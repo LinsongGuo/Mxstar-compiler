@@ -1,0 +1,31 @@
+package utility;
+
+public enum Operator {
+	suffixINCR,
+	suffixDECR,
+	POS,
+	NEG,
+	prefixINCR,
+	prefixDECR,
+	logicalNOT,
+	bitwiseNOT,
+	MUL,
+	DIV,
+	MOD,
+	ADD,
+	SUB,
+	leftSHIFT,
+	rightSHIFT,
+	LESS,
+	GREATER,
+	lessEQU,
+	greaterEQU,
+	EQU,
+	notEQU,
+	bitwiseAND,
+	bitwiseXOR,
+	bitwiseOR,
+	logicalAND,
+	logicalOR,
+	ASSIGN
+}

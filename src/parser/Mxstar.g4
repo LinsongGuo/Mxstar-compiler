@@ -1,26 +1,39 @@
 grammar Mxstar;
 
+@header {
+	package parser;
+}
+
+
 program 
-	: definition* EOF
+	: def* EOF
 	;
 
-definition
-	: varDef
+def
+	: classDef
+	| varDefStmt
 	| functDef
-	| classDef
-	;
-
-varDef
-	: varType ('[' ']')* (Identifier ('=' expr)?) (Identifier ('=' expr)?)* ';'
 	;
 
 classDef
-	: CLASS Identifier '{' (varDef | functDef)* '}'
+	: CLASS Identifier '{' (varDefStmt | functDef)* '}'
+	;
+
+varDefStmt
+	: type varDef (',' varDef)* ';'
+	;
+
+varDef
+	: Identifier ('=' expr)?
 	;
 
 functDef
-	: (varType | VOID) Identifier '(' ( (varType Identifier ('=' expr)?) (',' varType Identifier ('=' expr)?)* )? ')' block
+	: (type | VOID) Identifier '(' para* ')' block
     ;
+
+para
+	: type Identifier ('=' expr)?
+	;
 
 block
 	: '{' stmt* '}'
@@ -29,18 +42,18 @@ block
 stmt
 	: block                                  # blockStmt
 	| expr ';'                               # exprStmt
-	| varDef                                 # varDefStmt
+	| varDefStmt                             # varStmt 
 	| IF '(' expr ')' stmt (ELSE stmt)?      # ifStmt
-	| FOR '(' init = expr ';'  
-			  cond = expr ';'
-			  step = expr ';'
+	| FOR '(' init = expr? ';'  
+			  cond = expr? ';'
+			  step = expr? ';'
 		  ')'
 	  stmt                                   # forStmt
 	| WHILE '(' expr ')' stmt                # whileStmt   
 	| RETURN expr? ';'                       # returnStmt
 	| BREAK ';'                              # breakStmt
-	| CONTINUE ';'                           # contintueStmt
-	| ';'                                    # brankstmt
+	| CONTINUE ';'                           # continueStmt
+	| ';'                                    # brankStmt
 	;
 
 expr
@@ -64,9 +77,9 @@ expr
 	| expr op = '&' expr                               # binaryExpr     
 	| expr op = '^' expr                               # binaryExpr     
 	| expr op = '|' expr                               # binaryExpr     
-	| expr op = '&&' expr                              # logicalExpr      
-	| expr op = '||' expr                              # logicalExpr              
-	| <assoc = right> expr '=' expr                    # assignExpr
+	| expr op = '&&' expr                              # binaryExpr      
+	| expr op = '||' expr                              # binaryExpr              
+	| <assoc = right> expr '=' expr                    # binaryExpr
 	;        
 
 creator
@@ -75,13 +88,22 @@ creator
 	| Identifier                                           # nonarrayCreator
 	;
 
+type
+	: varType
+	| arrayType 
+	;
+
+arrayType
+	: varType ('[' ']')*
+	;
+
 varType
-	: primitiveType
+	: primType
 	| Identifier
 	;
 
-primitiveType
-    : type = (BOOL | INT | STRING)
+primType
+    : BOOL | INT | STRING
     ;
 
 literal
