@@ -1,0 +1,17 @@
+
+INT      : 'int'      ;          
+BOOL     : 'bool'     ;     
+STRING   : 'string'   ;       
+NULL     : 'null'     ;     
+VOID     : 'void'     ;     
+TRUE     : 'true'     ;     
+FALSE    : 'false'    ;      
+ELSE     : 'else'     ;      
+FOR      : 'for'      ;    
+WHILE    : 'while'    ;      
+BREAK    : 'break'    ;      
+CONTINUE : 'continue' ;         
+RETURN   : 'return'   ;       
+NEW      : 'new'      ;    
+CLASS    : 'class'    ;      
+THIS     : 'this'     ;    

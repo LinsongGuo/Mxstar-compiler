@@ -20,6 +20,14 @@ public class Location {
 		this(ctx.start);
 	}
 	
+	public int getLine() {
+		return line;
+	}
+	
+	public int getCol() {
+		return col;
+	}
+	
 	public String toString() {
         return "(" + line + "," + col + ")";
     }

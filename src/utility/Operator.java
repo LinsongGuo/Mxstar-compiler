@@ -27,5 +27,6 @@ public enum Operator {
 	bitwiseOR,
 	logicalAND,
 	logicalOR,
-	ASSIGN
+	ASSIGN,
+	INVALID
 }

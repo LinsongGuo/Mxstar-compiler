@@ -4,22 +4,21 @@ grammar Mxstar;
 	package parser;
 }
 
-
 program 
 	: def* EOF
 	;
-
+  
 def
 	: classDef
-	| varDefStmt
+	| varDefList
 	| functDef
 	;
 
 classDef
-	: CLASS Identifier '{' (varDefStmt | functDef)* '}'
+	: 'class' Identifier '{' (varDefList | functDef)* '}' ';'
 	;
 
-varDefStmt
+varDefList
 	: type varDef (',' varDef)* ';'
 	;
 
@@ -28,8 +27,15 @@ varDef
 	;
 
 functDef
-	: (type | VOID) Identifier '(' para* ')' block
+	: (type | VOID) Identifier '(' paraList ')' block
     ;
+
+VOID : 'void';
+
+paraList
+	: 
+	| para (',' para)*
+	;
 
 para
 	: type Identifier ('=' expr)?
@@ -41,30 +47,35 @@ block
 
 stmt
 	: block                                  # blockStmt
-	| expr ';'                               # exprStmt
-	| varDefStmt                             # varStmt 
-	| IF '(' expr ')' stmt (ELSE stmt)?      # ifStmt
-	| FOR '(' init = expr? ';'  
+	| 'if' '(' expr ')' stmt ('else' stmt)?      # ifStmt
+	| 'for' '(' init = expr? ';'  
 			  cond = expr? ';'
-			  step = expr? ';'
+			  step = expr? 
 		  ')'
 	  stmt                                   # forStmt
-	| WHILE '(' expr ')' stmt                # whileStmt   
-	| RETURN expr? ';'                       # returnStmt
-	| BREAK ';'                              # breakStmt
-	| CONTINUE ';'                           # continueStmt
+	| 'while' '(' expr ')' stmt                # whileStmt   
+	| 'return' expr? ';'                     	 # returnStmt
+	| 'break' ';'                              # breakStmt
+	| 'continue' ';'                           # continueStmt
+	| varDefList                             # varDefStmt 
+	| expr ';'                               # exprStmt
+
 	| ';'                                    # brankStmt
+	;
+	
+exprList
+	: (expr (',' expr)*)?
 	;
 
 expr
-	: Identifier                                       # varExpr
-	| THIS                                             # thisExpr 
+ 	: '(' expr ')'                                     # bracketExpr           
+	| 'this'                                             # thisExpr 
+	| 'new' creator                                      # creatorExpr            
 	| literal                                          # literalExpr       
+	| Identifier                                       # varExpr
 	| expr '.' Identifier                              # memberExpr                  
-	| 'new' creator                                    # creatorExpr            
 	| expr '[' expr ']'                                # arrayExpr               
-	| expr '(' (expr (',' expr)*)? ')'                 # functExpr                                
-	| '(' expr ')'                                     # bracketExpr           
+	| expr '(' exprList ')'                 		   # functExpr                                
 	| expr op = ('++' | '--')                          # suffixExpr                      
 	| op = ('+' | '-') expr                            # prefixExpr                    
 	| op = ('++' | '--') expr                          # prefixExpr                      
@@ -79,13 +90,14 @@ expr
 	| expr op = '|' expr                               # binaryExpr     
 	| expr op = '&&' expr                              # binaryExpr      
 	| expr op = '||' expr                              # binaryExpr              
-	| <assoc = right> expr '=' expr                    # binaryExpr
+	| <assoc = right> expr op = '=' expr               # binaryExpr
 	;        
-
+	
 creator
-	: varType ('[' expr ']')+ ('[' ']')+ ('[' expr ']')+  # errorCreator
+	: varType ('[' expr ']')+ ('[' ']')+ ('[' expr ']')+  # invalidCreator
 	| varType ('[' expr ']')+ ('[' ']')*                  # arrayCreator
-	| Identifier                                           # nonarrayCreator
+	| varType '(' ')'                                     # classCreator
+	| varType                                             # naiveCreator
 	;
 
 type
@@ -93,28 +105,28 @@ type
 	| arrayType 
 	;
 
-arrayType
-	: varType ('[' ']')*
-	;
-
 varType
 	: primType
 	| Identifier
 	;
 
+arrayType
+	: varType ('[' ']')*
+	;
+
 primType
-    : BOOL | INT | STRING
+    : 'bool' | 'int' | 'string'
     ;
 
 literal
 	: BoolLiteral   
 	| IntLiteral
 	| StringLiteral
-	| NULL
+	| 'null'
 	;
 
 BoolLiteral 
-	: TRUE | FALSE
+	: 'true' | 'false'
 	;
 
 IntLiteral 
@@ -122,37 +134,19 @@ IntLiteral
     | '0'
     ;
 
-
 StringLiteral 
 	: '"' (ESC|.)*? '"'
 	;
 
 ESC: '\\"' | '\\n' | '\\\\';
 
-WS : [\t\n\r]+  -> skip;
+Identifier: [a-zA-Z_] [a-zA-Z_0-9]* ;
 
-Newline : ('\r' '\n'? | '\n') -> skip;
+WS : [ \t]+  -> skip;
+
+NewLine: '\r' ? '\n' -> skip;
 
 LineComment : '//' ~[\r\n]* -> skip;
 
 BlockComment : '/*' .*? '*/' -> skip;
 
-Identifier: [a-zA-Z_] [a-zA-Z_0-9]* ;
-
-INT      : 'int'      ;          
-BOOL     : 'bool'     ;     
-STRING   : 'string'   ;       
-NULL     : 'null'     ;     
-VOID     : 'void'     ;     
-TRUE     : 'true'     ;     
-FALSE    : 'false'    ;      
-IF       : 'if'       ;    
-ELSE     : 'else'     ;      
-FOR      : 'for'      ;    
-WHILE    : 'while'    ;      
-BREAK    : 'break'    ;      
-CONTINUE : 'continue' ;         
-RETURN   : 'return'   ;       
-NEW      : 'new'      ;    
-CLASS    : 'class'    ;      
-THIS     : 'this'     ;      

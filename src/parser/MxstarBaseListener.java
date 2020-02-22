@@ -54,13 +54,13 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVarDefStmt(MxstarParser.VarDefStmtContext ctx) { }
+	@Override public void enterVarDefList(MxstarParser.VarDefListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVarDefStmt(MxstarParser.VarDefStmtContext ctx) { }
+	@Override public void exitVarDefList(MxstarParser.VarDefListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -85,6 +85,18 @@ public class MxstarBaseListener implements MxstarListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFunctDef(MxstarParser.FunctDefContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParaList(MxstarParser.ParaListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParaList(MxstarParser.ParaListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -121,30 +133,6 @@ public class MxstarBaseListener implements MxstarListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBlockStmt(MxstarParser.BlockStmtContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterExprStmt(MxstarParser.ExprStmtContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExprStmt(MxstarParser.ExprStmtContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterVarStmt(MxstarParser.VarStmtContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitVarStmt(MxstarParser.VarStmtContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -222,6 +210,30 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterVarDefStmt(MxstarParser.VarDefStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVarDefStmt(MxstarParser.VarDefStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprStmt(MxstarParser.ExprStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprStmt(MxstarParser.ExprStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterBrankStmt(MxstarParser.BrankStmtContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -234,13 +246,13 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVarExpr(MxstarParser.VarExprContext ctx) { }
+	@Override public void enterExprList(MxstarParser.ExprListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVarExpr(MxstarParser.VarExprContext ctx) { }
+	@Override public void exitExprList(MxstarParser.ExprListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -253,6 +265,18 @@ public class MxstarBaseListener implements MxstarListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitThisExpr(MxstarParser.ThisExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterVarExpr(MxstarParser.VarExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVarExpr(MxstarParser.VarExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -366,13 +390,13 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterErrorCreator(MxstarParser.ErrorCreatorContext ctx) { }
+	@Override public void enterInvalidCreator(MxstarParser.InvalidCreatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitErrorCreator(MxstarParser.ErrorCreatorContext ctx) { }
+	@Override public void exitInvalidCreator(MxstarParser.InvalidCreatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -390,13 +414,25 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNonarrayCreator(MxstarParser.NonarrayCreatorContext ctx) { }
+	@Override public void enterClassCreator(MxstarParser.ClassCreatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNonarrayCreator(MxstarParser.NonarrayCreatorContext ctx) { }
+	@Override public void exitClassCreator(MxstarParser.ClassCreatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNaiveCreator(MxstarParser.NaiveCreatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNaiveCreator(MxstarParser.NaiveCreatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -414,18 +450,6 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArrayType(MxstarParser.ArrayTypeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitArrayType(MxstarParser.ArrayTypeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterVarType(MxstarParser.VarTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -433,6 +457,18 @@ public class MxstarBaseListener implements MxstarListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitVarType(MxstarParser.VarTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArrayType(MxstarParser.ArrayTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayType(MxstarParser.ArrayTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
