@@ -15,9 +15,13 @@ def
 	;
 
 classDef
-	: 'class' Identifier '{' (varDefList | functDef)* '}' ';'
+	: 'class' Identifier '{' (varDefList | functDef | constructorDef)* '}' ';'
 	;
 
+constructorDef
+	: Identifier '(' paraList ')' block
+	;
+	
 varDefList
 	: type varDef (',' varDef)* ';'
 	;

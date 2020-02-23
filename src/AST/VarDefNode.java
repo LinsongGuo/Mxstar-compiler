@@ -17,4 +17,12 @@ public class VarDefNode extends ASTNode{
 	public void setType(TypeNode type) {
 		this.type = type;
 	}
+	
+	public TypeNode getType() {
+		return this.type;
+	}
+	
+	public boolean typeEquals(VarDefNode other) {
+		return type.identifierEquals(other.type);
+	}
 }

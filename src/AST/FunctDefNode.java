@@ -16,4 +16,15 @@ public class FunctDefNode extends DefNode {
 		this.paraList = paraList;
 		this.stmt = stmt;
 	}
+	
+	public boolean paraEquals(FunctDefNode other) {
+		if (paraList.size() != other.paraList.size()) 
+			return false;
+		for (int i = 0; i < paraList.size(); ++i) {
+			if (!paraList.get(i).typeEquals(other.paraList.get(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

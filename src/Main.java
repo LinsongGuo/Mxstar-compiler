@@ -1,4 +1,5 @@
-//import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -15,21 +16,33 @@ import utility.*;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
+		ErrorReminder errorReminder = new ErrorReminder();
 		InputStream IS = new FileInputStream("code.Mx");
 		CharStream AIS = CharStreams.fromStream(IS);
-       // ANTLRInputStream AIS = new ANTLRInputStream(IS);
+      	//ANTLRInputStream AIS = new ANTLRInputStream(IS);
+		
+		System.err.println("lexer------------------");
 		MxstarLexer lexer = new MxstarLexer(AIS);
+		lexer.removeErrorListeners();
+		lexer.addErrorListener(new MxstarErrorListener(errorReminder));
+		
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		System.out.println("Get tokens.");
 		/*
+		System.out.println("Get tokens.");
 		tokens.fill();
 		for(Token token : tokens.getTokens()) {
 			System.out.println(token.getType() + " " + token.getText());
 		}*/
 		
+		System.err.println("parser------------------");
 		MxstarParser parser = new MxstarParser(tokens);
-		ASTBuilder ast = new ASTBuilder();
+		parser.removeErrorListeners();
+		parser.addErrorListener(new MxstarErrorListener(errorReminder));
+		
+		System.err.println("Building AST------------");
+		ASTBuilder ast = new ASTBuilder(errorReminder);
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
-		System.out.println("Build AST.");
+		
+		System.err.println("Finished.");
 	}
 }

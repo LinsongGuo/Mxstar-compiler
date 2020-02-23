@@ -40,6 +40,16 @@ public interface MxstarListener extends ParseTreeListener {
 	 */
 	void exitClassDef(MxstarParser.ClassDefContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link MxstarParser#constructorDef}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstructorDef(MxstarParser.ConstructorDefContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MxstarParser#constructorDef}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstructorDef(MxstarParser.ConstructorDefContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link MxstarParser#varDefList}.
 	 * @param ctx the parse tree
 	 */

@@ -3,12 +3,10 @@ package AST;
 import utility.Location;
 
 public class ArrayTypeNode extends TypeNode {
-	private TypeNode type;
 	private int dimension;
 	
-	public ArrayTypeNode(Location loc, TypeNode type, int dimension) {
-		super(loc);
-		this.type = type;
+	public ArrayTypeNode(Location loc, String identifier, int dimension) {
+		super(loc, identifier);
 		this.dimension = dimension;
 	}
 }

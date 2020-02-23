@@ -31,6 +31,12 @@ public interface MxstarVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitClassDef(MxstarParser.ClassDefContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MxstarParser#constructorDef}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstructorDef(MxstarParser.ConstructorDefContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MxstarParser#varDefList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
