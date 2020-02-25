@@ -2,7 +2,7 @@ package AST;
 
 import utility.Location;
 
-public class ASTNode {
+abstract public class ASTNode {
 	private Location loc;
 	
 	public ASTNode(Location loc) {
@@ -12,4 +12,6 @@ public class ASTNode {
 	public Location getLoc() {
 		return loc;
 	}
+	
+	abstract public void accept(ASTVisitor visitor);
 }

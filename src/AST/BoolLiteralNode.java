@@ -9,4 +9,8 @@ public class BoolLiteralNode extends LiteralExprNode {
 		super(loc);
 		this.bool = bool;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

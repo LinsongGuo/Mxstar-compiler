@@ -31,10 +31,8 @@ varDef
 	;
 
 functDef
-	: (type | VOID) Identifier '(' paraList ')' block
+	: type Identifier '(' paraList ')' block
     ;
-
-VOID : 'void';
 
 paraList
 	: 
@@ -119,7 +117,7 @@ arrayType
 	;
 
 primType
-    : 'bool' | 'int' | 'string'
+    : 'bool' | 'int' | 'string' | 'void'
     ;
 
 literal

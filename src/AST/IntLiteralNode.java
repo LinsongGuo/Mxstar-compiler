@@ -10,4 +10,7 @@ public class IntLiteralNode extends LiteralExprNode {
 		this.integer = integer;
 	}
 	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

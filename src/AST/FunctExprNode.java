@@ -12,4 +12,8 @@ public class FunctExprNode extends ExprNode {
 		this.funct = funct;
 		this.paraList = paraList;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

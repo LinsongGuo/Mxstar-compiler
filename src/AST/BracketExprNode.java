@@ -9,4 +9,8 @@ public class BracketExprNode extends ExprNode {
 		super(loc);
 		this.subexpr = subexpr;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

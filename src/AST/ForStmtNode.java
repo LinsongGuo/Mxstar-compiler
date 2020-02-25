@@ -13,4 +13,8 @@ public class ForStmtNode extends StmtNode {
 		this.step = step;
 		this.stmt = stmt;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -19,10 +19,22 @@ public class VarDefNode extends ASTNode{
 	}
 	
 	public TypeNode getType() {
-		return this.type;
+		return type;
+	}
+	
+	public String getTypeIdentifier() {
+		return type.getIdentifier();
+	}
+	
+	public String getIdentifier() {
+		return identifier;
 	}
 	
 	public boolean typeEquals(VarDefNode other) {
 		return type.identifierEquals(other.type);
+	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
 	}
 }

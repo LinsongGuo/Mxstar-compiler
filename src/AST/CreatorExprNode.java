@@ -13,4 +13,8 @@ public class CreatorExprNode extends ExprNode {
 		this.sizeList = sizeList;
 		this.dimension = dimension;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

@@ -11,4 +11,8 @@ public class WhileStmtNode extends StmtNode {
 		this.expr = expr;
 		this.stmt = stmt;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

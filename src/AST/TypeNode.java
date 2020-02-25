@@ -17,5 +17,9 @@ public class TypeNode extends ASTNode {
 	public boolean identifierEquals(TypeNode other) {
 		return identifier.equals(other.identifier);
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }
 

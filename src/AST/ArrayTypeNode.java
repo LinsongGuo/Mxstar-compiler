@@ -9,4 +9,12 @@ public class ArrayTypeNode extends TypeNode {
 		super(loc, identifier);
 		this.dimension = dimension;
 	}
+	
+	public int getDimension() {
+		return dimension;
+	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

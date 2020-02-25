@@ -12,4 +12,7 @@ public class ArrayExprNode extends ExprNode {
 		this.indexExpr = indexExpr;
 	}
 	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

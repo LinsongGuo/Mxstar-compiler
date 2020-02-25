@@ -10,4 +10,8 @@ public class BlockStmtNode extends StmtNode {
 		super(loc);
 		this.stmtList = stmtList;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

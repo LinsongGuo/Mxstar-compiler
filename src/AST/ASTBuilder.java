@@ -67,18 +67,12 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitFunctDef(MxstarParser.FunctDefContext ctx) {
 		System.err.println("visitFunctDef: " + ctx.getText());
-		TypeNode type;
-		
-		if (ctx.VOID() == null) type = (TypeNode)visit(ctx.type());
-		else {
-			type = (TypeNode)(new PrimTypeNode( new Location(ctx.getStart()), "void") );
-		}
 		ArrayList<VarDefNode> paraList = new ArrayList<VarDefNode>();
 		for (MxstarParser.ParaContext item : ctx.paraList().para()) {
 			paraList.add((VarDefNode)visit(item));
 		}
 		return new FunctDefNode( new Location(ctx.getStart()),
-			type,
+			(TypeNode)visit(ctx.type()),
 			ctx.Identifier().getText(),
 			paraList,
 			(BlockStmtNode)visit(ctx.block())

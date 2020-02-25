@@ -11,4 +11,8 @@ public class MemberExprNode extends ExprNode {
 		this.expr = expr;
 		this.identifier = identifier;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

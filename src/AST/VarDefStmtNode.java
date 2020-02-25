@@ -9,4 +9,8 @@ public class VarDefStmtNode extends StmtNode {
 		super(loc);
 		this.varList = varList;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

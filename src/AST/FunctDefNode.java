@@ -17,6 +17,18 @@ public class FunctDefNode extends DefNode {
 		this.stmt = stmt;
 	}
 	
+	public TypeNode getType() {
+		return type;
+	}
+	
+	public String getTypeIdentifier() {
+		return type.getIdentifier();
+	}
+	
+	public ArrayList<VarDefNode> getParaList() {
+		return paraList;
+	}
+	
 	public boolean paraEquals(FunctDefNode other) {
 		if (paraList.size() != other.paraList.size()) 
 			return false;
@@ -26,5 +38,9 @@ public class FunctDefNode extends DefNode {
 			}
 		}
 		return true;
+	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
 	}
 }

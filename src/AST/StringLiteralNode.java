@@ -10,4 +10,7 @@ public class StringLiteralNode extends LiteralExprNode {
 		this.string = string;
 	}
 	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

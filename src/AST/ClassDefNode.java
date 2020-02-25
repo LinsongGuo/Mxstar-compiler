@@ -15,4 +15,8 @@ public class ClassDefNode extends DefNode {
 		this.functList = functList;
 		this.constructorList = constructorList;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

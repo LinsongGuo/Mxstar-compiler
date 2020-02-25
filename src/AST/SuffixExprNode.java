@@ -12,4 +12,8 @@ public class SuffixExprNode extends ExprNode {
 		this.op = op;
 		this.expr = expr;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

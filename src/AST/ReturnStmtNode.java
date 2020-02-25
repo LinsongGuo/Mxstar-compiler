@@ -9,4 +9,8 @@ public class ReturnStmtNode extends StmtNode {
 		super(loc);
 		this.expr = expr;
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

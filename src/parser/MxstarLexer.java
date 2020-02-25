@@ -25,7 +25,7 @@ public class MxstarLexer extends Lexer {
 		T__24=25, T__25=26, T__26=27, T__27=28, T__28=29, T__29=30, T__30=31, 
 		T__31=32, T__32=33, T__33=34, T__34=35, T__35=36, T__36=37, T__37=38, 
 		T__38=39, T__39=40, T__40=41, T__41=42, T__42=43, T__43=44, T__44=45, 
-		T__45=46, VOID=47, BoolLiteral=48, IntLiteral=49, StringLiteral=50, ESC=51, 
+		T__45=46, T__46=47, BoolLiteral=48, IntLiteral=49, StringLiteral=50, ESC=51, 
 		Identifier=52, WS=53, NewLine=54, LineComment=55, BlockComment=56;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -42,9 +42,9 @@ public class MxstarLexer extends Lexer {
 			"T__17", "T__18", "T__19", "T__20", "T__21", "T__22", "T__23", "T__24", 
 			"T__25", "T__26", "T__27", "T__28", "T__29", "T__30", "T__31", "T__32", 
 			"T__33", "T__34", "T__35", "T__36", "T__37", "T__38", "T__39", "T__40", 
-			"T__41", "T__42", "T__43", "T__44", "T__45", "VOID", "BoolLiteral", "IntLiteral", 
-			"StringLiteral", "ESC", "Identifier", "WS", "NewLine", "LineComment", 
-			"BlockComment"
+			"T__41", "T__42", "T__43", "T__44", "T__45", "T__46", "BoolLiteral", 
+			"IntLiteral", "StringLiteral", "ESC", "Identifier", "WS", "NewLine", 
+			"LineComment", "BlockComment"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -56,7 +56,7 @@ public class MxstarLexer extends Lexer {
 			"'new'", "'.'", "'['", "']'", "'++'", "'--'", "'+'", "'-'", "'~'", "'!'", 
 			"'*'", "'/'", "'%'", "'<<'", "'>>'", "'<'", "'>'", "'<='", "'>='", "'=='", 
 			"'!='", "'&'", "'^'", "'|'", "'&&'", "'||'", "'bool'", "'int'", "'string'", 
-			"'null'", "'void'"
+			"'void'", "'null'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -65,7 +65,7 @@ public class MxstarLexer extends Lexer {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, null, null, null, "VOID", 
+			null, null, null, null, null, null, null, null, null, null, null, null, 
 			"BoolLiteral", "IntLiteral", "StringLiteral", "ESC", "Identifier", "WS", 
 			"NewLine", "LineComment", "BlockComment"
 		};
@@ -214,9 +214,9 @@ public class MxstarLexer extends Lexer {
 		"X\3\2\2\2\u00f9\u00fa\7k\2\2\u00fa\u00fb\7p\2\2\u00fb\u00fc\7v\2\2\u00fc"+
 		"Z\3\2\2\2\u00fd\u00fe\7u\2\2\u00fe\u00ff\7v\2\2\u00ff\u0100\7t\2\2\u0100"+
 		"\u0101\7k\2\2\u0101\u0102\7p\2\2\u0102\u0103\7i\2\2\u0103\\\3\2\2\2\u0104"+
-		"\u0105\7p\2\2\u0105\u0106\7w\2\2\u0106\u0107\7n\2\2\u0107\u0108\7n\2\2"+
-		"\u0108^\3\2\2\2\u0109\u010a\7x\2\2\u010a\u010b\7q\2\2\u010b\u010c\7k\2"+
-		"\2\u010c\u010d\7f\2\2\u010d`\3\2\2\2\u010e\u010f\7v\2\2\u010f\u0110\7"+
+		"\u0105\7x\2\2\u0105\u0106\7q\2\2\u0106\u0107\7k\2\2\u0107\u0108\7f\2\2"+
+		"\u0108^\3\2\2\2\u0109\u010a\7p\2\2\u010a\u010b\7w\2\2\u010b\u010c\7n\2"+
+		"\2\u010c\u010d\7n\2\2\u010d`\3\2\2\2\u010e\u010f\7v\2\2\u010f\u0110\7"+
 		"t\2\2\u0110\u0111\7w\2\2\u0111\u0118\7g\2\2\u0112\u0113\7h\2\2\u0113\u0114"+
 		"\7c\2\2\u0114\u0115\7n\2\2\u0115\u0116\7u\2\2\u0116\u0118\7g\2\2\u0117"+
 		"\u010e\3\2\2\2\u0117\u0112\3\2\2\2\u0118b\3\2\2\2\u0119\u011d\t\2\2\2"+

@@ -9,4 +9,8 @@ public class VarExprNode extends ExprNode {
 		super(loc);
 		this.identifier = identifier;
 	}	
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }

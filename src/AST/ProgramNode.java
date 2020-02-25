@@ -14,4 +14,8 @@ public class ProgramNode extends ASTNode {
 	public void addDef(DefNode def) {
 		defList.add(def);
 	}
+	
+	public void accept(ASTVisitor visitor) {
+		visitor.visit(this);
+	}
 }
