@@ -5,6 +5,8 @@ import parser.MxstarBaseVisitor;
 
 import java.util.ArrayList;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+
 import utility.Location;
 import utility.Operator;
 import utility.ErrorReminder;
@@ -96,52 +98,52 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		for (MxstarParser.VarDefListContext item : ctx.varDefList()) {
 			varList.add((VarDefListNode)visit(item));
 		}
+		String identifier = ctx.Identifier().getText();
 		ArrayList<FunctDefNode> functList = new ArrayList<FunctDefNode>();
 		for (MxstarParser.FunctDefContext item : ctx.functDef()) {
-			if (item.Identifier().getText().equals(ctx.Identifier().getText())) {
+			if (item.Identifier().getText().equals(identifier)) {
 				errorReminder.error( new Location(item.getStart()), 
-					"The constructor should not have return type."
+					"The constructor \"" + identifier + "()\"has return type."
 				);
 				continue;
 			}
 			functList.add((FunctDefNode)visit(item));
 		}
-		ArrayList<FunctDefNode> constructorList = new ArrayList<FunctDefNode>();
+		FunctDefNode constructorDef = null;
+		int count = 0;
 		for (MxstarParser.ConstructorDefContext item : ctx.constructorDef()) {
-			FunctDefNode tmp = (FunctDefNode)visit(item);
-			boolean flag = true;
-			for (FunctDefNode pre : constructorList) {
-				if (tmp.paraEquals(pre)) {
-					flag = false;
-					break;
-				}
-			}
-			if (!flag) {
-				errorReminder.error( new Location(item.getStart()), 
-					"The constructor should not have the same parameters with the previous one."
+			if (item.Identifier().getText() != identifier) {
+				errorReminder.error(new Location(item.getStart()), 
+					"The function \"" + item.Identifier().getText() + "()\" has no return type."
 				);
 			}
-			constructorList.add(tmp);
+			else {
+				count++;
+				if (count > 1) {
+					errorReminder.error(new Location(item.getStart()), 
+						"The class \"" + identifier + "\" has several constructors."
+					);
+				}
+				else {
+					constructorDef = (FunctDefNode) visit(item);
+				}
+			}
 		}
 		return new ClassDefNode( new Location(ctx.getStart()),
 			ctx.Identifier().getText(),
 			varList, 
 			functList, 
-			constructorList
+			constructorDef
 		);
 	}
 	
 	@Override
 	public ASTNode visitConstructorDef(MxstarParser.ConstructorDefContext ctx) {
 		System.err.println("visitConstructorDef: " + ctx.getText());
-		ArrayList<VarDefNode> paraList = new ArrayList<VarDefNode>();
-		for (MxstarParser.ParaContext item : ctx.paraList().para()) {
-			paraList.add((VarDefNode)visit(item));
-		}
 		return new FunctDefNode( new Location(ctx.getStart()),
 			null,
 			ctx.Identifier().getText(),
-			paraList,
+			new ArrayList<VarDefNode>(),
 			(BlockStmtNode)visit(ctx.block())
 		);
 	}

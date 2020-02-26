@@ -19,7 +19,7 @@ classDef
 	;
 
 constructorDef
-	: Identifier '(' paraList ')' block
+	: Identifier '(' ')' block
 	;
 	
 varDefList

@@ -14,9 +14,22 @@ public class FunctSymbol extends ScopedSymbol {
 	private Type type;
 	private int dimension;
 	private LinkedHashMap<String, Type> paraList;
+	private ArrayList<LocalScope> children;
 	
 	public FunctSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
+		this.type = null;
+		this.dimension = 0;
+		this.paraList = new LinkedHashMap<String, Type>();
+		this.children = new ArrayList<LocalScope>();
+	}
+	
+	public FunctSymbol(Scope parent, String identifier, Type type, int dimension) {
+		super(parent, identifier);
+		this.type = type;
+		this.dimension = dimension;
+		this.paraList = new LinkedHashMap<String, Type>();
+		this.children = new ArrayList<LocalScope>();
 	}
 	
 	public FunctSymbol(Scope parent, String identifier, Type type, int dimension, LinkedHashMap<String, Type> paraList) {
@@ -24,38 +37,28 @@ public class FunctSymbol extends ScopedSymbol {
 		this.type = type;
 		this.dimension = dimension;
 		this.paraList = paraList;
+		this.children = new ArrayList<LocalScope>();
 	}
 	
 	@Override
-	public void defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		//check return type
-		TypeNode typeNode = node.getType();
-		String typeIdentifier = typeNode.getIdentifier();
-		Type type = resolveType(typeIdentifier);
-		if (type == null) {
-			errorReminder.error(node.getLoc(), 
-				"The return type \"" + typeIdentifier + "\" is not defined.");
-			return;
-		}
-		this.type = type;
-		if (type instanceof ArrayTypeNode) 
-			this.dimension = ((ArrayTypeNode) type).getDimension();
-		else 
-			this.dimension = 0;
-		
-		//check parameter type
-		ArrayList<VarDefNode> paraList = node.getParaList();
-		for(VarDefNode var : paraList) {
-			String paraTypeIdentifier = var.getTypeIdentifier();
+	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
+		errorReminder.error(node.getLoc(), "Invalid function definion.");
+		return null;
+	}
+	
+	@Override
+	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
+		for(VarDefNode item : paraList) {
+			String paraTypeIdentifier = item.getTypeIdentifier();
 			Type paraType = resolveType(paraTypeIdentifier);
 			if (paraType == null) {
-				errorReminder.error(node.getLoc(), 
+				errorReminder.error(item.getLoc(), 
 					"The parameter type \"" + paraTypeIdentifier + "\" is not defined.");
 				return;
 			}
-			String paraIdentifier = var.getIdentifier();
+			String paraIdentifier = item.getIdentifier();
 			if(this.paraList.containsKey(paraIdentifier)) {
-				errorReminder.error(var.getLoc(),
+				errorReminder.error(item.getLoc(),
 					"The parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
 				);
 			}
@@ -64,11 +67,6 @@ public class FunctSymbol extends ScopedSymbol {
 			}
 		}
 	}
-	
 
-	@Override
-	public void defineClass(ClassDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "404 NOT FOUND!");
-	}
-	
+		
 }

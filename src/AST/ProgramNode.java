@@ -15,6 +15,9 @@ public class ProgramNode extends ASTNode {
 		defList.add(def);
 	}
 	
+	public ArrayList<DefNode> getDefList() {
+		return defList;
+	}
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

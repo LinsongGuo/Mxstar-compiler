@@ -11,13 +11,11 @@ import utility.ErrorReminder;
 
 abstract public class ScopedSymbol extends Symbol implements Scope {
 	protected Scope parent;
-	private ArrayList<LocalScope> children;
 	private LinkedHashMap<String, Type> varList;
 	
 	public ScopedSymbol(Scope parent, String identifier) {
 		super(identifier);
 		this.parent = parent;
-		this.children = new ArrayList<LocalScope>();
 		this.varList = new LinkedHashMap<String, Type>();
 	}
 	
@@ -28,13 +26,14 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	@Override
 	public Type resolveType(String identifier) {
 		Scope parent = getEnclosingScope();
+		
 		if (parent != null) 
 			return parent.resolveType(identifier);
 		return null;
 	}
 	
 	@Override 
-	public void defineVar(VarDefListNode node, ErrorReminder errorReminder) {
+	public void defineVarList(VarDefListNode node, ErrorReminder errorReminder) {
 		ArrayList<VarDefNode> varList = node.getVarList();
 		String typeIdentifier = varList.get(0).getTypeIdentifier();
 		Type type = resolveType(typeIdentifier);
@@ -55,7 +54,14 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		}
 	}
 
-	public abstract void defineClass(ClassDefNode node, ErrorReminder errorReminder);
+	public abstract Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder);
 	
-	public abstract void defineFunct(FunctDefNode node, ErrorReminder errorReminder);
+	@Override
+	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
+		errorReminder.error(node.getLoc(), "Invalid class definition.");
+		return null;
+	}
+	
+	public abstract void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
+
 }

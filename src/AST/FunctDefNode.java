@@ -25,8 +25,16 @@ public class FunctDefNode extends DefNode {
 		return type.getIdentifier();
 	}
 	
+	public String getIdentifier() {
+		return identifier;
+	}
+	
 	public ArrayList<VarDefNode> getParaList() {
 		return paraList;
+	}
+	
+	public BlockStmtNode getBlockStmt() {
+		return stmt;
 	}
 	
 	public boolean paraEquals(FunctDefNode other) {
