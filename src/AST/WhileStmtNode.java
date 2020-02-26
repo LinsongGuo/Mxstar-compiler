@@ -12,6 +12,14 @@ public class WhileStmtNode extends StmtNode {
 		this.stmt = stmt;
 	}
 	
+	public ExprNode getExpr() {
+		return expr;
+	}
+	
+	public StmtNode getStmt() {
+		return stmt;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

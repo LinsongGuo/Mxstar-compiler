@@ -11,15 +11,18 @@ import AST.VarDefNode;
 import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol {
-	private LinkedHashMap<String, FunctSymbol> functList;
 	
 	public ClassSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
-		this.functList = new LinkedHashMap<String, FunctSymbol>();
 	}
 	
+	@Override
+	public Symbol resolveFunct(FunctDefNode node, ErrorReminder errorReminder) {
+		return null;
+	}
+	
+	@Override
 	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		//check return type
 		TypeNode typeNode = node.getType();
 		Type type = null;
 		int dimension = 0;
@@ -31,24 +34,35 @@ public class ClassSymbol extends ScopedSymbol {
 					"The return type \"" + typeIdentifier + "\" is not defined."
 				);
 			}
-			if (type instanceof ArrayTypeNode) 
-				dimension = ((ArrayTypeNode) type).getDimension();	
+			if (typeNode instanceof ArrayTypeNode) 
+				dimension = ((ArrayTypeNode) typeNode).getDimension();	
 		}
 		
 		//check identifier
 		String identifier = node.getIdentifier();
 		FunctSymbol functSymbol = new FunctSymbol(this, identifier, type, dimension);
-		if (functList.containsKey(identifier)) {
+		if (methodList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
 				"The function \"" + identifier + "()\" has the same name with previous function."
 			);
 		}
-		functList.put(identifier, functSymbol);
+		methodList.put(identifier, functSymbol);
 		return functSymbol;
 	}
+	
 	
 	@Override
 	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		
+	}
+	
+	@Override
+	public boolean inFunctScope() {
+		return false;
+	}
+	
+	@Override
+	public boolean inClassScope() {
+		return true;
 	}
 }

@@ -13,6 +13,10 @@ public class PrefixExprNode extends ExprNode {
 		this.expr = expr;
 	}
 	
+	public ExprNode getExpr() {
+		return expr;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

@@ -3,7 +3,7 @@ package AST;
 public interface ASTVisitor {
 	public abstract void visit(ProgramNode node);
 
-	public abstract void visit(DefNode node);
+	//public abstract void visit(DefNode node);
 	public abstract void visit(VarDefListNode node);
 	public abstract void visit(FunctDefNode node);
 	public abstract void visit(ClassDefNode node);
@@ -14,7 +14,7 @@ public interface ASTVisitor {
 	public abstract void visit(ClassTypeNode node);
 	public abstract void visit(ArrayTypeNode node);
 
-	public abstract void visit(ExprNode node);
+	//public abstract void visit(ExprNode node);
 	public abstract void visit(ArrayExprNode node);
 	public abstract void visit(BinaryExprNode node);
 	public abstract void visit(BracketExprNode node);
@@ -25,9 +25,9 @@ public interface ASTVisitor {
 	public abstract void visit(PrefixExprNode node);
 	public abstract void visit(SuffixExprNode node);
 	public abstract void visit(ThisExprNode node);
-	public abstract void visit(VarExprNode node);
+	public abstract void visit(IdentifierExprNode node);
  
-	public abstract void visit(StmtNode node);
+	//public abstract void visit(StmtNode node);
 	public abstract void visit(BlockStmtNode node);
 	public abstract void visit(BrankStmtNode node);
 	public abstract void visit(BreakStmtNode node);

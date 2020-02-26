@@ -3,11 +3,15 @@ package AST;
 import utility.Location;
 
 public class BracketExprNode extends ExprNode {
-	public ExprNode subexpr;
+	public ExprNode expr;
 	
-	public BracketExprNode(Location loc, ExprNode subexpr) {
+	public BracketExprNode(Location loc, ExprNode expr) {
 		super(loc);
-		this.subexpr = subexpr;
+		this.expr = expr;
+	}
+	
+	public ExprNode getExpr() {
+		return expr;
 	}
 	
 	public void accept(ASTVisitor visitor) {

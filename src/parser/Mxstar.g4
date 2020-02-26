@@ -71,10 +71,10 @@ exprList
 
 expr
  	: '(' expr ')'                                     # bracketExpr           
-	| 'this'                                             # thisExpr 
-	| 'new' creator                                      # creatorExpr            
+	| 'this'                                           # thisExpr 
+	| 'new' creator                                    # creatorExpr            
 	| literal                                          # literalExpr       
-	| Identifier                                       # varExpr
+	| Identifier                                       # identifierExpr
 	| expr '.' Identifier                              # memberExpr                  
 	| expr '[' expr ']'                                # arrayExpr               
 	| expr '(' exprList ')'                 		   # functExpr                                

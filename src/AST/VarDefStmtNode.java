@@ -4,10 +4,14 @@ import utility.Location;
 import java.util.ArrayList;
 
 public class VarDefStmtNode extends StmtNode {
-	private ArrayList<VarDefNode> varList;
-	public VarDefStmtNode(Location loc, ArrayList<VarDefNode> varList) {
+	private VarDefListNode varDefList;
+	public VarDefStmtNode(Location loc, VarDefListNode varDefList) {
 		super(loc);
-		this.varList = varList;
+		this.varDefList = varDefList;
+	}
+	
+	public VarDefListNode getVarDefList() {
+		return varDefList;
 	}
 	
 	public void accept(ASTVisitor visitor) {

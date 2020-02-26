@@ -2,12 +2,10 @@ package AST;
 
 import utility.Location;
 
-public class DefNode extends ASTNode {
+public abstract class DefNode extends ASTNode {
 	public DefNode(Location loc) {
 		super(loc);
 	}
 	
-	public void accept(ASTVisitor visitor) {
-		visitor.visit(this);
-	}
+	public abstract void accept(ASTVisitor visitor);
 }

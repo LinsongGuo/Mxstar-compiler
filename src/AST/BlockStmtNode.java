@@ -11,6 +11,10 @@ public class BlockStmtNode extends StmtNode {
 		this.stmtList = stmtList;
 	}
 	
+	public ArrayList<StmtNode> getStmtList() {
+		return stmtList;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

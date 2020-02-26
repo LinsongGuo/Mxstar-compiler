@@ -1,8 +1,5 @@
-class Test {
-	int a, b;
-	Test() {a = 0; b = 0;}
-	Test() {a = 0; b = 0;}
-	Test(int x) {a = x;}
-	Test(int x, int y) {a = x; b = y;}
-	Test(int a, int b) {a = x; b = y;}
-};
+int main() {
+	for(i = 0;; ++i) {
+		int x = 0;
+	}
+}

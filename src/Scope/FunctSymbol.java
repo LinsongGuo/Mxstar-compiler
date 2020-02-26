@@ -41,6 +41,12 @@ public class FunctSymbol extends ScopedSymbol {
 	}
 	
 	@Override
+	public Symbol resolveFunct(FunctDefNode node, ErrorReminder errorReminder) {
+		return null;
+	}
+
+	
+	@Override
 	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
 		errorReminder.error(node.getLoc(), "Invalid function definion.");
 		return null;
@@ -68,5 +74,13 @@ public class FunctSymbol extends ScopedSymbol {
 		}
 	}
 
-		
+	@Override
+	public boolean inFunctScope() {
+		return true;
+	}
+	
+	@Override
+	public boolean inClassScope() {
+		return getEnclosingScope().inClassScope();
+	}
 }

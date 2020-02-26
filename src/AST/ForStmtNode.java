@@ -14,6 +14,22 @@ public class ForStmtNode extends StmtNode {
 		this.stmt = stmt;
 	}
 	
+	public ExprNode getInitExpr() {
+		return init;
+	}
+	
+	public ExprNode getCondExpr() {
+		return cond;
+	}
+	
+	public ExprNode getStepExpr() {
+		return step;
+	}
+	
+	public StmtNode getStmt() {
+		return stmt;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

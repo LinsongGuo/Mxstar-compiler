@@ -7,4 +7,8 @@ public class ArraySymbol extends VarSymbol{
 		super(identifier, type);
 		this.dimension = dimension;
 	}
+	
+	public int getDimension() {
+		return dimension;
+	}
 }

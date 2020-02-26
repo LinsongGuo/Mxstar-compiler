@@ -13,5 +13,5 @@ abstract public class ASTNode {
 		return loc;
 	}
 	
-	abstract public void accept(ASTVisitor visitor);
+	public abstract void accept(ASTVisitor visitor);
 }

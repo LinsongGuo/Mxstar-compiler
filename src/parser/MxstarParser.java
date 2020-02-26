@@ -1294,23 +1294,6 @@ public class MxstarParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class VarExprContext extends ExprContext {
-		public TerminalNode Identifier() { return getToken(MxstarParser.Identifier, 0); }
-		public VarExprContext(ExprContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof MxstarListener ) ((MxstarListener)listener).enterVarExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof MxstarListener ) ((MxstarListener)listener).exitVarExpr(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof MxstarVisitor ) return ((MxstarVisitor<? extends T>)visitor).visitVarExpr(this);
-			else return visitor.visitChildren(this);
-		}
-	}
 	public static class PrefixExprContext extends ExprContext {
 		public Token op;
 		public ExprContext expr() {
@@ -1495,6 +1478,23 @@ public class MxstarParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class IdentifierExprContext extends ExprContext {
+		public TerminalNode Identifier() { return getToken(MxstarParser.Identifier, 0); }
+		public IdentifierExprContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof MxstarListener ) ((MxstarListener)listener).enterIdentifierExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof MxstarListener ) ((MxstarListener)listener).exitIdentifierExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxstarVisitor ) return ((MxstarVisitor<? extends T>)visitor).visitIdentifierExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 
 	public final ExprContext expr() throws RecognitionException {
 		return expr(0);
@@ -1563,7 +1563,7 @@ public class MxstarParser extends Parser {
 				break;
 			case Identifier:
 				{
-				_localctx = new VarExprContext(_localctx);
+				_localctx = new IdentifierExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(185);
