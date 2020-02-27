@@ -278,10 +278,27 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitMemberExpr(MxstarParser.MemberExprContext ctx) {
-		return new MemberExprNode( new Location(ctx.getStart()),
-			(ExprNode)visit(ctx.expr()),
-			ctx.Identifier().getText()
-		);
+		ExprNode expr = (ExprNode) visit(ctx.expr());
+		if (ctx.Identifier() != null) {
+			return new MemberExprNode( new Location(ctx.getStart()),
+				expr,
+				ctx.Identifier().getText()
+			);
+		}
+		else if (ctx.functCall() != null) {
+			return new MemberExprNode( new Location(ctx.getStart()),
+				expr,
+				(FunctExprNode) visit(ctx.functCall())
+			);
+		}
+		else if (ctx.arrayCall() != null){
+			return new MemberExprNode( new Location(ctx.getStart()),
+				expr,
+				(ArrayExprNode) visit(ctx.arrayCall())
+			);
+		}
+		else 		
+			return null;
 	}
 	
 	@Override
@@ -333,6 +350,8 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitArrayExpr(MxstarParser.ArrayExprContext ctx) {
+		return visit(ctx.arrayCall());
+		/*
 		ExprNode nameExpr = (ExprNode)visit(ctx.expr(0));
 		if (nameExpr instanceof ArrayExprNode) { 
 			ArrayList<ExprNode> indexExpr = ((ArrayExprNode)nameExpr).getIndexExpr();
@@ -349,27 +368,43 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 				nameExpr,
 				indexExpr	
 			);	
+		}*/
+	}
+	
+	@Override
+	public ASTNode visitArrayCall(MxstarParser.ArrayCallContext ctx) {
+		ArrayList<ExprNode> indexExpr = new ArrayList<ExprNode>();
+		for (MxstarParser.ExprContext item : ctx.expr()) {
+			indexExpr.add((ExprNode)visit(item));
 		}
-		
+		return new ArrayExprNode( new Location(ctx.getStart()),
+			ctx.Identifier().getText(),
+			indexExpr
+		);
 	}
 	
 	@Override
 	public ASTNode visitFunctExpr(MxstarParser.FunctExprContext ctx) {
 		//System.err.println("visitFunctExpr: " + ctx.getText());
+		return visit(ctx.functCall());
+	}
+	
+	@Override
+	public ASTNode visitFunctCall(MxstarParser.FunctCallContext ctx) {
 		ArrayList<ExprNode> paraList = new ArrayList<ExprNode>();
-		for (MxstarParser.ExprContext item : ctx.exprList().expr()) {
+		for (MxstarParser.ExprContext item : ctx.expr()) {
 			paraList.add((ExprNode)visit(item));
 		}
-		return new FunctExprNode( new Location(ctx.getStart()), 
-			(ExprNode)visit(ctx.expr()),	
-			paraList 
+		return new FunctExprNode( new Location(ctx.getStart()),
+			ctx.Identifier().getText(), 
+			paraList
 		);
 	}
 	
 	@Override
 	public ASTNode visitBracketExpr(MxstarParser.BracketExprContext ctx) {
 		System.err.println("visitBracketExpr: " + ctx.getText());
-		return new BracketExprNode( new Location(ctx.getStart()), (ExprNode)visit(ctx.expr()) );
+		return new BracketExprNode(new Location(ctx.getStart()), (ExprNode)visit(ctx.expr()) );
 	}
 	
 	@Override

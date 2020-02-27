@@ -17,6 +17,29 @@ public class PrefixExprNode extends ExprNode {
 		return expr;
 	}
 	
+	public Operator getOp() {
+		return op;
+	}
+	
+	/*
+	public String opToString() {
+		if (op == Operator.POS)
+			return new String("+");
+		else if (op == Operator.NEG)
+			return new String("-");
+		else if (op == Operator.prefixINCR)
+			return new String("++");
+		else if (op == Operator.prefixDECR)
+			return new String("--");
+		else if (op == Operator.bitwiseNOT)
+			return new String("~");
+		else if (op == Operator.logicalNOT)
+			return new String("!");
+		else 
+			return new String("");
+	}
+	*/
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

@@ -17,7 +17,22 @@ public class SuffixExprNode extends ExprNode {
 		return expr;
 	}
 	
+	public Operator getOp() {
+		return op;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	/*
+	public String opToString() {
+		if (op == Operator.suffixINCR)
+			return new String("++");
+		else if (op == Operator.suffixDECR)
+			return new String("--");
+		else 
+			return new String("");
+	}
+	*/
 }

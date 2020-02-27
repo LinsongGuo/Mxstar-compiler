@@ -20,7 +20,7 @@ public interface ASTVisitor {
 	public abstract void visit(BracketExprNode node);
 	public abstract void visit(CreatorExprNode node);
 	public abstract void visit(FunctExprNode node);
-	public abstract void visit(LiteralExprNode node);
+	//public abstract void visit(LiteralExprNode node);
 	public abstract void visit(MemberExprNode node);
 	public abstract void visit(PrefixExprNode node);
 	public abstract void visit(SuffixExprNode node);

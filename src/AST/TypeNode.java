@@ -3,7 +3,7 @@ package AST;
 import utility.Location;
 
 public class TypeNode extends ASTNode {
-	String identifier;
+	protected String identifier;
 	
 	public TypeNode(Location loc, String identifier) {
 		super(loc);

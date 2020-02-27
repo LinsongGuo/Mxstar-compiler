@@ -2,8 +2,10 @@ package Scope;
 
 import java.util.ArrayList;
 
+import AST.ArrayExprNode;
 import AST.ClassDefNode;
 import AST.FunctDefNode;
+import AST.FunctExprNode;
 import utility.ErrorReminder;
 import utility.Location;
 
@@ -18,6 +20,11 @@ public class LocalScope extends BaseScope {
 	}
 
 	@Override
+	public Scope getGlobalScope() {
+		return parent;
+	}
+	
+	@Override
 	public Type resolveType(String identifier) {
 		Scope parent = getEnclosingScope();
 		if (parent != null) 
@@ -26,32 +33,56 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
-	public Symbol resovleVar(Location loc, String identifier, int dimension, ErrorReminder errorReminder) {
-		if(!methodList.containsKey(identifier) || (methodList.get(identifier) instanceof FunctSymbol)) {
-			return getEnclosingScope().resovleVar(loc, identifier, dimension, errorReminder);
+	public VarSymbol resovleVar(ArrayExprNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if(!varList.containsKey(identifier)) {
+			return getEnclosingScope().resovleVar(node, errorReminder);
 		}
-		VarSymbol var = (VarSymbol)methodList.get(identifier);
-		int tmp = (var instanceof ArraySymbol) ? ((ArraySymbol)var).getDimension() : 0;
-		if (dimension > tmp) {
-			errorReminder.error(loc, "The dimension of the variable \"" + identifier + "\" is invalid.");
+		VarSymbol var = (VarSymbol)varList.get(identifier);
+		Type type = var.getType();
+		int dimension = node.getDimension();
+		if (type instanceof ArrayType) {
+			int tmp = ((ArrayType)type).getDimension();
+			if (dimension > tmp) {
+				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			}
+			if (dimension >= tmp){
+				String typeIdentifier = type.toString();
+				if (typeIdentifier.equals("bool"))
+					return new VarSymbol(identifier, new BoolType());
+				else if (typeIdentifier.equals("int"))
+					return new VarSymbol(identifier, new IntType());
+				else if (typeIdentifier.equals("string"))
+					return new VarSymbol(identifier, new StringType());
+				else 
+					return new VarSymbol(identifier, new ClassSymbol(getGlobalScope(), typeIdentifier));
+			}
+			else {
+				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+			}
+		} 
+		else {
+			if (dimension > 0) {
+				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			}
+			return var;
 		}
-		return var;
 	}
 	
 	@Override
-	public Symbol resolveFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		return getEnclosingScope().resolveFunct(node, errorReminder);
+	public FunctSymbol resolveFunct(FunctExprNode node, ArrayList<Type> typeList, ErrorReminder errorReminder) {
+		return getEnclosingScope().resolveFunct(node, typeList, errorReminder);
 	}
 	
 	@Override
 	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "Invalid function definion.");
+		errorReminder.error(node.getLoc(), "invalid function definion.");
 		return null;
 	}
 	
 	@Override
 	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "Invalid class definition.");
+		errorReminder.error(node.getLoc(), "invalid class definition.");
 		return null;
 	}
 	
@@ -75,5 +106,10 @@ public class LocalScope extends BaseScope {
 	@Override
 	public boolean inClassScope() {
 		return getEnclosingScope().inClassScope();
+	}
+	
+	@Override
+	public ClassSymbol getClassSymbol() {
+		return getEnclosingScope().getClassSymbol();
 	}
 }

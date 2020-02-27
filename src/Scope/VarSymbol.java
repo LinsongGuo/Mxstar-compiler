@@ -7,4 +7,18 @@ public class VarSymbol extends Symbol{
 		super(identifier);
 		this.type = type;
 	}
+	
+	public Type getType() {
+		return type;
+	}
+	
+	@Override
+	public boolean isVar() {
+		return true;
+	}
+	
+	@Override
+	public boolean isFunct() {
+		return false;
+	}
 }

@@ -65,19 +65,15 @@ stmt
 	| ';'                                    # brankStmt
 	;
 	
-exprList
-	: (expr (',' expr)*)?
-	;
-
 expr
  	: '(' expr ')'                                     # bracketExpr           
 	| 'this'                                           # thisExpr 
 	| 'new' creator                                    # creatorExpr            
 	| literal                                          # literalExpr       
 	| Identifier                                       # identifierExpr
-	| expr '.' Identifier                              # memberExpr                  
-	| expr '[' expr ']'                                # arrayExpr               
-	| expr '(' exprList ')'                 		   # functExpr                                
+	| functCall               		   				   # functExpr                                
+	| arrayCall                                        # arrayExpr               
+	| expr '.' (Identifier | functCall | arrayCall)    # memberExpr                  
 	| expr op = ('++' | '--')                          # suffixExpr                      
 	| op = ('+' | '-') expr                            # prefixExpr                    
 	| op = ('++' | '--') expr                          # prefixExpr                      
@@ -94,7 +90,15 @@ expr
 	| expr op = '||' expr                              # binaryExpr              
 	| <assoc = right> expr op = '=' expr               # binaryExpr
 	;        
+
+arrayCall
+	: Identifier ('[' expr ']')+
+	;
 	
+functCall
+	: Identifier '(' (expr (',' expr)*)? ')'
+	;
+
 creator
 	: varType ('[' expr ']')+ ('[' ']')+ ('[' expr ']')+  # invalidCreator
 	| varType ('[' expr ']')+ ('[' ']')*                  # arrayCreator

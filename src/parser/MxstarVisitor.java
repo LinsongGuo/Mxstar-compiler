@@ -143,12 +143,6 @@ public interface MxstarVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBrankStmt(MxstarParser.BrankStmtContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link MxstarParser#exprList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprList(MxstarParser.ExprListContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code thisExpr}
 	 * labeled alternative in {@link MxstarParser#expr}.
 	 * @param ctx the parse tree
@@ -225,6 +219,18 @@ public interface MxstarVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitIdentifierExpr(MxstarParser.IdentifierExprContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MxstarParser#arrayCall}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayCall(MxstarParser.ArrayCallContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MxstarParser#functCall}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctCall(MxstarParser.FunctCallContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code invalidCreator}
 	 * labeled alternative in {@link MxstarParser#creator}.

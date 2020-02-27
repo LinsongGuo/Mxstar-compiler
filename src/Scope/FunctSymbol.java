@@ -8,6 +8,8 @@ import AST.FunctDefNode;
 import AST.VarDefNode;
 import AST.TypeNode;
 import AST.ArrayTypeNode;
+import AST.ExprNode;
+import AST.FunctExprNode;
 import utility.ErrorReminder;
 
 public class FunctSymbol extends ScopedSymbol {
@@ -40,15 +42,19 @@ public class FunctSymbol extends ScopedSymbol {
 		this.children = new ArrayList<LocalScope>();
 	}
 	
+	public LinkedHashMap<String, Type> getParaList() {
+		return paraList;
+	}
+	
 	@Override
-	public Symbol resolveFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		return null;
+	public FunctSymbol resolveFunct(FunctExprNode node, ArrayList<Type> typeList, ErrorReminder errorReminder) {
+		return getEnclosingScope().resolveFunct(node, typeList, errorReminder);
 	}
 
 	
 	@Override
 	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "Invalid function definion.");
+		errorReminder.error(node.getLoc(), "invalid function definion.");
 		return null;
 	}
 	
@@ -59,13 +65,13 @@ public class FunctSymbol extends ScopedSymbol {
 			Type paraType = resolveType(paraTypeIdentifier);
 			if (paraType == null) {
 				errorReminder.error(item.getLoc(), 
-					"The parameter type \"" + paraTypeIdentifier + "\" is not defined.");
+					"the parameter type \"" + paraTypeIdentifier + "\" is not declared in this scope.");
 				return;
 			}
 			String paraIdentifier = item.getIdentifier();
 			if(this.paraList.containsKey(paraIdentifier)) {
 				errorReminder.error(item.getLoc(),
-					"The parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
+					"the parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
 				);
 			}
 			else {
@@ -82,5 +88,20 @@ public class FunctSymbol extends ScopedSymbol {
 	@Override
 	public boolean inClassScope() {
 		return getEnclosingScope().inClassScope();
+	}
+	
+	@Override
+	public ClassSymbol getClassSymbol() {
+		return getEnclosingScope().getClassSymbol();
+	}
+	
+	@Override
+	public boolean isFunct() {
+		return true;
+	}
+	
+	public boolean matchParameters(FunctExprNode node) {
+		ArrayList<ExprNode> paraList = node.getParaList();
+		return paraList.size() == this.paraList.size();
 	}
 }
