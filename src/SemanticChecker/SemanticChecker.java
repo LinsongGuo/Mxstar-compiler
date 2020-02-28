@@ -16,15 +16,6 @@ public class SemanticChecker implements ASTVisitor {
 		((GlobalScope)currentScope).setBuiltInType();
 		((GlobalScope)currentScope).setBuiltInFunction(currentScope);
 	}
-	/*
-	private void pushScope() {
-		currentScope = new LocalScope(currentScope);
-	}
-	
-	private void popScope() {
-		currentScope = currentScope.getEnclosingScope();
-	}
-	*/
 	
 	@Override
 	public void visit(ProgramNode node){
@@ -57,11 +48,11 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		//define constructor in class.
 		FunctDefNode constructorDef = node.getConstructorDef();
-		if (constructorDef != null) {
-			currentScope = currentScope.defineFunct(constructorDef, errorReminder);
+		currentScope = currentScope.defineFunct(constructorDef, errorReminder);
+		if (constructorDef != null) 	
 			constructorDef.getBlockStmt().accept(this);
-			currentScope = currentScope.getEnclosingScope();
-		}
+		currentScope = currentScope.getEnclosingScope();
+		
 		//define functions in class.
 		ArrayList<FunctDefNode> functList = node.getFunctList();
 		for (FunctDefNode item : functList) {
@@ -191,18 +182,37 @@ public class SemanticChecker implements ASTVisitor {
 	
 	
 	//expression--------------------------------------------------
+	@Override
+	public void visit(ThisExprNode node) {
+		ClassSymbol classSymbol = currentScope.getClassSymbol();
+		if (classSymbol == null) {
+			errorReminder.error(node.getLoc(), 
+				"invalid use of \"this\" in non-member function."
+			);
+		}
+		else 
+			node.setType(classSymbol);
+	}
+	
+	@Override
+	public void visit(VarExprNode node) {
+		VarSymbol var = currentScope.resovleVar(node, errorReminder);
+		if (var != null) {
+			node.setType(var.getType());
+			node.setLvalue(true);
+		}
+	}	
 	
 	@Override
 	public void visit(ArrayExprNode node) {
-		VarSymbol var = currentScope.resovleVar(node, errorReminder);
-		node.setType(var.getType());
-		node.setLvalue(true);
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for (ExprNode item : indexExpr) {
 			item.accept(this);
-			if (!(item.getType() instanceof IntType)) {
-				
-			}
+		}
+		VarSymbol var = currentScope.resovleArray(node, errorReminder);
+		if (var != null) {
+			node.setType(var.getType());
+			node.setLvalue(true);
 		}
 	}
 	
@@ -216,22 +226,95 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(CreatorExprNode node) {
-		;
+		ArrayList<ExprNode> indexList = node.getIndexList();
+		for (ExprNode item : indexList) {
+			item.accept(this);
+			if (!(item.getType() instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "the index of the array should be an integer.");
+			}	
+		}
+		String tmp = node.getTypeNode().toString();
+		Type type = currentScope.resolveType(tmp);
+		if (type != null) {
+			node.setType(type);
+		}
+		else {
+			errorReminder.error(node.getLoc(), 
+				"class \"" + tmp + "\" is not declared in this scope."
+			);
+		}
+		
 	}
 	
 	@Override
 	public void visit(FunctExprNode node) {
 		ArrayList<ExprNode> paraList = node.getParaList();
-		ArrayList<Type> typeList = new ArrayList<Type>();
 		for (ExprNode item : paraList) {
 			item.accept(this);
-			typeList.add(item.getType());
 		}
+		FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
+		if (functSymbol != null)
+			node.setType(functSymbol.getType());
 	}
 	
 	@Override
 	public void visit(MemberExprNode node) { 
+		ExprNode expr = node.getExpr();
+		expr.accept(this);
+		Type type = expr.getType();
+		if (type != null) {
+			if(!(type instanceof ClassSymbol)) {
+				errorReminder.error(node.getLoc(), "\"" + type.toString() + "\" is a non-class type.");
+			}
+			else {
+				if (node.getVarExpr() != null) {
+					VarExprNode varExpr = node.getVarExpr();
+					VarSymbol varSymbol = ((ClassSymbol)type).findVar(varExpr, errorReminder);
+					if (varSymbol != null) {
+						node.setType(varSymbol.getType());
+						node.setLvalue(true);
+					}
+				}
+				else if (node.getArrayExpr() != null) {
+					ArrayExprNode arrayExpr = node.getArrayExpr();
+					VarSymbol arraySymbol = ((ClassSymbol)type).findArray(arrayExpr, errorReminder);
+					if (arraySymbol != null) {
+						node.setType(arraySymbol.getType());
+						node.setLvalue(true);
+					}
+				}
+				else if (node.getFunctExpr() != null) {
+					FunctExprNode functExpr = node.getFunctExpr();
+					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct(functExpr, errorReminder);
+					if (functExpr != null) {
+						node.setType(functExpr.getType());
+					}
+				}
+			}
+		}
 		
+	}
+	
+	@Override
+	public void visit(SuffixExprNode node) {
+		ExprNode expr = node.getExpr();
+		Operator op = node.getOp();
+		expr.accept(this);
+		Type type = expr.getType();
+		if (type == null) return;
+		node.setType(type);
+		//check lvalue
+		if (!expr.getLvalue()) {
+			errorReminder.error(node.getLoc(), 
+				"lvalue required as operator" + op.toString() + "."
+			);
+		}
+		//check type
+		if (!(type instanceof IntType)) {
+			errorReminder.error(node.getLoc(), 
+				"no match for operator" + op.toString() + "as the suffix of the expression."
+			);
+		}
 	}
 	
 	@Override
@@ -240,8 +323,8 @@ public class SemanticChecker implements ASTVisitor {
 		Operator op = node.getOp();
 		expr.accept(this);
 		Type type = expr.getType();
+		if (type == null) return;
 		node.setType(type);
-		node.setLvalue(false);
 		//check type
 		if (op == Operator.logicalNOT) {
 			if (!(type instanceof BoolType)) {
@@ -272,32 +355,6 @@ public class SemanticChecker implements ASTVisitor {
 	}
 	
 	@Override
-	public void visit(SuffixExprNode node) {
-		ExprNode expr = node.getExpr();
-		Operator op = node.getOp();
-		expr.accept(this);
-		Type type = expr.getType();
-		node.setType(type);
-		node.setLvalue(false);
-		//check lvalue
-		if (expr.getLvalue()) {
-			node.setLvalue(true);
-		}
-		else {
-			node.setLvalue(false);
-			errorReminder.error(node.getLoc(), 
-				"lvalue required as operator" + op.toString() + "."
-			);
-		}
-		//check type
-		if (!(type instanceof IntType)) {
-			errorReminder.error(node.getLoc(), 
-				"no match for operator" + op.toString() + "as the suffix of the expression."
-			);
-		}
-	}
-	
-	@Override
 	public void visit(BinaryExprNode node) {
 		ExprNode left = node.getLeft(), right = node.getRight();
 		left.accept(this);
@@ -305,6 +362,7 @@ public class SemanticChecker implements ASTVisitor {
 		node.setLvalue(false);
 		Operator op = node.getOp();
 		Type leftType = left.getType(), rightType = right.getType();
+		if (leftType == null || rightType == null) return;
 		if (op == Operator.ASSIGN) {
 			node.setType(leftType);
 			if (!left.getLvalue()) {
@@ -312,7 +370,7 @@ public class SemanticChecker implements ASTVisitor {
 					"lvalue required as left operand of assignment."
 				);
 			}
-			if (!leftType.typeToString().equals(rightType.typeToString())) {
+			if (!leftType.toString().equals(rightType.toString())) {
 				if (!((leftType instanceof ClassSymbol || leftType instanceof ArrayType) && rightType instanceof NullType)) {
 					errorReminder.error( node.getLoc(),
 						"no match for assignment between the two expressions."
@@ -389,26 +447,6 @@ public class SemanticChecker implements ASTVisitor {
 			}
 		}
 	}
-	
-	@Override
-	public void visit(ThisExprNode node) {
-		ClassSymbol classSymbol = currentScope.getClassSymbol();
-		if (classSymbol == null) {
-			errorReminder.error(node.getLoc(), 
-				"invalid use of \"this\" in non-member function."
-			);
-		}
-		node.setType(classSymbol);
-		node.setLvalue(false);
-	}
-	
-	@Override
-	public void visit(IdentifierExprNode node) {
-		VarSymbol var = currentScope.resovleVar(node.getLoc(), node.getIdentifier(), 0, errorReminder);
-		if (var != null)
-			node.setType(var.getType());
-		node.setLvalue(true);
-	}	
 	
 	@Override
 	public void visit(BoolLiteralNode node) {

@@ -6,11 +6,13 @@ import java.util.LinkedHashMap;
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;
 import AST.ClassDefNode;
+import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefListNode;
 import AST.VarDefNode;
+import AST.VarExprNode;
 import utility.ErrorReminder;
 import utility.Location;
 
@@ -35,66 +37,22 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	}
 	
 	@Override
-	public Type resolveType(String identifier) {
-		Scope parent = getEnclosingScope();
-		
-		if (parent != null) 
-			return parent.resolveType(identifier);
-		return null;
-	}
-	
-	@Override
-	public VarSymbol resovleVar(ArrayExprNode node, ErrorReminder errorReminder) {
-		String identifier = node.getIdentifier();
-		if(!varList.containsKey(identifier)) {
-			return getEnclosingScope().resovleVar(node, errorReminder);
-		}
-		VarSymbol var = (VarSymbol)varList.get(identifier);
-		Type type = var.getType();
-		int dimension = node.getDimension();
-		if (type instanceof ArrayType) {
-			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
-			}
-			if (dimension >= tmp){
-				String typeIdentifier = type.toString();
-				if (typeIdentifier.equals("bool"))
-					return new VarSymbol(identifier, new BoolType());
-				else if (typeIdentifier.equals("int"))
-					return new VarSymbol(identifier, new IntType());
-				else if (typeIdentifier.equals("string"))
-					return new VarSymbol(identifier, new StringType());
-				else 
-					return new VarSymbol(identifier, new ClassSymbol(getGlobalScope(), typeIdentifier));
-			}
-			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
-			}
-		} 
-		else {
-			if (dimension > 0) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
-			}
-			return var;
-		}
-	}
-		
-	public abstract FunctSymbol resolveFunct(FunctExprNode node, ArrayList<Type> typeList, ErrorReminder errorReminder);
-
-	@Override
 	public void defineVarList(VarDefListNode node, ErrorReminder errorReminder) {
 		ArrayList<VarDefNode> varList = node.getVarList();
 		TypeNode typeNode = varList.get(0).getType();
-		String typeIdentifier = typeNode.getIdentifier();
+		String typeIdentifier = typeNode.toString();
 		Type type = resolveType(typeIdentifier);
 		if (type == null) { 
 			//check variable type
 			errorReminder.error(node.getLoc(), 
 				"the type \"" + typeIdentifier + "\" is not declared in this scope."
 			);
+			return;
 		}
-		
+		if (type.toString().equals("void")) {
+			errorReminder.error(node.getLoc(), "the variable declared void.");
+			return;
+		}
 		if (typeNode instanceof ArrayTypeNode) {
 			int dimension = ((ArrayTypeNode)typeNode).getDimension(); 
 			for(VarDefNode var : varList) {
@@ -128,14 +86,72 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 
 	public abstract Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder);
 	
+	public abstract void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
+	
 	@Override
 	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
 		errorReminder.error(node.getLoc(), "invalid class definition.");
 		return null;
 	}
 	
-	public abstract void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
+	@Override
+	public Type resolveType(String identifier) {
+		if (parent != null) 
+			return parent.resolveType(identifier);
+		else 
+			return null;
+	}
 	
+	@Override
+	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if(!varList.containsKey(identifier)) {
+			return parent.resovleVar(node, errorReminder);
+		}
+		else 
+			return varList.get(identifier);
+	}
+	
+	@Override
+	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if(!varList.containsKey(identifier)) {
+			return parent.resovleArray(node, errorReminder);
+		}
+		
+		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
+		for(ExprNode item : indexExpr) {
+			if (!(item.getType() instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "the index of the array shoule be an integer.");
+				return null;
+			}
+		}
+		
+		VarSymbol var = varList.get(identifier);
+		Type type = var.getType();
+		int dimension = node.getDimension();
+		if (type instanceof ArrayType) {
+			int tmp = ((ArrayType)type).getDimension();
+			if (dimension > tmp) {
+				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+				return null;
+			}
+			if (dimension >= tmp){
+				String typeIdentifier = type.toString();
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			}
+			else {
+				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+			}
+		} 
+		else {
+			errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			return null;
+		}
+	}
+		
+	public abstract FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder);
+
 	@Override
 	public boolean inLoopScope() {
 		return false;

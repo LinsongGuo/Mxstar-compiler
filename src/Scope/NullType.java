@@ -21,4 +21,8 @@ public class NullType extends Symbol implements Type {
 		return false;
 	}
 	
+	@Override
+	public boolean isBuiltInType() {
+		return false;
+	}
 }

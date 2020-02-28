@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import AST.ArrayExprNode;
 import AST.ClassDefNode;
+import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
+import AST.VarExprNode;
 import utility.ErrorReminder;
 import utility.Location;
 
@@ -21,57 +23,7 @@ public class LocalScope extends BaseScope {
 
 	@Override
 	public Scope getGlobalScope() {
-		return parent;
-	}
-	
-	@Override
-	public Type resolveType(String identifier) {
-		Scope parent = getEnclosingScope();
-		if (parent != null) 
-			return parent.resolveType(identifier);
-		return null;
-	}
-	
-	@Override
-	public VarSymbol resovleVar(ArrayExprNode node, ErrorReminder errorReminder) {
-		String identifier = node.getIdentifier();
-		if(!varList.containsKey(identifier)) {
-			return getEnclosingScope().resovleVar(node, errorReminder);
-		}
-		VarSymbol var = (VarSymbol)varList.get(identifier);
-		Type type = var.getType();
-		int dimension = node.getDimension();
-		if (type instanceof ArrayType) {
-			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
-			}
-			if (dimension >= tmp){
-				String typeIdentifier = type.toString();
-				if (typeIdentifier.equals("bool"))
-					return new VarSymbol(identifier, new BoolType());
-				else if (typeIdentifier.equals("int"))
-					return new VarSymbol(identifier, new IntType());
-				else if (typeIdentifier.equals("string"))
-					return new VarSymbol(identifier, new StringType());
-				else 
-					return new VarSymbol(identifier, new ClassSymbol(getGlobalScope(), typeIdentifier));
-			}
-			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
-			}
-		} 
-		else {
-			if (dimension > 0) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
-			}
-			return var;
-		}
-	}
-	
-	@Override
-	public FunctSymbol resolveFunct(FunctExprNode node, ArrayList<Type> typeList, ErrorReminder errorReminder) {
-		return getEnclosingScope().resolveFunct(node, typeList, errorReminder);
+		return parent.getGlobalScope();
 	}
 	
 	@Override
@@ -87,29 +39,90 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
+	public Type resolveType(String identifier) {
+		if (parent != null) 
+			return parent.resolveType(identifier);
+		else
+			return null;
+	}
+	
+	@Override
+	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if(!varList.containsKey(identifier)) {
+			return parent.resovleVar(node, errorReminder);
+		}
+		else 
+			return varList.get(identifier);
+	}
+	
+	@Override
+	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if(!varList.containsKey(identifier)) {
+			return parent.resovleArray(node, errorReminder);
+		}
+		
+		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
+		for(ExprNode item : indexExpr) {
+			if (!(item.getType() instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "the index of the array shoule be an integer.");
+				return null;
+			}
+		}
+		
+		VarSymbol var = varList.get(identifier);
+		Type type = var.getType();
+		int dimension = node.getDimension();
+		if (type instanceof ArrayType) {
+			int tmp = ((ArrayType)type).getDimension();
+			if (dimension > tmp) {
+				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+				return null;
+			}
+			if (dimension >= tmp){
+				String typeIdentifier = type.toString();
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			}
+			else {
+				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+			}
+		} 
+		else {
+			errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			return null;
+		}
+	}
+	
+	@Override
+	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
+		return parent.resolveFunct(node, errorReminder);
+	}
+
+	@Override
 	public boolean inLoopScope() {
 		if (scopeType == ScopeType.LoopScope) return true;
-		return getEnclosingScope().inLoopScope();
+		return parent.inLoopScope();
 	}
 	
 	@Override
 	public boolean inIfScope() {
 		if (scopeType == ScopeType.IfScope) return true;
-		return getEnclosingScope().inIfScope();
+		return parent.inIfScope();
 	}
 	
 	@Override
 	public boolean inFunctScope() {
-		return getEnclosingScope().inFunctScope();
+		return parent.inFunctScope();
 	}
 	
 	@Override
 	public boolean inClassScope() {
-		return getEnclosingScope().inClassScope();
+		return parent.inClassScope();
 	}
 	
 	@Override
 	public ClassSymbol getClassSymbol() {
-		return getEnclosingScope().getClassSymbol();
+		return parent.getClassSymbol();
 	}
 }

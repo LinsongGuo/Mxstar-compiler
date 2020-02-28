@@ -22,7 +22,7 @@ public class FunctDefNode extends DefNode {
 	}
 	
 	public String getTypeIdentifier() {
-		return type.getIdentifier();
+		return type.toString();
 	}
 	
 	public String getIdentifier() {

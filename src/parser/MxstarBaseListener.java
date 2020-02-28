@@ -270,6 +270,18 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterVarExpr(MxstarParser.VarExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVarExpr(MxstarParser.VarExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPrefixExpr(MxstarParser.PrefixExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -378,13 +390,13 @@ public class MxstarBaseListener implements MxstarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdentifierExpr(MxstarParser.IdentifierExprContext ctx) { }
+	@Override public void enterIdentifierMember(MxstarParser.IdentifierMemberContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIdentifierExpr(MxstarParser.IdentifierExprContext ctx) { }
+	@Override public void exitIdentifierMember(MxstarParser.IdentifierMemberContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

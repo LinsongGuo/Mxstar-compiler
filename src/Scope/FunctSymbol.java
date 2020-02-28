@@ -14,43 +14,29 @@ import utility.ErrorReminder;
 
 public class FunctSymbol extends ScopedSymbol {
 	private Type type;
-	private int dimension;
 	private LinkedHashMap<String, Type> paraList;
 	private ArrayList<LocalScope> children;
 	
 	public FunctSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
 		this.type = null;
-		this.dimension = 0;
 		this.paraList = new LinkedHashMap<String, Type>();
 		this.children = new ArrayList<LocalScope>();
 	}
 	
-	public FunctSymbol(Scope parent, String identifier, Type type, int dimension) {
+	public FunctSymbol(Scope parent, String identifier, Type type) {
 		super(parent, identifier);
 		this.type = type;
-		this.dimension = dimension;
 		this.paraList = new LinkedHashMap<String, Type>();
 		this.children = new ArrayList<LocalScope>();
 	}
 	
-	public FunctSymbol(Scope parent, String identifier, Type type, int dimension, LinkedHashMap<String, Type> paraList) {
+	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, Type> paraList) {
 		super(parent, identifier);
 		this.type = type;
-		this.dimension = dimension;
 		this.paraList = paraList;
 		this.children = new ArrayList<LocalScope>();
 	}
-	
-	public LinkedHashMap<String, Type> getParaList() {
-		return paraList;
-	}
-	
-	@Override
-	public FunctSymbol resolveFunct(FunctExprNode node, ArrayList<Type> typeList, ErrorReminder errorReminder) {
-		return getEnclosingScope().resolveFunct(node, typeList, errorReminder);
-	}
-
 	
 	@Override
 	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
@@ -61,23 +47,40 @@ public class FunctSymbol extends ScopedSymbol {
 	@Override
 	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		for(VarDefNode item : paraList) {
-			String paraTypeIdentifier = item.getTypeIdentifier();
-			Type paraType = resolveType(paraTypeIdentifier);
+			TypeNode typeNode = item.getType();
+			String typeIdentifier = typeNode.toString();
+			Type paraType = resolveType(typeIdentifier);
 			if (paraType == null) {
 				errorReminder.error(item.getLoc(), 
-					"the parameter type \"" + paraTypeIdentifier + "\" is not declared in this scope.");
-				return;
-			}
-			String paraIdentifier = item.getIdentifier();
-			if(this.paraList.containsKey(paraIdentifier)) {
-				errorReminder.error(item.getLoc(),
-					"the parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
+					"the parameter type \"" + typeIdentifier + "\" is not declared in this scope."
 				);
 			}
+			else if (paraType.equals("void")) {
+				errorReminder.error(item.getLoc(), "the variable declared void.");
+				return;
+			}
 			else {
-				this.paraList.put(paraIdentifier, paraType);
+				String paraIdentifier = item.getIdentifier();
+				if(this.paraList.containsKey(paraIdentifier)) {
+					errorReminder.error(item.getLoc(),
+						"the parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
+					);
+				}
+				else {
+					if (typeNode instanceof ArrayTypeNode) {
+						this.paraList.put(paraIdentifier, new ArrayType(typeIdentifier, ((ArrayTypeNode) typeNode).getDimension()));
+					}
+					else {
+						this.paraList.put(paraIdentifier, paraType);
+					}
+				}
 			}
 		}
+	}
+	
+	@Override
+	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
+		return parent.resolveFunct(node, errorReminder);
 	}
 
 	@Override
@@ -87,17 +90,25 @@ public class FunctSymbol extends ScopedSymbol {
 	
 	@Override
 	public boolean inClassScope() {
-		return getEnclosingScope().inClassScope();
+		return parent.inClassScope();
 	}
 	
 	@Override
 	public ClassSymbol getClassSymbol() {
-		return getEnclosingScope().getClassSymbol();
+		return parent.getClassSymbol();
 	}
 	
 	@Override
 	public boolean isFunct() {
 		return true;
+	}
+	
+	public LinkedHashMap<String, Type> getParaList() {
+		return paraList;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 	
 	public boolean matchParameters(FunctExprNode node) {

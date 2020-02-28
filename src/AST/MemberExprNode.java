@@ -4,14 +4,14 @@ import utility.Location;
 
 public class MemberExprNode extends ExprNode {
 	private ExprNode expr;
-	private String identifier;
+	private VarExprNode varExpr;
 	private FunctExprNode functExpr;
 	private ArrayExprNode arrayExpr;
 	
-	public MemberExprNode(Location loc, ExprNode expr, String identifier) {
+	public MemberExprNode(Location loc, ExprNode expr, VarExprNode varExpr) {
 		super(loc);
 		this.expr = expr;
-		this.identifier = identifier;
+		this.varExpr = varExpr;
 		this.functExpr = null;
 		this.arrayExpr = null;
 	}
@@ -34,8 +34,8 @@ public class MemberExprNode extends ExprNode {
 		return expr;
 	}
 	
-	public String getIdentifier() {
-		return identifier;
+	public VarExprNode getVarExpr() {
+		return varExpr;
 	}
 	
 	public FunctExprNode getFunctExpr() {

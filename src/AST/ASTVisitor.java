@@ -25,7 +25,7 @@ public interface ASTVisitor {
 	public abstract void visit(PrefixExprNode node);
 	public abstract void visit(SuffixExprNode node);
 	public abstract void visit(ThisExprNode node);
-	public abstract void visit(IdentifierExprNode node);
+	public abstract void visit(VarExprNode node);
  
 	//public abstract void visit(StmtNode node);
 	public abstract void visit(BlockStmtNode node);

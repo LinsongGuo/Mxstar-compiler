@@ -248,9 +248,9 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	}
 	
 	@Override
-	public ASTNode visitIdentifierExpr(MxstarParser.IdentifierExprContext ctx) {
+	public ASTNode visitVarExpr(MxstarParser.VarExprContext ctx) {
 		//System.err.println("visitVarExpr: " + ctx.getText());
-		return new IdentifierExprNode( new Location(ctx.getStart()), ctx.Identifier().getText() );
+		return new VarExprNode( new Location(ctx.getStart()), ctx.Identifier().getText() );
 	}
 	
 	@Override
@@ -279,10 +279,10 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitMemberExpr(MxstarParser.MemberExprContext ctx) {
 		ExprNode expr = (ExprNode) visit(ctx.expr());
-		if (ctx.Identifier() != null) {
+		if (ctx.identifierMember() != null) {
 			return new MemberExprNode( new Location(ctx.getStart()),
 				expr,
-				ctx.Identifier().getText()
+				(VarExprNode) visit(ctx.identifierMember())
 			);
 		}
 		else if (ctx.functCall() != null) {
@@ -299,6 +299,11 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		}
 		else 		
 			return null;
+	}
+	
+	@Override
+	public ASTNode visitIdentifierMember(MxstarParser.IdentifierMemberContext ctx) {
+		return new VarExprNode(new Location(ctx.getStart()), ctx.getText());
 	}
 	
 	@Override
@@ -581,7 +586,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		}
 		TypeNode tmp = (TypeNode)visit(ctx.varType());
 		return new ArrayTypeNode( new Location(ctx.getStart()),
-			tmp.getIdentifier(),
+			tmp.toString(),
 			dimension
 		);
 	}

@@ -20,4 +20,9 @@ public class VoidType extends Symbol implements Type {
 	public boolean isFunct() {
 		return false;
 	}
+	
+	@Override
+	public boolean isBuiltInType() {
+		return true;
+	}
 }

@@ -23,7 +23,7 @@ public class VarDefNode extends ASTNode{
 	}
 	
 	public String getTypeIdentifier() {
-		return type.getIdentifier();
+		return type.toString();
 	}
 	
 	public String getIdentifier() {

@@ -2,10 +2,10 @@ package AST;
 
 import utility.Location;
 
-public class IdentifierExprNode extends ExprNode {
+public class VarExprNode extends ExprNode {
 	private String identifier;
 	
-	public IdentifierExprNode(Location loc, String identifier) {
+	public VarExprNode(Location loc, String identifier) {
 		super(loc);
 		this.identifier = identifier;
 	}	

@@ -10,7 +10,7 @@ public class TypeNode extends ASTNode {
 		this.identifier = identifier;
 	}
 	
-	public String getIdentifier() {
+	public String toString() {
 		return identifier;
 	}
 	

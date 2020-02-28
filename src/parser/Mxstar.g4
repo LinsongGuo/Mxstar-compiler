@@ -66,30 +66,34 @@ stmt
 	;
 	
 expr
- 	: '(' expr ')'                                     # bracketExpr           
-	| 'this'                                           # thisExpr 
-	| 'new' creator                                    # creatorExpr            
-	| literal                                          # literalExpr       
-	| Identifier                                       # identifierExpr
-	| functCall               		   				   # functExpr                                
-	| arrayCall                                        # arrayExpr               
-	| expr '.' (Identifier | functCall | arrayCall)    # memberExpr                  
-	| expr op = ('++' | '--')                          # suffixExpr                      
-	| op = ('+' | '-') expr                            # prefixExpr                    
-	| op = ('++' | '--') expr                          # prefixExpr                      
-	| op = ('~' | '!') expr                            # prefixExpr                    
-	| expr op = ('*' | '/' | '%') expr                 # binaryExpr                               
-	| expr op = ('+' | '-') expr                       # binaryExpr                         
-	| expr op = ('<<' | '>>') expr                     # binaryExpr                           
-	| expr op = ('<' | '>' | '<=' | '>=') expr         # binaryExpr       
-	| expr op = ('==' | '!=') expr                     # binaryExpr        
-	| expr op = '&' expr                               # binaryExpr     
-	| expr op = '^' expr                               # binaryExpr     
-	| expr op = '|' expr                               # binaryExpr     
-	| expr op = '&&' expr                              # binaryExpr      
-	| expr op = '||' expr                              # binaryExpr              
-	| <assoc = right> expr op = '=' expr               # binaryExpr
+ 	: '(' expr ')'                                           # bracketExpr           
+	| 'this'                                                 # thisExpr 
+	| 'new' creator                                          # creatorExpr            
+	| literal                                                # literalExpr       
+	| Identifier                                             # varExpr
+	| functCall               		   				         # functExpr                                
+	| arrayCall                                              # arrayExpr               
+	| expr '.' (identifierMember | functCall | arrayCall)    # memberExpr                  
+	| expr op = ('++' | '--')                                # suffixExpr                      
+	| op = ('+' | '-') expr                                  # prefixExpr                    
+	| op = ('++' | '--') expr                                # prefixExpr                      
+	| op = ('~' | '!') expr                                  # prefixExpr                    
+	| expr op = ('*' | '/' | '%') expr                       # binaryExpr                               
+	| expr op = ('+' | '-') expr                             # binaryExpr                         
+	| expr op = ('<<' | '>>') expr                           # binaryExpr                           
+	| expr op = ('<' | '>' | '<=' | '>=') expr               # binaryExpr       
+	| expr op = ('==' | '!=') expr                           # binaryExpr        
+	| expr op = '&' expr                                     # binaryExpr     
+	| expr op = '^' expr                                     # binaryExpr     
+	| expr op = '|' expr                                     # binaryExpr     
+	| expr op = '&&' expr                                    # binaryExpr      
+	| expr op = '||' expr                                    # binaryExpr              
+	| <assoc = right> expr op = '=' expr                     # binaryExpr
 	;        
+
+identifierMember
+	: Identifier
+	;
 
 arrayCall
 	: Identifier ('[' expr ']')+
