@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import parser.*;
 import AST.*;
 import utility.*;
+import SemanticChecker.*;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
@@ -43,6 +44,9 @@ public class Main {
 		ASTBuilder ast = new ASTBuilder(errorReminder);
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		
+		System.err.println("Semantic checking--------");
+		SemanticChecker checker = new SemanticChecker(errorReminder);
+		checker.visit(root);
 		System.err.println("Finished.");
 	}
 }

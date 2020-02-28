@@ -12,6 +12,11 @@ public class BoolType extends Symbol implements Type {
 	}
 	
 	@Override
+	public String typeString() {
+		return new String("bool");
+	}
+	
+	@Override
 	public boolean isVar() {
 		return false;
 	}

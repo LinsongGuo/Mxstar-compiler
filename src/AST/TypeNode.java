@@ -2,7 +2,7 @@ package AST;
 
 import utility.Location;
 
-public class TypeNode extends ASTNode {
+public abstract class TypeNode extends ASTNode {
 	protected String identifier;
 	
 	public TypeNode(Location loc, String identifier) {
@@ -10,16 +10,12 @@ public class TypeNode extends ASTNode {
 		this.identifier = identifier;
 	}
 	
-	public String toString() {
+	public abstract String toString();
+	
+	public String typeString() {
 		return identifier;
 	}
 	
-	public boolean identifierEquals(TypeNode other) {
-		return identifier.equals(other.identifier);
-	}
-	
-	public void accept(ASTVisitor visitor) {
-		visitor.visit(this);
-	}
+	public abstract void accept(ASTVisitor visitor);
 }
 

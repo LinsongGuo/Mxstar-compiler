@@ -12,6 +12,11 @@ public class StringType extends Symbol implements Type {
 	}
 	
 	@Override
+	public String typeString() {
+		return new String("string");
+	}
+	
+	@Override
 	public boolean isVar() {
 		return false;
 	}

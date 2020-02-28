@@ -12,6 +12,11 @@ public class VoidType extends Symbol implements Type {
 	}
 	
 	@Override
+	public String typeString() {
+		return new String("void");
+	}
+	
+	@Override
 	public boolean isVar() {
 		return false;
 	}

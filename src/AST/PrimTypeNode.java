@@ -7,6 +7,11 @@ public class PrimTypeNode extends TypeNode {
 		super(loc, identifier);
 	}
 	
+	@Override
+	public String toString() {
+		return identifier;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

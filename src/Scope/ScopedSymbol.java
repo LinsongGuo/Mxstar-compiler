@@ -36,16 +36,16 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		return parent;
 	}
 	
-	@Override
+	@Override	
 	public void defineVarList(VarDefListNode node, ErrorReminder errorReminder) {
 		ArrayList<VarDefNode> varList = node.getVarList();
-		TypeNode typeNode = varList.get(0).getType();
-		String typeIdentifier = typeNode.toString();
+		TypeNode typeNode = node.getType();
+		String typeIdentifier = typeNode.typeString();
 		Type type = resolveType(typeIdentifier);
 		if (type == null) { 
 			//check variable type
 			errorReminder.error(node.getLoc(), 
-				"the type \"" + typeIdentifier + "\" is not declared in this scope."
+				"the class \'" + typeIdentifier + "\' was not decalred in this scope."
 			);
 			return;
 		}
@@ -54,33 +54,37 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			return;
 		}
 		if (typeNode instanceof ArrayTypeNode) {
-			int dimension = ((ArrayTypeNode)typeNode).getDimension(); 
-			for(VarDefNode var : varList) {
-				String identifier = var.getIdentifier();
-				//check variable name
-				if (this.varList.containsKey(identifier)) {
-					errorReminder.error(node.getLoc(), 
-						"the variable \"" + identifier + "\" has the same name with the previous variable."
-					);
-				}
-				else {
-					this.varList.put(identifier, new VarSymbol(identifier, new ArrayType(typeIdentifier, dimension)));
-				}
-			}	
+			type = new ArrayType(typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
 		}
-		else {
-			for(VarDefNode var : varList) {
-				String identifier = var.getIdentifier();
-				//check variable name
-				if (this.varList.containsKey(identifier)) {
-					errorReminder.error(node.getLoc(), 
-						"the variable \"" + identifier + "\" has the same name with the previous variable."
-					);
+		for(VarDefNode var : varList) {
+			String identifier = var.getIdentifier();
+			//check variable name
+			if (this.varList.containsKey(identifier)) {
+				errorReminder.error(node.getLoc(), 
+					"redeclaration of \'" + identifier + "\'."
+				);
+			}
+			else {
+				this.varList.put(identifier, new VarSymbol(identifier, type));
+			}
+		}	
+		for (VarDefNode var : varList) {
+			ExprNode initValue = var.getInitValue();
+			if (initValue != null) {
+				Type initType = initValue.getType();
+				if (initType != null) {
+					//System.err.println("initType: " + initType.toString());
+					//int d1 = (typeNode instanceof ArrayTypeNode) ? ((ArrayTypeNode)typeNode).getDimension() : 0;
+					//int d2 = (initType instanceof ArrayType) ? ((ArrayType)initType).getDimension() : 0;
+					//System.err.println(d1);
+					//System.err.println(d2);
+					if (!initType.toString().equals(typeNode.toString())) {
+						errorReminder.error(var.getInitValue().getLoc(), 
+							"cannot convert \'" + initType.toString() + "\' to \'" + type.toString() + "\' in initialization."
+						);
+					}
 				}
-				else {
-					this.varList.put(identifier, new VarSymbol(identifier, type));
-				}
-			}	
+			}
 		}
 	}
 
@@ -118,11 +122,12 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
-		
+
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			if (!(item.getType() instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "the index of the array shoule be an integer.");
+			Type tmp = item.getType();
+			if (!(tmp instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
 				return null;
 			}
 		}
@@ -132,20 +137,20 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
+			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 				return null;
 			}
-			if (dimension >= tmp){
-				String typeIdentifier = type.toString();
+			else if (dimension == tmp){
 				return new VarSymbol(identifier, resolveType(typeIdentifier));
 			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
 			}
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 			return null;
 		}
 	}

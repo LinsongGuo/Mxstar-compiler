@@ -12,6 +12,11 @@ public class IntType extends Symbol implements Type {
 	}
 	
 	@Override
+	public String typeString() {
+		return new String("int");
+	}
+	
+	@Override
 	public boolean isVar() {
 		return false;
 	}

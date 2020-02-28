@@ -9,7 +9,7 @@ public interface ASTVisitor {
 	public abstract void visit(ClassDefNode node);
 	public abstract void visit(VarDefNode node);
 
-	public abstract void visit(TypeNode node);
+//	public abstract void visit(TypeNode node);
 	public abstract void visit(PrimTypeNode node);
 	public abstract void visit(ClassTypeNode node);
 	public abstract void visit(ArrayTypeNode node);

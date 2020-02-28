@@ -48,11 +48,11 @@ public class FunctSymbol extends ScopedSymbol {
 	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		for(VarDefNode item : paraList) {
 			TypeNode typeNode = item.getType();
-			String typeIdentifier = typeNode.toString();
+			String typeIdentifier = typeNode.typeString();
 			Type paraType = resolveType(typeIdentifier);
 			if (paraType == null) {
 				errorReminder.error(item.getLoc(), 
-					"the parameter type \"" + typeIdentifier + "\" is not declared in this scope."
+					"the class \'" + typeIdentifier + "\' was not declared in this scope."
 				);
 			}
 			else if (paraType.equals("void")) {
@@ -63,15 +63,18 @@ public class FunctSymbol extends ScopedSymbol {
 				String paraIdentifier = item.getIdentifier();
 				if(this.paraList.containsKey(paraIdentifier)) {
 					errorReminder.error(item.getLoc(),
-						"the parameter \"" + paraIdentifier + "\" has the same name with previous parameter."
+						"redeclaration of \'" + paraIdentifier + "\'."
 					);
 				}
 				else {
 					if (typeNode instanceof ArrayTypeNode) {
-						this.paraList.put(paraIdentifier, new ArrayType(typeIdentifier, ((ArrayTypeNode) typeNode).getDimension()));
+						ArrayType tmp = new ArrayType(typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
+						this.paraList.put(paraIdentifier, tmp);
+						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
 					}
 					else {
 						this.paraList.put(paraIdentifier, paraType);
+						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
 					}
 				}
 			}

@@ -11,6 +11,10 @@ public class VarDefListNode extends DefNode {
 		this.varList = varList;
 	}
 	
+	public TypeNode getType() {
+		return varList.isEmpty() ? null : varList.get(0).getType();
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

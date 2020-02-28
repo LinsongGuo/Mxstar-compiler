@@ -39,17 +39,17 @@ public class GlobalScope extends BaseScope {
 		String identifier = node.getIdentifier();
 		if (functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
-				"the function \"" + identifier + "()\" has the same name with previous function."
+				"redeclaration of the function \'" + identifier + "\'."
 			);
 		}		
 		//check return type
 		TypeNode typeNode = node.getType();
 		if (typeNode != null) {
-			String typeIdentifier = typeNode.toString();
+			String typeIdentifier = typeNode.typeString();
 			Type type = resolveType(typeIdentifier);
 			if (type == null) {
 				errorReminder.error(node.getLoc(), 
-					"the return type \"" + typeIdentifier + "\" is not declared in this scope."
+					"the class \'" + typeIdentifier + "\' was not declared in this scope."
 				);
 				return null;
 			}
@@ -76,7 +76,7 @@ public class GlobalScope extends BaseScope {
 		String identifier = node.getIdentifier();
 		if (typeList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
-				"the class \"" + identifier + "\" has the same name with previous class." 
+				"redeclaration of the class \'" + identifier + "\'." 
 			);
 		}
 		ClassSymbol classSymbol = new ClassSymbol(this, identifier);
@@ -96,7 +96,7 @@ public class GlobalScope extends BaseScope {
 	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the variable \"" + identifier + "\" is not declared in this scope.");
+			errorReminder.error(node.getLoc(), "the variable \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
 		else
@@ -107,14 +107,15 @@ public class GlobalScope extends BaseScope {
 	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the variable \"" + identifier + "\" is not declared in this scope.");
+			errorReminder.error(node.getLoc(), "the variable \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
 		
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			if (!(item.getType() instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "the index of the array shoule be an integer.");
+			Type tmp = item.getType();
+			if (!(tmp instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
 				return null;
 			}
 		}
@@ -124,20 +125,20 @@ public class GlobalScope extends BaseScope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
+			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 				return null;
 			}
-			if (dimension >= tmp){
-				String typeIdentifier = type.toString();
+			else if (dimension == tmp){
 				return new VarSymbol(identifier, resolveType(typeIdentifier));
 			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
 			}
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 			return null;
 		}
 	}
@@ -146,30 +147,34 @@ public class GlobalScope extends BaseScope {
 	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if (!functList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the function \"" + identifier + "\" is not declared in this scope.");
+			errorReminder.error(node.getLoc(), "the function \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
 		FunctSymbol functSymbol = functList.get(identifier);
 		LinkedHashMap<String, Type> argueList = functSymbol.getParaList();
 		ArrayList<ExprNode> paraList = node.getParaList();
 		if (paraList.size() < argueList.size()) {
-			errorReminder.error(node.getLoc(), "too few parameters to function " + identifier + ".");
-			return null;
+			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
+			//return null;
 		}
 		if (paraList.size() > argueList.size()) {
-			errorReminder.error(node.getLoc(), "too many parameters to function " + identifier + ".");
-			return null;
+			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
+			//return null;
 		}
 		int i = 0;
 		for (Map.Entry<String, Type> entry : argueList.entrySet()) {
 			if (i >= paraList.size()) 
 				break;
 			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
-			int d1 = (tmp1 instanceof ArrayType) ? ((ArrayType)tmp1).getDimension() : 0;
-			int d2 = (tmp2 instanceof ArrayType) ? ((ArrayType)tmp2).getDimension() : 0;
-			if (!tmp1.toString().equals(tmp2.toString()) || d1 != d2) {
-				errorReminder.error(paraList.get(i).getLoc(), "the parameter's type is not matched.");
-				return null;
+			if (tmp2 != null) {
+				//int d1 = (tmp1 instanceof ArrayType) ? ((ArrayType)tmp1).getDimension() : 0;
+				//int d2 = (tmp2 instanceof ArrayType) ? ((ArrayType)tmp2).getDimension() : 0;
+				if (!tmp1.toString().equals(tmp2.toString())) {
+					errorReminder.error(paraList.get(i).getLoc(), 
+						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
+					);
+					//return null;
+				}
 			}
 			i++;
 		}

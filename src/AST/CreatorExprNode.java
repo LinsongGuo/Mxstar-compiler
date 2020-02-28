@@ -25,6 +25,10 @@ public class CreatorExprNode extends ExprNode {
 		return type;
 	}
 	
+	public int getDimension() {
+		return dimension;
+	}
+	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

@@ -36,7 +36,7 @@ public class FunctDefNode extends DefNode {
 	public BlockStmtNode getBlockStmt() {
 		return stmt;
 	}
-	
+	/*
 	public boolean paraEquals(FunctDefNode other) {
 		if (paraList.size() != other.paraList.size()) 
 			return false;
@@ -47,7 +47,7 @@ public class FunctDefNode extends DefNode {
 		}
 		return true;
 	}
-	
+	*/
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

@@ -1,1 +1,4 @@
 int x = 0;
+int f(int x) {
+	return x;
+}

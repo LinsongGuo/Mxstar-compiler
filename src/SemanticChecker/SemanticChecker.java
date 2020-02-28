@@ -21,34 +21,49 @@ public class SemanticChecker implements ASTVisitor {
 	public void visit(ProgramNode node){
 		ArrayList<DefNode> defList = node.getDefList();
 		for(DefNode item : defList) {
-			item.accept(this);
+			if ((item instanceof VarDefListNode)||
+				(item instanceof FunctDefNode)  ||
+				(item instanceof ClassDefNode) 
+			)
+				item.accept(this);
 		}
 	}
 	
 	@Override
 	public void visit(VarDefListNode node){
+		ArrayList<VarDefNode> varList = node.getVarList();
+		for (VarDefNode item : varList) {
+			ExprNode initValue = item.getInitValue();
+			if (initValue != null)
+				initValue.accept(this);
+		//	System.err.println(initValue.getType().toString());
+		}
 		currentScope.defineVarList((VarDefListNode)node, errorReminder);
 	}
 	
 	@Override
 	public void visit(FunctDefNode node){
 		currentScope = currentScope.defineFunct(node, errorReminder);
+	
 		currentScope.defineParaList(node.getParaList(), errorReminder);
 		((FunctDefNode) node).getBlockStmt().accept(this);
+		
 		currentScope = currentScope.getEnclosingScope();
 	}
 	
 	@Override
 	public void visit(ClassDefNode node){
-		currentScope.defineClass(node, errorReminder);
+		currentScope = currentScope.defineClass(node, errorReminder);
+		
 		//define variables in class.
 		ArrayList<VarDefListNode> varList = node.getVarList();
 		for (VarDefListNode item : varList) {
 			currentScope.defineVarList(item, errorReminder);
 		}
+		
 		//define constructor in class.
 		FunctDefNode constructorDef = node.getConstructorDef();
-		currentScope = currentScope.defineFunct(constructorDef, errorReminder);
+		currentScope = ((ClassSymbol)currentScope).defineConstructor();
 		if (constructorDef != null) 	
 			constructorDef.getBlockStmt().accept(this);
 		currentScope = currentScope.getEnclosingScope();
@@ -61,16 +76,13 @@ public class SemanticChecker implements ASTVisitor {
 			item.getBlockStmt().accept(this);
 			currentScope = currentScope.getEnclosingScope();
 		}
+		
+		currentScope = currentScope.getEnclosingScope();
 	}
 	
 
 	@Override
 	public void visit(VarDefNode node) {
-		
-	}
-	
-	@Override
-	public void visit(TypeNode node) {
 		
 	}
 	
@@ -123,7 +135,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ExprStmtNode node) {;
-		node.accept(this);
+		node.getExpr().accept(this);
 	}
 	
 	@Override
@@ -229,21 +241,24 @@ public class SemanticChecker implements ASTVisitor {
 		ArrayList<ExprNode> indexList = node.getIndexList();
 		for (ExprNode item : indexList) {
 			item.accept(this);
-			if (!(item.getType() instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "the index of the array should be an integer.");
+			Type tmp = item.getType();
+			if (!(tmp instanceof IntType)) {
+				errorReminder.error(item.getLoc(), 
+					"cannot convert \'" + tmp.toString() + "\' to \'int\' in initialization."	
+				);
 			}	
 		}
-		String tmp = node.getTypeNode().toString();
+		String tmp = node.getTypeNode().typeString();
 		Type type = currentScope.resolveType(tmp);
 		if (type != null) {
-			node.setType(type);
+			node.setType(new ArrayType(tmp, node.getDimension()));
 		}
 		else {
 			errorReminder.error(node.getLoc(), 
-				"class \"" + tmp + "\" is not declared in this scope."
+				"class \'" + tmp + "\' is not declared in this scope."
 			);
 		}
-		
+		//System.err.println(node.getType().toString());
 	}
 	
 	@Override
@@ -264,7 +279,7 @@ public class SemanticChecker implements ASTVisitor {
 		Type type = expr.getType();
 		if (type != null) {
 			if(!(type instanceof ClassSymbol)) {
-				errorReminder.error(node.getLoc(), "\"" + type.toString() + "\" is a non-class type.");
+				errorReminder.error(node.getLoc(), "\"" + type.typeString() + "\" is a non-class type.");
 			}
 			else {
 				if (node.getVarExpr() != null) {
@@ -302,7 +317,6 @@ public class SemanticChecker implements ASTVisitor {
 		expr.accept(this);
 		Type type = expr.getType();
 		if (type == null) return;
-		node.setType(type);
 		//check lvalue
 		if (!expr.getLvalue()) {
 			errorReminder.error(node.getLoc(), 
@@ -310,11 +324,13 @@ public class SemanticChecker implements ASTVisitor {
 			);
 		}
 		//check type
-		if (!(type instanceof IntType)) {
+		else if (!(type instanceof IntType)) {
 			errorReminder.error(node.getLoc(), 
-				"no match for operator" + op.toString() + "as the suffix of the expression."
+				"no match for operator" + op.toString() + "as the suffix of \'" + type.toString() + "\'."
 			);
 		}
+		else 
+			node.setType(type);
 	}
 	
 	@Override
@@ -324,14 +340,15 @@ public class SemanticChecker implements ASTVisitor {
 		expr.accept(this);
 		Type type = expr.getType();
 		if (type == null) return;
-		node.setType(type);
 		//check type
 		if (op == Operator.logicalNOT) {
 			if (!(type instanceof BoolType)) {
 				errorReminder.error(node.getLoc(), 
-					"no match for operator! as the prefix of the expression."
+					"no match for operator! as the prefix of \'" + type.toString() + "\'."
 				);
 			}	
+			else
+				node.setType(type);
 		}
 		else if (op == Operator.prefixDECR || op == Operator.prefixINCR){
 			if (!expr.getLvalue()) {
@@ -339,47 +356,64 @@ public class SemanticChecker implements ASTVisitor {
 					"lvalue required as operator" + op.toString() + "."
 				);
 			}
-			if (!(type instanceof IntType)) {
+			else if (!(type instanceof IntType)) {
 				errorReminder.error(node.getLoc(), 
-					"no match for operator" + op.toString() + "as the prefix of the expression."
+					"no match for operator" + op.toString() + "as the prefix of \'" + type.toString() + "\'."
 				);
 			}
+			else 
+				node.setType(type);
 		}
 		else if (op == Operator.POS || op == Operator.NEG || op == Operator.bitwiseNOT){
 			if (!(type instanceof IntType)) {
 				errorReminder.error(node.getLoc(), 
-					"no match for operator" + op.toString() + "as the prefix of the expression."
+					"no match for operator" + op.toString() + "as the prefix of \'" + type.toString() + "\'."
 				);
 			}
+			else
+				node.setType(type);
 		}
 	}
 	
 	@Override
 	public void visit(BinaryExprNode node) {
+		//System.err.println("check bianrynode");
 		ExprNode left = node.getLeft(), right = node.getRight();
 		left.accept(this);
 		right.accept(this);
 		node.setLvalue(false);
 		Operator op = node.getOp();
 		Type leftType = left.getType(), rightType = right.getType();
-		if (leftType == null || rightType == null) return;
+		if (leftType == null || rightType == null) {
+			return;
+		}
 		if (op == Operator.ASSIGN) {
-			node.setType(leftType);
 			if (!left.getLvalue()) {
 				errorReminder.error( node.getLoc(),
 					"lvalue required as left operand of assignment."
 				);
 			}
-			if (!leftType.toString().equals(rightType.toString())) {
+			else if (!leftType.toString().equals(rightType.toString())) {
 				if (!((leftType instanceof ClassSymbol || leftType instanceof ArrayType) && rightType instanceof NullType)) {
-					errorReminder.error( node.getLoc(),
-						"no match for assignment between the two expressions."
+					errorReminder.error( right.getLoc(),
+						"cannot convert \'" + rightType.toString() + "\' to \'" + leftType.toString() + "\' in initialization."	
 					);
 				}
 			}
+			else {
+				/*node.setType(leftType);
+				int d1 = (leftType instanceof ArrayType) ? ((ArrayType)leftType).getDimension() : 0;
+				int d2 = (rightType instanceof ArrayType) ? ((ArrayType)rightType).getDimension() : 0;
+				if (d1 != d2) {
+					errorReminder.error(right.getLoc(), 
+						"cannot convert \'" + rightType.toString() + "\' to \'" + leftType.toString() + "\' in initialization."
+					);
+				}
+				else */
+				node.setType(leftType);
+			}
 		}
 		else if (op == Operator.EQU || op == Operator.notEQU) {
-			node.setType(new BoolType());
 			if ( !((leftType instanceof IntType && rightType instanceof IntType)       ||   
 				   (leftType instanceof BoolType && rightType instanceof BoolType)     ||    
 				   (leftType instanceof StringType && rightType instanceof StringType) ||     
@@ -390,33 +424,37 @@ public class SemanticChecker implements ASTVisitor {
 				   (leftType instanceof NullType && rightType instanceof NullType)) 
 			   ) {
 					errorReminder.error( node.getLoc(),
-						"no match for operator== between the two expressions."
+						"no match for operator== between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
 					);
 			     }
+			else 
+				node.setType(new BoolType());
 		}
 		else if ( op == Operator.LESS    || 
 			      op == Operator.lessEQU || 
 			      op == Operator.GREATER || 
 			      op == Operator.greaterEQU 
 			   	) { 
-			        node.setType(new BoolType());
 					if ( !((leftType instanceof IntType && rightType instanceof IntType)  ||
 						   (leftType instanceof StringType && rightType instanceof StringType)) 
 					   ) {
 							errorReminder.error( node.getLoc(),
-							   "no match for operator" + op.toString() + " between the two expressions."
+							   "no match for operator" + op.toString() + " between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
 						    );
 				         }
+			        else
+			        	node.setType(new BoolType());
 		         }
 		else if (op == Operator.logicalAND || op == Operator.logicalOR) {
-			node.setType(new BoolType());
 			if ( !(leftType instanceof BoolType && rightType instanceof BoolType) ) {
 				errorReminder.error( node.getLoc(),
-					"no match for operator" + op.toString() + " between the two expressions."
+					"no match for operator" + op.toString() + " between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
 			    );
 			}
+			else 
+				node.setType(new BoolType());
 		}
-		else if ( op == Operator.ADD        ||
+		else if ( op == Operator.SUB        ||
 				  op == Operator.MUL        ||
 				  op == Operator.DIV        ||
 				  op == Operator.MOD        ||
@@ -426,12 +464,13 @@ public class SemanticChecker implements ASTVisitor {
 				  op == Operator.leftSHIFT  ||
 				  op == Operator.rightSHIFT
 				) {
-					 node.setType(new IntType());
 					 if ( !(leftType instanceof IntType && rightType instanceof IntType) ) {
 							errorReminder.error( node.getLoc(),
-								"no match for operator" + op.toString() + " between the two expressions."
-						    );
+								"no match for operator" + op.toString() + " between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
+							);
 						}
+					 else
+						 node.setType(new IntType());
 		          }
 		else if (op == Operator.ADD) {
 			if (leftType instanceof IntType && rightType instanceof IntType) {
@@ -442,7 +481,7 @@ public class SemanticChecker implements ASTVisitor {
 			}
 			else {
 				errorReminder.error( node.getLoc(),
-					"no match for operator+ between the two expressions."
+					"no match for operator" + op.toString() + " between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."    
 				);
 			}
 		}
@@ -462,6 +501,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(StringLiteralNode node) {
+		//System.err.println("StringLiteral" + node.getString());
 		node.setType(new StringType());
 		node.setLvalue(false);
 	}

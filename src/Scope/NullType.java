@@ -12,6 +12,11 @@ public class NullType extends Symbol implements Type {
 	}
 	
 	@Override
+	public String typeString() {
+		return new String("null");
+	}
+	
+	@Override
 	public boolean isVar() {
 		return false;
 	}

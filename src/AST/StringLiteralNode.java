@@ -1,5 +1,6 @@
 package AST;
 
+import Scope.Type;
 import utility.Location;
 
 public class StringLiteralNode extends LiteralExprNode {
@@ -8,6 +9,10 @@ public class StringLiteralNode extends LiteralExprNode {
 	public StringLiteralNode(Location loc, String string) {
 		super(loc);
 		this.string = string;
+	}
+	
+	public String getString() {
+		return string;
 	}
 	
 	public void accept(ASTVisitor visitor) {

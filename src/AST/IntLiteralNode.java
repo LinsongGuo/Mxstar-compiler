@@ -1,5 +1,6 @@
 package AST;
 
+import Scope.Type;
 import utility.Location;
 
 public class IntLiteralNode extends LiteralExprNode {

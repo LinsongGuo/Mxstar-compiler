@@ -63,10 +63,12 @@ public class LocalScope extends BaseScope {
 			return parent.resovleArray(node, errorReminder);
 		}
 		
+
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			if (!(item.getType() instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "the index of the array shoule be an integer.");
+			Type tmp = item.getType();
+			if (!(tmp instanceof IntType)) {
+				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
 				return null;
 			}
 		}
@@ -76,20 +78,20 @@ public class LocalScope extends BaseScope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
+			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 				return null;
 			}
-			if (dimension >= tmp){
-				String typeIdentifier = type.toString();
+			else if (dimension == tmp){
 				return new VarSymbol(identifier, resolveType(typeIdentifier));
 			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
+				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
 			}
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \"" + identifier + "\" is invalid.");
+			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
 			return null;
 		}
 	}

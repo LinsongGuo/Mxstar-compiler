@@ -60,7 +60,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	public ASTNode visitVarDef(MxstarParser.VarDefContext ctx) {
 		System.err.println("visitVarDef: " + ctx.getText());
 		return new VarDefNode( new Location(ctx.getStart()), 
-			null,
+				null,
 			ctx.Identifier().getText(),
 			ctx.expr() == null ? null : (ExprNode)visit(ctx.expr()) 
 		);
@@ -103,7 +103,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		for (MxstarParser.FunctDefContext item : ctx.functDef()) {
 			if (item.Identifier().getText().equals(identifier)) {
 				errorReminder.error( new Location(item.getStart()), 
-					"The constructor \"" + identifier + "()\"has return type."
+					"return type specification for constructor invalid."
 				);
 				continue;
 			}
@@ -112,19 +112,20 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		FunctDefNode constructorDef = null;
 		int count = 0;
 		for (MxstarParser.ConstructorDefContext item : ctx.constructorDef()) {
-			if (item.Identifier().getText() != identifier) {
+			if (!item.Identifier().getText().equals(identifier)) {
 				errorReminder.error(new Location(item.getStart()), 
-					"The function \"" + item.Identifier().getText() + "()\" has no return type."
+					"no return type for the function \'" + item.Identifier().getText() + "\'."
 				);
 			}
 			else {
 				count++;
 				if (count > 1) {
 					errorReminder.error(new Location(item.getStart()), 
-						"The class \"" + identifier + "\" has several constructors."
+						"the constructor cannot be overloaded."
 					);
 				}
 				else {
+					System.err.println("constructor");
 					constructorDef = (FunctDefNode) visit(item);
 				}
 			}
@@ -139,7 +140,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitConstructorDef(MxstarParser.ConstructorDefContext ctx) {
-		System.err.println("visitConstructorDef: " + ctx.getText());
+		//System.err.println("visitConstructorDef: " + ctx.getText());
 		return new FunctDefNode( new Location(ctx.getStart()),
 			null,
 			ctx.Identifier().getText(),
@@ -161,7 +162,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitBlockStmt(MxstarParser.BlockStmtContext ctx) {
-		System.err.println("visitBlockStmt: " + ctx.getText());
+		//System.err.println("visitBlockStmt: " + ctx.getText());
 		ArrayList<StmtNode> stmtList = new ArrayList<StmtNode>();
 		for (MxstarParser.StmtContext item : ctx.block().stmt()) {
 			stmtList.add((StmtNode)visit(item));
@@ -171,7 +172,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitVarDefStmt(MxstarParser.VarDefStmtContext ctx) {
-		System.err.println("visitVarDefStmt: " + ctx.getText());
+		//System.err.println("visitVarDefStmt: " + ctx.getText());
 		TypeNode type = (TypeNode)visit(ctx.varDefList().type());
 		ArrayList<VarDefNode> varList = new ArrayList<VarDefNode>();
 		for (MxstarParser.VarDefContext item : ctx.varDefList().varDef()) {
@@ -197,7 +198,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitForStmt(MxstarParser.ForStmtContext ctx) {
 		System.err.println("visitForStmt: " + ctx.getText());
-		System.err.println("init: " + ctx.init.getText());
+		//System.err.println("init: " + ctx.init.getText());
 		return new ForStmtNode( new Location(ctx.getStart()),
 			ctx.init == null ? null : (ExprNode)visit(ctx.init),
 			ctx.cond == null ? null : (ExprNode)visit(ctx.cond),
@@ -225,31 +226,31 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitBreakStmt(MxstarParser.BreakStmtContext ctx) {
-		System.err.println("visitBreakStmt: " + ctx.getText());
+		//System.err.println("visitBreakStmt: " + ctx.getText());
 		return new BreakStmtNode( new Location(ctx.getStart()) );
 	}
 	
 	@Override
 	public ASTNode visitContinueStmt(MxstarParser.ContinueStmtContext ctx) {
-		System.err.println("visitContinueStmt: " + ctx.getText());
+		///System.err.println("visitContinueStmt: " + ctx.getText());
 		return new ContinueStmtNode( new Location(ctx.getStart()) );
 	}
 	
 	@Override
 	public ASTNode visitExprStmt(MxstarParser.ExprStmtContext ctx) {
-		System.err.println("visitExprStmt: " + ctx.getText());
+		//System.err.println("visitExprStmt: " + ctx.getText());
 		return new ExprStmtNode( new Location(ctx.getStart()), (ExprNode)visit(ctx.expr()) );
 	}
 	
 	@Override
 	public ASTNode visitBrankStmt(MxstarParser.BrankStmtContext ctx) {
-		System.err.println("visitBrankStmt: " + ctx.getText());
+		//System.err.println("visitBrankStmt: " + ctx.getText());
 		return new BrankStmtNode( new Location(ctx.getStart()) );
 	}
 	
 	@Override
 	public ASTNode visitVarExpr(MxstarParser.VarExprContext ctx) {
-		//System.err.println("visitVarExpr: " + ctx.getText());
+		//System.err.println("visitVarExpr: " + ctx.getText() + (new Location(ctx.getStart())));
 		return new VarExprNode( new Location(ctx.getStart()), ctx.Identifier().getText() );
 	}
 	
@@ -265,7 +266,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			return new BoolLiteralNode( new Location(ctx.getStart()), 
 				ctx.literal().BoolLiteral().getText() == "true" ? true : false
 			);
-		else if (ctx.literal().StringLiteral() != null) 
+		else if (ctx.literal().StringLiteral() != null)
 			return new StringLiteralNode( new Location(ctx.getStart()),
 				ctx.literal().StringLiteral().getText()
 			);
@@ -408,7 +409,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitBracketExpr(MxstarParser.BracketExprContext ctx) {
-		System.err.println("visitBracketExpr: " + ctx.getText());
+		//System.err.println("visitBracketExpr: " + ctx.getText());
 		return new BracketExprNode(new Location(ctx.getStart()), (ExprNode)visit(ctx.expr()) );
 	}
 	
@@ -466,7 +467,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitBinaryExpr(MxstarParser.BinaryExprContext ctx) {
-		System.err.println("visitBinaryExpr: " + ctx.getText());
+		//System.err.println("visitBinaryExpr: " + ctx.getText());
 		//System.err.println(ctx.op);
 		//System.err.println(ctx.expr(0).getText());
 		//System.err.println(ctx.expr(1).getText());

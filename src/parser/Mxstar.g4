@@ -48,21 +48,20 @@ block
 	;
 
 stmt
-	: block                                  # blockStmt
+	: block                                      # blockStmt
 	| 'if' '(' expr ')' stmt ('else' stmt)?      # ifStmt
 	| 'for' '(' init = expr? ';'  
 			  cond = expr? ';'
 			  step = expr? 
 		  ')'
-	  stmt                                   # forStmt
+	  stmt                                     # forStmt
 	| 'while' '(' expr ')' stmt                # whileStmt   
-	| 'return' expr? ';'                     	 # returnStmt
+	| 'return' expr? ';'                       # returnStmt
 	| 'break' ';'                              # breakStmt
 	| 'continue' ';'                           # continueStmt
-	| varDefList                             # varDefStmt 
-	| expr ';'                               # exprStmt
-
-	| ';'                                    # brankStmt
+	| varDefList                               # varDefStmt 
+	| expr ';'                                 # exprStmt
+	| ';'                                      # brankStmt
 	;
 	
 expr
