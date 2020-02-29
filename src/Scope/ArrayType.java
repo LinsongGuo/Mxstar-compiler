@@ -1,7 +1,6 @@
 package Scope;
 
 public class ArrayType extends Symbol implements Type {
-
 	private int dimension;
 	
 	public ArrayType(String identifier, int dimension) {

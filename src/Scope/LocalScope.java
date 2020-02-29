@@ -63,14 +63,17 @@ public class LocalScope extends BaseScope {
 			return parent.resovleArray(node, errorReminder);
 		}
 		
-
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			Type tmp = item.getType();
-			if (!(tmp instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				return null;
+			if(item != null) {
+				Type tmp = item.getType();
+				if (!(tmp instanceof IntType)) {
+					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
+				}
 			}
+			else {
+				errorReminder.error(item.getLoc(), "empty index of array.");
+			}	
 		}
 		
 		VarSymbol var = varList.get(identifier);
@@ -78,20 +81,20 @@ public class LocalScope extends BaseScope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 				return null;
 			}
-			else if (dimension == tmp){
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
-			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			}
+				String typeIdentifier = type.typeString();
+				if (dimension == tmp)
+					return new VarSymbol(identifier, resolveType(typeIdentifier));
+				else 
+					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
+			} 
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 			return null;
 		}
 	}
@@ -114,13 +117,8 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
-	public boolean inFunctScope() {
-		return parent.inFunctScope();
-	}
-	
-	@Override
-	public boolean inClassScope() {
-		return parent.inClassScope();
+	public FunctSymbol getFunctSymbol() {
+		return parent.getFunctSymbol();
 	}
 	
 	@Override

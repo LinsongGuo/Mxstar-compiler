@@ -39,11 +39,12 @@ public class GlobalScope extends BaseScope {
 		String identifier = node.getIdentifier();
 		if (functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
-				"redeclaration of the function \'" + identifier + "\'."
+				"redeclaration of function \'" + identifier + "\'."
 			);
 		}		
 		//check return type
 		TypeNode typeNode = node.getType();
+		FunctSymbol functSymbol;
 		if (typeNode != null) {
 			String typeIdentifier = typeNode.typeString();
 			Type type = resolveType(typeIdentifier);
@@ -51,24 +52,22 @@ public class GlobalScope extends BaseScope {
 				errorReminder.error(node.getLoc(), 
 					"the class \'" + typeIdentifier + "\' was not declared in this scope."
 				);
-				return null;
+				functSymbol = new FunctSymbol(this, identifier, null);
 			}
-			if (typeNode instanceof ArrayTypeNode) {
+			else if (typeNode instanceof ArrayTypeNode) {
 				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				FunctSymbol functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
-				functList.put(identifier, functSymbol);
-				return functSymbol;
+				functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
 			}
 			else {
-				FunctSymbol functSymbol = new FunctSymbol(this, identifier, type);
-				functList.put(identifier, functSymbol);
-				return functSymbol;
+				functSymbol = new FunctSymbol(this, identifier, type);
 			}
 		}
 		else {
 			errorReminder.error(node.getLoc(), "the function should have return value.");
-			return null;
+			functSymbol = new FunctSymbol(this, identifier, null);
 		}
+		functList.put(identifier, functSymbol);
+		return functSymbol;
 	}
 	
 	@Override
@@ -113,11 +112,15 @@ public class GlobalScope extends BaseScope {
 		
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			Type tmp = item.getType();
-			if (!(tmp instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				return null;
+			if(item != null) {
+				Type tmp = item.getType();
+				if (!(tmp instanceof IntType)) {
+					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
+				}
 			}
+			else {
+				errorReminder.error(item.getLoc(), "empty index of array.");
+			}	
 		}
 		
 		VarSymbol var = varList.get(identifier);
@@ -125,20 +128,20 @@ public class GlobalScope extends BaseScope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 				return null;
 			}
-			else if (dimension == tmp){
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
-			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			}
+				String typeIdentifier = type.typeString();
+				if (dimension == tmp)
+					return new VarSymbol(identifier, resolveType(typeIdentifier));
+				else 
+					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
+			} 
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 			return null;
 		}
 	}
@@ -192,13 +195,8 @@ public class GlobalScope extends BaseScope {
 	}
 	
 	@Override
-	public boolean inFunctScope() {
-		return false;
-	}
-	
-	@Override
-	public boolean inClassScope() {
-		return false;
+	public FunctSymbol getFunctSymbol() {
+		return null;
 	}
 	
 	@Override
@@ -206,20 +204,21 @@ public class GlobalScope extends BaseScope {
 		return null;
 	}
 	
-	public void setBuiltInType() {
-		typeList.put("bool", new BoolType());
-		typeList.put("int", new IntType());
-		typeList.put("string", new StringType());
-		typeList.put("void", new VoidType());
+	public void setBuiltInType(Scope gobalScope) {
 	}
 	
-	public void setBuiltInFunction(Scope gobalScope) {
+	public void setBuiltInMember(Scope gobalScope, StringType stringTemplate) {
+		typeList.put("bool", new BoolType());
+		typeList.put("int", new IntType());
+		typeList.put("void", new VoidType());
+		typeList.put("string", stringTemplate);
+	
 		LinkedHashMap<String, Type> paraList1 = new LinkedHashMap<String, Type>();
-		paraList1.put("str", new StringType());
+		paraList1.put("str", stringTemplate);
 		functList.put("print", new FunctSymbol(gobalScope, "print", new VoidType(), paraList1));
 		
 		LinkedHashMap<String, Type> paraList2 = new LinkedHashMap<String, Type>();
-		paraList2.put("str", new StringType());
+		paraList2.put("str", stringTemplate);
 		functList.put("println", new FunctSymbol(gobalScope, "println", new VoidType(), paraList2));	
 		
 		LinkedHashMap<String, Type> paraList3 = new LinkedHashMap<String, Type>();
@@ -228,14 +227,14 @@ public class GlobalScope extends BaseScope {
 		
 		LinkedHashMap<String, Type> paraList4 = new LinkedHashMap<String, Type>();
 		paraList4.put("n", new IntType());
-		functList.put("printlnInt", new FunctSymbol(gobalScope, "printlnInt", new VoidType(), paraList4));	
+		functList.put("printlnInt", new FunctSymbol(gobalScope, "printlnInt", stringTemplate, paraList4));	
 		
-		functList.put("getString", new FunctSymbol(gobalScope, "getString", new StringType(), new LinkedHashMap<String, Type>()));	
+		functList.put("getString", new FunctSymbol(gobalScope, "getString", stringTemplate, new LinkedHashMap<String, Type>()));	
 		
 		functList.put("getInt", new FunctSymbol(gobalScope, "getInt", new IntType(), new LinkedHashMap<String, Type>()));	
 		
 		LinkedHashMap<String, Type> paraList7 = new LinkedHashMap<String, Type>();
 		paraList7.put("i", new IntType());
-		functList.put("toString", new FunctSymbol(gobalScope, "toString", new StringType(), paraList7));	
+		functList.put("toString", new FunctSymbol(gobalScope, "toString", stringTemplate, paraList7));	
 	}
 }

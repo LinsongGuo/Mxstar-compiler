@@ -21,11 +21,11 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitProgram(MxstarParser.ProgramContext ctx) {
-		//System.err.println((new Location(ctx.getStart())).toString());
-		System.err.println("visitProgram: " + ctx.getText());
+		//System.err.println("visitProgram: " + ctx.getText());
 		ArrayList<DefNode> defList = new ArrayList<DefNode>();
+		boolean hasMain = false;
 		for (MxstarParser.DefContext item : ctx.def()) {
-			defList.add((DefNode)visit(item));
+			defList.add((DefNode)visit(item)); 
 		}
 		return new ProgramNode(new Location(ctx.getStart()), defList);
 	}
@@ -50,15 +50,21 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		ArrayList<VarDefNode> varList = new ArrayList<VarDefNode>();
 		for (MxstarParser.VarDefContext item : ctx.varDef()) {
 			VarDefNode tmp = (VarDefNode)visit(item);
-			tmp.setType(type);
-			varList.add(tmp);
+			if (tmp != null) {
+				tmp.setType(type);
+				varList.add(tmp);
+			}
 		}
-		return new VarDefListNode(new Location(ctx.getStart()), varList);
+		return new VarDefListNode(new Location(ctx.getStart()), type, varList);
 	}
 	
 	@Override
 	public ASTNode visitVarDef(MxstarParser.VarDefContext ctx) {
-		System.err.println("visitVarDef: " + ctx.getText());
+		if (ctx.Identifier() == null) {
+			errorReminder.error(new Location(ctx.getStart()), "invalid name of variable.");
+			return null;
+		}
+		//System.err.println("visitVarDef " + ctx.getText() + " " + ctx.Identifier().getText());
 		return new VarDefNode( new Location(ctx.getStart()), 
 				null,
 			ctx.Identifier().getText(),
@@ -73,11 +79,16 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		for (MxstarParser.ParaContext item : ctx.paraList().para()) {
 			paraList.add((VarDefNode)visit(item));
 		}
+		ArrayList<StmtNode> stmtList = new ArrayList<StmtNode>();
+		for (MxstarParser.StmtContext item : ctx.stmt()) {
+			stmtList.add((StmtNode)visit(item));
+		}
+		
 		return new FunctDefNode( new Location(ctx.getStart()),
 			(TypeNode)visit(ctx.type()),
 			ctx.Identifier().getText(),
 			paraList,
-			(BlockStmtNode)visit(ctx.block())
+			stmtList
 		);
 	}
 	
@@ -114,7 +125,8 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 		for (MxstarParser.ConstructorDefContext item : ctx.constructorDef()) {
 			if (!item.Identifier().getText().equals(identifier)) {
 				errorReminder.error(new Location(item.getStart()), 
-					"no return type for the function \'" + item.Identifier().getText() + "\'."
+					"mismatched constructor name."
+					//"no return type for the function \'" + item.Identifier().getText() + "\'."
 				);
 			}
 			else {
@@ -125,7 +137,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 					);
 				}
 				else {
-					System.err.println("constructor");
 					constructorDef = (FunctDefNode) visit(item);
 				}
 			}
@@ -140,21 +151,23 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitConstructorDef(MxstarParser.ConstructorDefContext ctx) {
-		//System.err.println("visitConstructorDef: " + ctx.getText());
+		ArrayList<StmtNode> stmtList = new ArrayList<StmtNode>();
+		for (MxstarParser.StmtContext item : ctx.stmt()) {
+			stmtList.add((StmtNode)visit(item));
+		}
 		return new FunctDefNode( new Location(ctx.getStart()),
 			null,
 			ctx.Identifier().getText(),
 			new ArrayList<VarDefNode>(),
-			(BlockStmtNode)visit(ctx.block())
+			stmtList
 		);
 	}
 	
 	@Override
 	public ASTNode visitBlock(MxstarParser.BlockContext ctx) {
-		System.err.println("visitBlock: " + ctx.getText());
+		//System.err.println("visitBlock: " + ctx.getText());
 		ArrayList<StmtNode> stmtList = new ArrayList<StmtNode>();
 		for (MxstarParser.StmtContext item : ctx.stmt()) {
-			//System.err.println("item: " + item.getText());
 			stmtList.add((StmtNode)visit(item));
 		}
 		return new BlockStmtNode( new Location(ctx.getStart()), stmtList);
@@ -172,24 +185,28 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitVarDefStmt(MxstarParser.VarDefStmtContext ctx) {
-		//System.err.println("visitVarDefStmt: " + ctx.getText());
+		System.err.println("visitVarDefStmt: " + ctx.getText());
 		TypeNode type = (TypeNode)visit(ctx.varDefList().type());
 		ArrayList<VarDefNode> varList = new ArrayList<VarDefNode>();
-		for (MxstarParser.VarDefContext item : ctx.varDefList().varDef()) {
-			VarDefNode tmp = (VarDefNode)visit(item);
-			tmp.setType(type);
-			varList.add(tmp);
+		if (ctx.varDefList() != null) {
+			for (MxstarParser.VarDefContext item : ctx.varDefList().varDef()) {
+				VarDefNode tmp = (VarDefNode)visit(item);
+				if (tmp != null) {
+					tmp.setType(type);
+					varList.add(tmp);
+				}
+			}
 		}
-		return new VarDefStmtNode(new Location(ctx.getStart()), 
-			new VarDefListNode(new Location(ctx.getStart()), varList) 
+		return new VarDefStmtNode(new Location(ctx.getStart()),
+			new VarDefListNode(new Location(ctx.getStart()), type, varList) 
 		);
 	}
-	
+		
 	@Override
 	public ASTNode visitIfStmt(MxstarParser.IfStmtContext ctx) {
-		System.err.println("visitIfStmt: " + ctx.getText());
+		//System.err.println("visitIfStmt: " + ctx.getText());
 		return new IfStmtNode( new Location(ctx.getStart()),
-			(ExprNode)visit(ctx.expr()),
+			ctx.expr() == null ? null : (ExprNode)visit(ctx.expr()),
 			(StmtNode)visit(ctx.stmt(0)),
 			ctx.stmt(1) == null ? null : (StmtNode)visit(ctx.stmt(1))
 		);
@@ -197,8 +214,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitForStmt(MxstarParser.ForStmtContext ctx) {
-		System.err.println("visitForStmt: " + ctx.getText());
-		//System.err.println("init: " + ctx.init.getText());
+		//System.err.println("visitForStmt: " + ctx.getText());
 		return new ForStmtNode( new Location(ctx.getStart()),
 			ctx.init == null ? null : (ExprNode)visit(ctx.init),
 			ctx.cond == null ? null : (ExprNode)visit(ctx.cond),
@@ -209,19 +225,22 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitWhileStmt(MxstarParser.WhileStmtContext ctx) {
-		System.err.println("visitWhileStmt: " + ctx.getText());
+		//System.err.println("visitWhileStmt: " + ctx.getText());
 		return new WhileStmtNode( new Location(ctx.getStart()),
-			(ExprNode)visit(ctx.expr()),
+			ctx.expr() == null ? null : (ExprNode)visit(ctx.expr()),
 			(StmtNode)visit(ctx.stmt())
 		);
 	}
 	
 	@Override
 	public ASTNode visitReturnStmt(MxstarParser.ReturnStmtContext ctx) {
-		System.err.println("visitReturnStmt: " + ctx.getText());
-		return new ReturnStmtNode( new Location(ctx.getStart()),
-			(ExprNode)visit(ctx.expr())
-		);
+		//System.err.println("visitReturnStmt: " + ctx.getText());
+		if (ctx.expr() == null) 
+			return new ReturnStmtNode( new Location(ctx.getStart()), null );
+		else 
+			return new ReturnStmtNode( new Location(ctx.getStart()),
+				(ExprNode)visit(ctx.expr())
+			);
 	}
 	
 	@Override
@@ -261,7 +280,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitLiteralExpr(MxstarParser.LiteralExprContext ctx) {
-		//System.err.println("visitLiteralExpr: " + ctx.getText());
+		System.err.println("visitLiteralExpr: " + ctx.getText());
 		if (ctx.literal().BoolLiteral() != null) 
 			return new BoolLiteralNode( new Location(ctx.getStart()), 
 				ctx.literal().BoolLiteral().getText() == "true" ? true : false
@@ -272,13 +291,14 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			);
 		else if (ctx.literal().IntLiteral() != null) 
 			return new IntLiteralNode( new Location(ctx.getStart()),
-				Integer.parseInt(ctx.literal().IntLiteral().getText())   
+				Long.parseLong(ctx.literal().IntLiteral().getText())   
 			);
 		else return null;
 	}
 	
 	@Override
 	public ASTNode visitMemberExpr(MxstarParser.MemberExprContext ctx) {
+		//System.err.println("visitMemberExpr " + ( new Location(ctx.getStart())) + ctx.getText());
 		ExprNode expr = (ExprNode) visit(ctx.expr());
 		if (ctx.identifierMember() != null) {
 			return new MemberExprNode( new Location(ctx.getStart()),
@@ -309,13 +329,28 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitCreatorExpr(MxstarParser.CreatorExprContext ctx) {
+		//System.err.println("visitCreator " + ctx.getText());
 		return visit(ctx.creator());
 	}
 	
 	@Override 
 	public ASTNode visitInvalidCreator(MxstarParser.InvalidCreatorContext ctx) {
-		errorReminder.error( new Location(ctx.getStart()), "Invalid creator.");
-		return null;
+		errorReminder.error( new Location(ctx.getStart()), "invalid creator.");
+	//	return null;
+		int dimension = 0;
+		for (var item: ctx.children) {
+			if (item.getText().equals("[")) 
+				dimension++;
+		}
+		ArrayList<ExprNode> sizeList = new ArrayList<ExprNode>();
+		for (MxstarParser.ExprContext item : ctx.expr()) {
+			sizeList.add((ExprNode)visit(item));
+		}
+		return new CreatorExprNode( new Location(ctx.getStart()),
+			(TypeNode)visit(ctx.varType()),
+			sizeList, 
+			dimension
+		);
 	}
 	
 	@Override 
@@ -357,24 +392,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitArrayExpr(MxstarParser.ArrayExprContext ctx) {
 		return visit(ctx.arrayCall());
-		/*
-		ExprNode nameExpr = (ExprNode)visit(ctx.expr(0));
-		if (nameExpr instanceof ArrayExprNode) { 
-			ArrayList<ExprNode> indexExpr = ((ArrayExprNode)nameExpr).getIndexExpr();
-			indexExpr.add((ExprNode)visit(ctx.expr(1)));
-			return new ArrayExprNode( new Location(ctx.getStart()), 
-				((ArrayExprNode) nameExpr).getNameExpr(),
-				indexExpr	
-			);	
-		}
-		else {
-			ArrayList<ExprNode> indexExpr = new ArrayList<ExprNode>();
-			indexExpr.add((ExprNode)visit(ctx.expr(1)));
-			return new ArrayExprNode( new Location(ctx.getStart()), 
-				nameExpr,
-				indexExpr	
-			);	
-		}*/
 	}
 	
 	@Override
@@ -564,17 +581,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitPrimType(MxstarParser.PrimTypeContext ctx) {
-		/*if (ctx.getText().equals("bool")) 
-			return new PrimTypeNode( new Location(ctx.getStart()), "bool" );
-		else if (ctx.getText().equals("int")) 
-			return new PrimTypeNode( new Location(ctx.getStart()), "int" );
-		else if (ctx.getText().equals("string"))
-			return new PrimTypeNode( new Location(ctx.getStart()), "string" );
-		else if (ctx.getText().equals("void"))
-			return new PrimTypeNode( new Location(ctx.getStart()), "void" );
-		else
-			return null;
-		*/
 		return new PrimTypeNode( new Location(ctx.getStart()), ctx.getText() );
 	}
 	

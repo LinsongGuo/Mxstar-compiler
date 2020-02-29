@@ -39,9 +39,7 @@ public interface Scope {
 	
 	public abstract boolean inIfScope();
 	
-	public abstract boolean inFunctScope();
-	
-	public abstract boolean inClassScope();
+	public abstract FunctSymbol getFunctSymbol();
 	
 	public abstract ClassSymbol getClassSymbol();
 }

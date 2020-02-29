@@ -45,7 +45,7 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		if (type == null) { 
 			//check variable type
 			errorReminder.error(node.getLoc(), 
-				"the class \'" + typeIdentifier + "\' was not decalred in this scope."
+				"class \'" + typeIdentifier + "\' was not decalred in this scope."
 			);
 			return;
 		}
@@ -61,7 +61,7 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			//check variable name
 			if (this.varList.containsKey(identifier)) {
 				errorReminder.error(node.getLoc(), 
-					"redeclaration of \'" + identifier + "\'."
+					"redeclaration of variable \'" + identifier + "\'."
 				);
 			}
 			else {
@@ -73,11 +73,6 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			if (initValue != null) {
 				Type initType = initValue.getType();
 				if (initType != null) {
-					//System.err.println("initType: " + initType.toString());
-					//int d1 = (typeNode instanceof ArrayTypeNode) ? ((ArrayTypeNode)typeNode).getDimension() : 0;
-					//int d2 = (initType instanceof ArrayType) ? ((ArrayType)initType).getDimension() : 0;
-					//System.err.println(d1);
-					//System.err.println(d2);
 					if (!initType.toString().equals(typeNode.toString())) {
 						errorReminder.error(var.getInitValue().getLoc(), 
 							"cannot convert \'" + initType.toString() + "\' to \'" + type.toString() + "\' in initialization."
@@ -125,11 +120,15 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			Type tmp = item.getType();
-			if (!(tmp instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				return null;
+			if(item != null) {
+				Type tmp = item.getType();
+				if (!(tmp instanceof IntType)) {
+					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
+				}
 			}
+			else {
+				errorReminder.error(node.getLoc(), "empty index of array.");
+			}	
 		}
 		
 		VarSymbol var = varList.get(identifier);
@@ -137,20 +136,20 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			String typeIdentifier = type.typeString();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 				return null;
 			}
-			else if (dimension == tmp){
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
-			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			}
+				String typeIdentifier = type.typeString();
+				if (dimension == tmp)
+					return new VarSymbol(identifier, resolveType(typeIdentifier));
+				else 
+					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
+			} 
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 			return null;
 		}
 	}
@@ -167,11 +166,10 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		return false;
 	}
 	
-	public abstract boolean inFunctScope();
-	
-	public abstract boolean inClassScope();
+	public abstract FunctSymbol getFunctSymbol();
 	
 	public abstract ClassSymbol getClassSymbol();
+	
 	
 	@Override
 	public boolean isVar() {

@@ -7,14 +7,14 @@ public class FunctDefNode extends DefNode {
 	private TypeNode type;
 	private String identifier;
 	private ArrayList<VarDefNode> paraList;
-	private BlockStmtNode stmt;
+	private ArrayList<StmtNode> stmtList;
 	
-	public FunctDefNode(Location loc, TypeNode type, String identifier, ArrayList<VarDefNode> paraList, BlockStmtNode stmt) {
+	public FunctDefNode(Location loc, TypeNode type, String identifier, ArrayList<VarDefNode> paraList, ArrayList<StmtNode> stmtList) {
 		super(loc);
 		this.type = type;
 		this.identifier = identifier;
 		this.paraList = paraList;
-		this.stmt = stmt;
+		this.stmtList = stmtList;
 	}
 	
 	public TypeNode getType() {
@@ -33,21 +33,10 @@ public class FunctDefNode extends DefNode {
 		return paraList;
 	}
 	
-	public BlockStmtNode getBlockStmt() {
-		return stmt;
+	public ArrayList<StmtNode> getStmtList() {
+		return stmtList;
 	}
-	/*
-	public boolean paraEquals(FunctDefNode other) {
-		if (paraList.size() != other.paraList.size()) 
-			return false;
-		for (int i = 0; i < paraList.size(); ++i) {
-			if (!paraList.get(i).typeEquals(other.paraList.get(i))) {
-				return false;
-			}
-		}
-		return true;
-	}
-	*/
+
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}

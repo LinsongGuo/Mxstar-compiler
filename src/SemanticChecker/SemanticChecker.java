@@ -7,25 +7,57 @@ import parser.MxstarParser.ConstructorDefContext;
 import utility.*;
 
 public class SemanticChecker implements ASTVisitor {
-	Scope currentScope;
-	ErrorReminder errorReminder;
+	private Scope currentScope;
+	private ErrorReminder errorReminder;
+	private StringType stringTemplate;
 	
 	public SemanticChecker(ErrorReminder errorReminder) {
 		this.errorReminder = errorReminder;
 		currentScope = new GlobalScope(null);
-		((GlobalScope)currentScope).setBuiltInType();
-		((GlobalScope)currentScope).setBuiltInFunction(currentScope);
+		stringTemplate = new StringType(currentScope);
+		((GlobalScope)currentScope).setBuiltInMember(currentScope, stringTemplate);
 	}
 	
 	@Override
 	public void visit(ProgramNode node){
 		ArrayList<DefNode> defList = node.getDefList();
-		for(DefNode item : defList) {
-			if ((item instanceof VarDefListNode)||
-				(item instanceof FunctDefNode)  ||
-				(item instanceof ClassDefNode) 
-			)
+		boolean hasMain = false;
+		for (DefNode item : defList) {
+			if (item instanceof FunctDefNode) {
+				if (((FunctDefNode) item).getIdentifier().equals("main")) {
+					boolean can = true;
+					if (!((FunctDefNode) item).getType().toString().equals("int")) {
+						errorReminder.error(item.getLoc(), 
+							"\'main\' function must return \'int\'."
+						);
+						can = false;
+					}
+					if (!((FunctDefNode) item).getParaList().isEmpty()) {
+						errorReminder.error(item.getLoc(), 
+							"\'main\' function should not have parameters."
+						);
+						can = false;
+					}
+					if (can) {
+						if (hasMain) {
+							errorReminder.error(item.getLoc(), 
+								"\'int main\' previously here."  
+							);
+						}
+						else {
+							hasMain = true;
+							item.accept(this);
+						}
+					}	
+				}
+				else 
+					item.accept(this);
+			}	
+			else if ((item instanceof VarDefListNode) || (item instanceof ClassDefNode))
 				item.accept(this);
+		}
+		if (!hasMain) {
+			errorReminder.error(node.getLoc(), "\'int main()\' is not declared.");
 		}
 	}
 	
@@ -36,7 +68,7 @@ public class SemanticChecker implements ASTVisitor {
 			ExprNode initValue = item.getInitValue();
 			if (initValue != null)
 				initValue.accept(this);
-		//	System.err.println(initValue.getType().toString());
+			//System.err.println("INIT" + initValue.getType().toString());
 		}
 		currentScope.defineVarList((VarDefListNode)node, errorReminder);
 	}
@@ -44,9 +76,12 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(FunctDefNode node){
 		currentScope = currentScope.defineFunct(node, errorReminder);
-	
+		
 		currentScope.defineParaList(node.getParaList(), errorReminder);
-		((FunctDefNode) node).getBlockStmt().accept(this);
+		ArrayList<StmtNode> stmtList = node.getStmtList();
+		for (StmtNode stmt : stmtList) {
+			stmt.accept(this);
+		}
 		
 		currentScope = currentScope.getEnclosingScope();
 	}
@@ -58,14 +93,24 @@ public class SemanticChecker implements ASTVisitor {
 		//define variables in class.
 		ArrayList<VarDefListNode> varList = node.getVarList();
 		for (VarDefListNode item : varList) {
+			ArrayList<VarDefNode> initList = item.getVarList();
+			for (VarDefNode initVar : initList) {
+				ExprNode initValue = initVar.getInitValue();
+				if (initValue != null)
+					initValue.accept(this);
+			}
 			currentScope.defineVarList(item, errorReminder);
 		}
 		
 		//define constructor in class.
 		FunctDefNode constructorDef = node.getConstructorDef();
 		currentScope = ((ClassSymbol)currentScope).defineConstructor();
-		if (constructorDef != null) 	
-			constructorDef.getBlockStmt().accept(this);
+		if (constructorDef != null) {
+			ArrayList<StmtNode> stmtList = constructorDef.getStmtList();
+			for (StmtNode stmt : stmtList) {
+				stmt.accept(this);
+			}
+		}
 		currentScope = currentScope.getEnclosingScope();
 		
 		//define functions in class.
@@ -73,7 +118,10 @@ public class SemanticChecker implements ASTVisitor {
 		for (FunctDefNode item : functList) {
 			currentScope = currentScope.defineFunct(item, errorReminder);
 			currentScope.defineParaList(item.getParaList(), errorReminder);
-			item.getBlockStmt().accept(this);
+			ArrayList<StmtNode> stmtList1 = item.getStmtList();
+			for (StmtNode stmt : stmtList1) {
+				stmt.accept(this);
+			}
 			currentScope = currentScope.getEnclosingScope();
 		}
 		
@@ -104,10 +152,12 @@ public class SemanticChecker implements ASTVisitor {
 	//statement--------------------------------------------------
 	@Override
 	public void visit(BlockStmtNode node) {
+		currentScope = new LocalScope(currentScope, ScopeType.BlockScope);
 		ArrayList<StmtNode> stmtList = node.getStmtList();
 		for (StmtNode item : stmtList) {
 			item.accept(this);
 		}
+		currentScope = currentScope.getEnclosingScope();
 	}
 	
 	@Override
@@ -119,7 +169,7 @@ public class SemanticChecker implements ASTVisitor {
 	public void visit(BreakStmtNode node) { 
 		if (!currentScope.inLoopScope()) {
 			errorReminder.error(node.getLoc(), 
-				"The break statement must be in one loop."	
+				"break-statement not within loop."	
 			);
 		}
 	}
@@ -128,38 +178,38 @@ public class SemanticChecker implements ASTVisitor {
 	public void visit(ContinueStmtNode node) { 
 		if (!currentScope.inLoopScope()) {
 			errorReminder.error(node.getLoc(), 
-				"The continue statement must be in one loop."	
+				"continue-statement not within loop."		
 			);
 		}
 	}
 	
 	@Override
-	public void visit(ExprStmtNode node) {;
+	public void visit(ExprStmtNode node) {
 		node.getExpr().accept(this);
 	}
 	
 	@Override
-	public void visit(ForStmtNode node) {
-		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
-		ExprNode initExpr = node.getInitExpr();
-		if (initExpr != null) 
-			initExpr.accept(this);
-		ExprNode condExpr = node.getCondExpr();
-		if (condExpr != null)
-			condExpr.accept(this);
-		ExprNode stepExpr = node.getStepExpr();
-		if (stepExpr != null)
-			stepExpr.accept(this);
-		node.getStmt().accept(this);	
-	}
-	
-	@Override
 	public void visit(IfStmtNode node) { 
+		//System.err.println("enter if");
 		currentScope = new LocalScope(currentScope, ScopeType.IfScope);
-		node.getCond().accept(this);
+		//check the type of cond-expr
+		ExprNode cond = node.getCond();
+		if (cond == null) {
+			errorReminder.error(node.getLoc(), "empty condition of if-statement.");
+		}
+		else {
+			cond.accept(this);
+			Type type = cond.getType();
+			if (type != null && !(type instanceof BoolType)) {
+				errorReminder.error(cond.getLoc(),
+					"cannot convert \'" + type.toString() + "\' to \'bool\' in initialization."
+				);
+			}
+		}
+		//then-stmt
 		node.getThenStmt().accept(this);
 		currentScope = currentScope.getEnclosingScope();
-		
+		//else-stmt
 		if(node.getElseStmt() != null) {
 			currentScope = new LocalScope(currentScope, ScopeType.ElseScope);
 			node.getElseStmt().accept(this);
@@ -168,15 +218,94 @@ public class SemanticChecker implements ASTVisitor {
 	}
 	
 	@Override
+	public void visit(ForStmtNode node) {
+		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
+		//init-expr
+		ExprNode initExpr = node.getInitExpr();
+		if (initExpr != null) 
+			initExpr.accept(this);
+		//check the type of cond-expr
+		ExprNode condExpr = node.getCondExpr();
+		if (condExpr != null) {
+			condExpr.accept(this);
+			Type type = condExpr.getType();
+			if (type != null && !(type instanceof BoolType)) {
+				errorReminder.error(condExpr.getLoc(),
+					"cannot convert \'" + type.toString() + "\' to \'bool\' in initialization."
+				);
+			}
+		}
+		//step-expr
+		ExprNode stepExpr = node.getStepExpr();
+		if (stepExpr != null)
+			stepExpr.accept(this);
+		//stmt
+		node.getStmt().accept(this);
+		currentScope = currentScope.getEnclosingScope();
+	}
+	
+	@Override
+	public void visit(WhileStmtNode node) {
+		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
+		//check the type of cond-expr
+		ExprNode condExpr = node.getExpr();
+		if (condExpr == null) {
+			errorReminder.error(node.getLoc(), "empty condition of while-statement.");
+		}
+		else {
+			condExpr.accept(this);
+			Type type = condExpr.getType();
+			if (type != null && !(type instanceof BoolType)) {
+				errorReminder.error(condExpr.getLoc(),
+					"cannot convert \'" + type.toString() + "\' to \'bool\' in initialization."
+				);
+			}				
+		}
+		//stmt
+		node.getStmt().accept(this);
+		currentScope = currentScope.getEnclosingScope();
+	}
+		
+	@Override
 	public void visit(ReturnStmtNode node) {
-		if (!currentScope.inFunctScope()) {
+		FunctSymbol functSymbol = currentScope.getFunctSymbol();
+		ExprNode expr = node.getExpr();
+		if (functSymbol == null) {
 			errorReminder.error(node.getLoc(),
-				"The return statement must be in a function."
+				"return-statement must be in a function."
 			);
 		}
-		if (node.getExpr() != null) {
-			node.getExpr().accept(this);
+		else if (expr != null) {
+			expr.accept(this);
+			Type retType = functSymbol.getType();
+			Type exprType = expr.getType();
+			if (exprType == null) return;
+			//System.err.println("return " + retType.toString());
+			if (retType == null) {
+				errorReminder.error(node.getLoc(), 
+					"should have return value."
+				);
+			}
+			else if (retType instanceof VoidType) {
+				errorReminder.error(node.getLoc(), 
+					"return-statement with a value, in function returning \'void\'."
+				);
+			}
+			else if(!retType.toString().equals(exprType.toString())){
+				errorReminder.error(expr.getLoc(),
+					"cannot convert \'" + exprType.toString() + "\' to \'" + retType.toString() + "\' in initialization."
+				);
+			}
 		}
+		else {
+			Type retType = functSymbol.getType();
+			if (!(retType instanceof VoidType)) {
+				errorReminder.error(node.getLoc(),
+					"return-statement with no value, in function returning \'" + retType.toString() + "\'."
+				);
+			}
+		}
+		
 	}
 	
 	@Override
@@ -184,22 +313,13 @@ public class SemanticChecker implements ASTVisitor {
 		node.getVarDefList().accept(this);
 	}
 	
-	@Override
-	public void visit(WhileStmtNode node) {
-		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
-		node.getExpr().accept(this);
-		node.getStmt().accept(this);
-		currentScope = currentScope.getEnclosingScope();
-	}
-	
-	
 	//expression--------------------------------------------------
 	@Override
 	public void visit(ThisExprNode node) {
 		ClassSymbol classSymbol = currentScope.getClassSymbol();
 		if (classSymbol == null) {
 			errorReminder.error(node.getLoc(), 
-				"invalid use of \"this\" in non-member function."
+				"invalid use of \'this\' in non-member function."
 			);
 		}
 		else 
@@ -218,8 +338,10 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(ArrayExprNode node) {
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
+		//System.err.println(indexExpr.size());
 		for (ExprNode item : indexExpr) {
-			item.accept(this);
+			if (item != null)
+				item.accept(this);
 		}
 		VarSymbol var = currentScope.resovleArray(node, errorReminder);
 		if (var != null) {
@@ -234,6 +356,7 @@ public class SemanticChecker implements ASTVisitor {
 		expr.accept(this);
 		node.setType(expr.getType());
 		node.setLvalue(expr.getLvalue());
+		//System.err.println("bracket: " + node.getType().toString());
 	}
 	
 	@Override
@@ -255,10 +378,10 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		else {
 			errorReminder.error(node.getLoc(), 
-				"class \'" + tmp + "\' is not declared in this scope."
+				"class \'" + tmp + "\' was not declared in this scope."
 			);
 		}
-		//System.err.println(node.getType().toString());
+		//System.err.println("creator: " + node.getType().toString());
 	}
 	
 	@Override
@@ -278,8 +401,9 @@ public class SemanticChecker implements ASTVisitor {
 		expr.accept(this);
 		Type type = expr.getType();
 		if (type != null) {
+			//System.err.println("MemberExpr " + type.toString());
 			if(!(type instanceof ClassSymbol)) {
-				errorReminder.error(node.getLoc(), "\"" + type.typeString() + "\" is a non-class type.");
+				errorReminder.error(node.getLoc(), "invalid member call in a non-class type \'" + type.toString() + "\'.");
 			}
 			else {
 				if (node.getVarExpr() != null) {
@@ -292,6 +416,10 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (node.getArrayExpr() != null) {
 					ArrayExprNode arrayExpr = node.getArrayExpr();
+					ArrayList<ExprNode> indexExpr = arrayExpr.getIndexExpr();
+					for (ExprNode item : indexExpr) {
+						item.accept(this);
+					}
 					VarSymbol arraySymbol = ((ClassSymbol)type).findArray(arrayExpr, errorReminder);
 					if (arraySymbol != null) {
 						node.setType(arraySymbol.getType());
@@ -300,9 +428,13 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (node.getFunctExpr() != null) {
 					FunctExprNode functExpr = node.getFunctExpr();
+					ArrayList<ExprNode> paraList = functExpr.getParaList();
+					for (ExprNode item : paraList) {
+						item.accept(this);
+					}
 					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct(functExpr, errorReminder);
-					if (functExpr != null) {
-						node.setType(functExpr.getType());
+					if (functSymbol != null) {
+						node.setType(functSymbol.getType());
 					}
 				}
 			}
@@ -361,8 +493,10 @@ public class SemanticChecker implements ASTVisitor {
 					"no match for operator" + op.toString() + "as the prefix of \'" + type.toString() + "\'."
 				);
 			}
-			else 
+			else {
 				node.setType(type);
+				node.setLvalue(true);
+			}	
 		}
 		else if (op == Operator.POS || op == Operator.NEG || op == Operator.bitwiseNOT){
 			if (!(type instanceof IntType)) {
@@ -477,7 +611,7 @@ public class SemanticChecker implements ASTVisitor {
 				node.setType(new IntType());
 			}
 			else if (leftType instanceof StringType && rightType instanceof StringType) {
-				node.setType(new StringType());
+				node.setType(stringTemplate);
 			}
 			else {
 				errorReminder.error( node.getLoc(),
@@ -501,8 +635,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(StringLiteralNode node) {
-		//System.err.println("StringLiteral" + node.getString());
-		node.setType(new StringType());
+		node.setType(stringTemplate);
 		node.setLvalue(false);
 	}
 	

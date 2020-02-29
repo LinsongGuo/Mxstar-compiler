@@ -9,29 +9,43 @@ program
 	;
   
 def
-	: classDef
-	| varDefList
-	| functDef
+	: functDef
+	| classDef
+	| varDefList 
 	;
+
+functDef
+	: type Identifier '(' paraList ')' '{' stmt* '}'
+    ;
 
 classDef
 	: 'class' Identifier '{' (varDefList | functDef | constructorDef)* '}' ';'
 	;
 
-constructorDef
-	: Identifier '(' ')' block
-	;
-	
 varDefList
 	: type varDef (',' varDef)* ';'
 	;
 
-varDef
-	: Identifier ('=' expr)?
+constructorDef
+	: Identifier '(' ')' '{' stmt* '}'
 	;
 
-functDef
-	: type Identifier '(' paraList ')' block
+type
+	: varType
+	| arrayType
+	;
+
+arrayType
+	: varType ('[' ']')+
+	;
+
+varType
+	: primType
+	| Identifier
+	;
+
+primType
+    : 'bool' | 'int' | 'string' | 'void'
     ;
 
 paraList
@@ -43,36 +57,36 @@ para
 	: type Identifier ('=' expr)?
 	;
 
+varDef
+	: Identifier ('=' expr)?
+	;
+
 block
 	: '{' stmt* '}'
 	;
 
 stmt
 	: block                                      # blockStmt
-	| 'if' '(' expr ')' stmt ('else' stmt)?      # ifStmt
+	| varDefList                               # varDefStmt 
+	| 'if' '(' expr? ')' stmt ('else' stmt)?      # ifStmt
 	| 'for' '(' init = expr? ';'  
 			  cond = expr? ';'
 			  step = expr? 
 		  ')'
 	  stmt                                     # forStmt
-	| 'while' '(' expr ')' stmt                # whileStmt   
+	| 'while' '(' expr? ')' stmt                # whileStmt   
 	| 'return' expr? ';'                       # returnStmt
 	| 'break' ';'                              # breakStmt
 	| 'continue' ';'                           # continueStmt
-	| varDefList                               # varDefStmt 
-	| expr ';'                                 # exprStmt
 	| ';'                                      # brankStmt
+	| expr ';'                                 # exprStmt
 	;
 	
 expr
- 	: '(' expr ')'                                           # bracketExpr           
-	| 'this'                                                 # thisExpr 
-	| 'new' creator                                          # creatorExpr            
-	| literal                                                # literalExpr       
-	| Identifier                                             # varExpr
+ 	: 'new' creator                                          # creatorExpr            
+	| expr '.' (identifierMember | functCall | arrayCall)    # memberExpr                  
 	| functCall               		   				         # functExpr                                
 	| arrayCall                                              # arrayExpr               
-	| expr '.' (identifierMember | functCall | arrayCall)    # memberExpr                  
 	| expr op = ('++' | '--')                                # suffixExpr                      
 	| op = ('+' | '-') expr                                  # prefixExpr                    
 	| op = ('++' | '--') expr                                # prefixExpr                      
@@ -88,6 +102,10 @@ expr
 	| expr op = '&&' expr                                    # binaryExpr      
 	| expr op = '||' expr                                    # binaryExpr              
 	| <assoc = right> expr op = '=' expr                     # binaryExpr
+	| '(' expr ')'                                           # bracketExpr
+	| 'this'                                                 # thisExpr 
+	| literal                                                # literalExpr       
+	| Identifier                                             # varExpr
 	;        
 
 identifierMember
@@ -109,23 +127,6 @@ creator
 	| varType                                             # naiveCreator
 	;
 
-type
-	: varType
-	| arrayType 
-	;
-
-varType
-	: primType
-	| Identifier
-	;
-
-arrayType
-	: varType ('[' ']')*
-	;
-
-primType
-    : 'bool' | 'int' | 'string' | 'void'
-    ;
 
 literal
 	: BoolLiteral   
@@ -149,7 +150,7 @@ StringLiteral
 
 ESC: '\\"' | '\\n' | '\\\\';
 
-Identifier: [a-zA-Z_] [a-zA-Z_0-9]* ;
+Identifier: [a-zA-Z] [a-zA-Z_0-9]* ;
 
 WS : [ \t]+  -> skip;
 

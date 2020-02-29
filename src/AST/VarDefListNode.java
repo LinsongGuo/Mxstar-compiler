@@ -4,15 +4,17 @@ import utility.Location;
 import java.util.ArrayList;
 
 public class VarDefListNode extends DefNode {
+	private TypeNode type;
 	private ArrayList<VarDefNode> varList;
 	
-	public VarDefListNode(Location loc, ArrayList<VarDefNode> varList) {
+	public VarDefListNode(Location loc, TypeNode type, ArrayList<VarDefNode> varList) {
 		super(loc);
 		this.varList = varList;
+		this.type = type;
 	}
 	
 	public TypeNode getType() {
-		return varList.isEmpty() ? null : varList.get(0).getType();
+		return type;
 	}
 	
 	public void accept(ASTVisitor visitor) {

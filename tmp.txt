@@ -1,17 +1,27 @@
+/mnt/d/courses/compiler/Mxstar-compiler
 
-INT      : 'int'      ;          
-BOOL     : 'bool'     ;     
-STRING   : 'string'   ;       
-NULL     : 'null'     ;     
-VOID     : 'void'     ;     
-TRUE     : 'true'     ;     
-FALSE    : 'false'    ;      
-ELSE     : 'else'     ;      
-FOR      : 'for'      ;    
-WHILE    : 'while'    ;      
-BREAK    : 'break'    ;      
-CONTINUE : 'continue' ;         
-RETURN   : 'return'   ;       
-NEW      : 'new'      ;    
-CLASS    : 'class'    ;      
-THIS     : 'this'     ;    
+/mnt/d/courses/compiler/Compiler-2020/local-judge
+
+basic-15:null
+basic-42:funct and class不能重名
+函数，类向前引用
+null
+分号
+return type error
+(new int[2][])[0]
+**.this
+Duplicate name for function name and class name.
+Non-void function should return non-null value.(main函数返回Null)
+class int
+Array.size()
+new Class找构造函数. 构造函数不应该有返回值
+ The variable A and class A is dumplicated.
+区分返回值错误与构造函数
+检查函数无return;语句
+函数、类名称、变量不是关键字
+
+arrray-8
+misc-32:ltree[i][2 * x + 1]->mint = ltree[i][2 * x + 1].mint * mtag + ptag;
+
+
+   

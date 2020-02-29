@@ -16,7 +16,7 @@ import AST.VarExprNode;
 import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol implements Type {
-	private LinkedHashMap<String, FunctSymbol> functList;
+	protected LinkedHashMap<String, FunctSymbol> functList;
 	
 	public ClassSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
@@ -39,11 +39,12 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if (functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
-				"redeclaration of the function \'" + identifier + "\'."
+				"redeclaration of function \'" + identifier + "\'."
 			);
 		}		
 		//check return type
 		TypeNode typeNode = node.getType();
+		FunctSymbol functSymbol;
 		if (typeNode != null) {
 			String typeIdentifier = typeNode.typeString();
 			Type type = resolveType(typeIdentifier);
@@ -51,24 +52,22 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 				errorReminder.error(node.getLoc(), 
 					"the class \'" + typeIdentifier + "\' was not declared in this scope."
 				);
-				return null;
+				functSymbol = new FunctSymbol(this, identifier, null);
 			}
-			if (typeNode instanceof ArrayTypeNode) {
+			else if (typeNode instanceof ArrayTypeNode) {
 				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				FunctSymbol functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
-				functList.put(identifier, functSymbol);
-				return functSymbol;
+				functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
 			}
 			else {
-				FunctSymbol functSymbol = new FunctSymbol(this, identifier, type);
-				functList.put(identifier, functSymbol);
-				return functSymbol;
+				functSymbol = new FunctSymbol(this, identifier, type);
 			}
 		}
 		else {
 			errorReminder.error(node.getLoc(), "the function should have return value.");
-			return null;
+			functSymbol = new FunctSymbol(this, identifier, null);
 		}
+		functList.put(identifier, functSymbol);
+		return functSymbol;
 	}
 	
 	@Override
@@ -99,8 +98,6 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 				break;
 			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
 			if (tmp2 != null) {
-				//int d1 = (tmp1 instanceof ArrayType) ? ((ArrayType)tmp1).getDimension() : 0;
-				//int d2 = (tmp2 instanceof ArrayType) ? ((ArrayType)tmp2).getDimension() : 0;
 				if (!tmp1.toString().equals(tmp2.toString())) {
 					errorReminder.error(paraList.get(i).getLoc(), 
 						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
@@ -112,15 +109,15 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		}
 		return functSymbol;
 	}
-	
+		
 	@Override
-	public boolean inFunctScope() {
-		return false;
+	public FunctSymbol getFunctSymbol() {
+		return null;
 	}
 	
 	@Override
-	public boolean inClassScope() {
-		return true;
+	public ClassSymbol getClassSymbol() {
+		return this;
 	}
 	
 	@Override
@@ -131,11 +128,6 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	@Override
 	public boolean isBuiltInType() {
 		return false;
-	}
-	
-	@Override
-	public ClassSymbol getClassSymbol() {
-		return this;
 	}
 	
 	public VarSymbol findVar(VarExprNode node, ErrorReminder errorReminder) {
@@ -154,18 +146,22 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(),
-				"the class \'" + toString() + "\" has no member named " + node.getIdentifier()
+				"the class \'" + toString() + "\" has no member named " + identifier + "."
 			);
 			return null;
 		}
 
 		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
 		for(ExprNode item : indexExpr) {
-			Type tmp = item.getType();
-			if (!(tmp instanceof IntType)) {
-				errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				return null;
+			if(item != null) {
+				Type tmp = item.getType();
+				if (!(tmp instanceof IntType)) {
+					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\' in initilization.");
+				}
 			}
+			else {
+				errorReminder.error(item.getLoc(), "empty index of array.");
+			}	
 		}
 		
 		VarSymbol var = varList.get(identifier);
@@ -174,19 +170,19 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
 			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 				return null;
 			}
-			else if (dimension == tmp){
-				String typeIdentifier = type.typeString();
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
-			}
 			else {
-				return new VarSymbol(identifier, new ArrayType(identifier, tmp - dimension));
-			}
+				String typeIdentifier = type.typeString();
+				if (dimension == tmp)
+					return new VarSymbol(identifier, resolveType(typeIdentifier));
+				else 
+					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
+			} 
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "the dimension of the array \'" + identifier + "\' is invalid.");
+			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
 			return null;
 		}
 	}
@@ -195,7 +191,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if (!functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(),
-				"the class \'" + toString() + "\" has no member named \'" + node.getIdentifier() + "\'."
+				"the type \'" + toString() + "\" has no member named \'" + node.getIdentifier() + "\'."
 			);
 			return null;
 		}
@@ -204,11 +200,9 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		ArrayList<ExprNode> paraList = node.getParaList();
 		if (paraList.size() < argueList.size()) {
 			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		if (paraList.size() > argueList.size()) {
 			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		int i = 0;
 		for (Map.Entry<String, Type> entry : argueList.entrySet()) {
@@ -216,13 +210,10 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 				break;
 			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
 			if (tmp2 != null) {
-				//int d1 = (tmp1 instanceof ArrayType) ? ((ArrayType)tmp1).getDimension() : 0;
-				//int d2 = (tmp2 instanceof ArrayType) ? ((ArrayType)tmp2).getDimension() : 0;
 				if (!tmp1.toString().equals(tmp2.toString())) {
 					errorReminder.error(paraList.get(i).getLoc(), 
 						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
 					);
-					//return null;
 				}
 			}
 			i++;
@@ -231,7 +222,6 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	}
 	
 	public Scope defineConstructor() {
-		//System.err.println("defineConstructor");
 		String identifier = toString();
 		FunctSymbol functSymbol = new FunctSymbol(this, identifier);
 		functList.put(identifier, functSymbol);

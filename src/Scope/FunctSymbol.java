@@ -47,6 +47,7 @@ public class FunctSymbol extends ScopedSymbol {
 	@Override
 	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		for(VarDefNode item : paraList) {
+			if (item == null) continue;
 			TypeNode typeNode = item.getType();
 			String typeIdentifier = typeNode.typeString();
 			Type paraType = resolveType(typeIdentifier);
@@ -85,22 +86,22 @@ public class FunctSymbol extends ScopedSymbol {
 	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
 		return parent.resolveFunct(node, errorReminder);
 	}
-
-	@Override
-	public boolean inFunctScope() {
-		return true;
-	}
 	
 	@Override
-	public boolean inClassScope() {
-		return parent.inClassScope();
+	public FunctSymbol getFunctSymbol() {
+		return this;
 	}
 	
 	@Override
 	public ClassSymbol getClassSymbol() {
 		return parent.getClassSymbol();
 	}
-	
+
+	@Override
+	public boolean isVar() {
+		return false;
+	}
+
 	@Override
 	public boolean isFunct() {
 		return true;
@@ -118,4 +119,5 @@ public class FunctSymbol extends ScopedSymbol {
 		ArrayList<ExprNode> paraList = node.getParaList();
 		return paraList.size() == this.paraList.size();
 	}
+
 }

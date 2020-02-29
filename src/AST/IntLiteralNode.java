@@ -4,9 +4,9 @@ import Scope.Type;
 import utility.Location;
 
 public class IntLiteralNode extends LiteralExprNode {
-	private int integer;
+	private long integer;
 	
-	public IntLiteralNode(Location loc, int integer) {
+	public IntLiteralNode(Location loc, long integer) {
 		super(loc);
 		this.integer = integer;
 	}
