@@ -10,6 +10,7 @@ public class SemanticChecker implements ASTVisitor {
 	private Scope currentScope;
 	private ErrorReminder errorReminder;
 	private StringType stringTemplate;
+	private String[] reservedWordList = {"int", "bool", "string", "null", "void", "true", "false", "if", "else", "for", "while", "break", "continue", "return", "new", "class", "this"};
 	
 	public SemanticChecker(ErrorReminder errorReminder) {
 		this.errorReminder = errorReminder;
@@ -18,9 +19,45 @@ public class SemanticChecker implements ASTVisitor {
 		((GlobalScope)currentScope).setBuiltInMember(currentScope, stringTemplate);
 	}
 	
+	private boolean IsReservedWord(String identifier) {
+		for (int i = 0; i < 17; ++i) {
+			if (identifier.equals(reservedWordList[i]));
+				return true;
+		}
+		return false;
+	}
 	@Override
 	public void visit(ProgramNode node){
 		ArrayList<DefNode> defList = node.getDefList();
+		
+		//define all classes.
+		for (DefNode classItem : defList) {
+			if (classItem instanceof ClassDefNode) {
+				currentScope.declareClass((ClassDefNode)classItem, errorReminder);
+			}
+		}
+		
+		//define all members in class.
+		for (DefNode classItem : defList) {
+			if (classItem instanceof ClassDefNode) {
+				String identifier = ((ClassDefNode) classItem).getIdentifier();
+				ClassSymbol classScope = currentScope.getClassScope(identifier);
+				
+				ArrayList<VarDefListNode> varList =  ((ClassDefNode) classItem).getVarList();
+				for (VarDefListNode item : varList) {
+					classScope.declareVarList(item, errorReminder);
+				}
+				
+				classScope.defineConstructor();
+				ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
+				for (FunctDefNode item : functList) {
+					FunctSymbol functSymbol = (FunctSymbol) classScope.declareFunct(item, errorReminder);
+					functSymbol.declareParaList(item.getParaList(), errorReminder);
+				}
+			}
+		}
+		
+		//define all functions in global scope.
 		boolean hasMain = false;
 		for (DefNode item : defList) {
 			if (item instanceof FunctDefNode) {
@@ -41,23 +78,25 @@ public class SemanticChecker implements ASTVisitor {
 					if (can) {
 						if (hasMain) {
 							errorReminder.error(item.getLoc(), 
-								"\'int main\' previously here."  
+								"\'int main\' previously declared here."  
 							);
 						}
 						else {
 							hasMain = true;
-							item.accept(this);
+							currentScope.defineFunct((FunctDefNode)item, errorReminder);
 						}
 					}	
 				}
 				else 
-					item.accept(this);
+					currentScope.defineFunct((FunctDefNode)item, errorReminder);
 			}	
-			else if ((item instanceof VarDefListNode) || (item instanceof ClassDefNode))
-				item.accept(this);
 		}
 		if (!hasMain) {
 			errorReminder.error(node.getLoc(), "\'int main()\' is not declared.");
+		}
+		
+		for (DefNode item : defList) {
+			item.accept(this);
 		}
 	}
 	

@@ -12,13 +12,12 @@ import utility.ErrorReminder;
 import utility.Location;
 
 public class LocalScope extends BaseScope {
-	private ArrayList<LocalScope> children;
+	//private ArrayList<LocalScope> children;
 	private ScopeType scopeType;
 	
 	public LocalScope(Scope parent, ScopeType scopeType) {
 		super(parent);
 		this.scopeType = scopeType;
-		this.children = new ArrayList<LocalScope>();
 	}
 
 	@Override
@@ -27,14 +26,14 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
-	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "invalid function definion.");
+	public ClassSymbol declareClass(ClassDefNode node, ErrorReminder errorReminder) {
+		errorReminder.error(node.getLoc(), "invalid class definition.");
 		return null;
 	}
 	
 	@Override
-	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "invalid class definition.");
+	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
+		errorReminder.error(node.getLoc(), "invalid function definion.");
 		return null;
 	}
 	
@@ -62,39 +61,30 @@ public class LocalScope extends BaseScope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
-		
-		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
-		for(ExprNode item : indexExpr) {
-			if(item != null) {
-				Type tmp = item.getType();
-				if (!(tmp instanceof IntType)) {
-					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				}
+		//check index
+		ExprNode indexExpr = node.getIndexExpr();
+		if (indexExpr != null) {
+			Type indexType = indexExpr.getType();
+			if (!(indexType instanceof IntType)) {
+				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
 			}
-			else {
-				errorReminder.error(item.getLoc(), "empty index of array.");
-			}	
 		}
-		
+		else {
+			errorReminder.error(node.getLoc(), "empty index of array.");
+		}	
+		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
-		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
-				return null;
-			}
-			else {
-				String typeIdentifier = type.typeString();
-				if (dimension == tmp)
-					return new VarSymbol(identifier, resolveType(typeIdentifier));
-				else 
-					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			} 
+			String typeIdentifier = type.typeString();
+			if (tmp == 1)
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			else 
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
+			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
 			return null;
 		}
 	}
@@ -124,5 +114,15 @@ public class LocalScope extends BaseScope {
 	@Override
 	public ClassSymbol getClassSymbol() {
 		return parent.getClassSymbol();
+	}
+
+	@Override
+	public FunctSymbol getFunctScope(String identifier) {
+		return null;
+	}
+	
+	@Override
+	public ClassSymbol getClassScope(String identifier) {
+		return null;
 	}
 }

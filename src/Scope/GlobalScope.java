@@ -34,7 +34,20 @@ public class GlobalScope extends BaseScope {
 	}
 	
 	@Override
-	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
+	public ClassSymbol declareClass(ClassDefNode node, ErrorReminder errorReminder) {
+		String identifier = node.getIdentifier();
+		if (typeList.containsKey(identifier)) {
+			errorReminder.error(node.getLoc(), 
+				"redeclaration of the class \'" + identifier + "\'." 
+			);
+		}
+		ClassSymbol classSymbol = new ClassSymbol(this, identifier);
+		typeList.put(identifier, classSymbol);
+		return classSymbol;	
+	}
+	
+	@Override
+	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
 		//check identifier
 		String identifier = node.getIdentifier();
 		if (functList.containsKey(identifier)) {
@@ -56,7 +69,7 @@ public class GlobalScope extends BaseScope {
 			}
 			else if (typeNode instanceof ArrayTypeNode) {
 				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
+				functSymbol = new FunctSymbol(this, identifier, new ArrayType(getGlobalScope(), typeIdentifier, dimension));
 			}
 			else {
 				functSymbol = new FunctSymbol(this, identifier, type);
@@ -70,18 +83,7 @@ public class GlobalScope extends BaseScope {
 		return functSymbol;
 	}
 	
-	@Override
-	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
-		String identifier = node.getIdentifier();
-		if (typeList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), 
-				"redeclaration of the class \'" + identifier + "\'." 
-			);
-		}
-		ClassSymbol classSymbol = new ClassSymbol(this, identifier);
-		typeList.put(identifier, classSymbol);
-		return classSymbol;	
-	}
+
 	
 	@Override
 	public Type resolveType(String identifier) {
@@ -105,43 +107,35 @@ public class GlobalScope extends BaseScope {
 	@Override
 	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
+		//check identifier
 		if(!varList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), "the variable \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
-		
-		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
-		for(ExprNode item : indexExpr) {
-			if(item != null) {
-				Type tmp = item.getType();
-				if (!(tmp instanceof IntType)) {
-					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				}
+		//check index
+		ExprNode indexExpr = node.getIndexExpr();
+		if (indexExpr != null) {
+			Type indexType = indexExpr.getType();
+			if (!(indexType instanceof IntType)) {
+				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
 			}
-			else {
-				errorReminder.error(item.getLoc(), "empty index of array.");
-			}	
 		}
-		
+		else {
+			errorReminder.error(node.getLoc(), "empty index of array.");
+		}	
+		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
-		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
-				return null;
-			}
-			else {
-				String typeIdentifier = type.typeString();
-				if (dimension == tmp)
-					return new VarSymbol(identifier, resolveType(typeIdentifier));
-				else 
-					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			} 
+			String typeIdentifier = type.typeString();
+			if (tmp == 1)
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			else 
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
+			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
 			return null;
 		}
 	}
@@ -154,29 +148,24 @@ public class GlobalScope extends BaseScope {
 			return null;
 		}
 		FunctSymbol functSymbol = functList.get(identifier);
-		LinkedHashMap<String, Type> argueList = functSymbol.getParaList();
+		LinkedHashMap<String, VarSymbol> argueList = functSymbol.getParaList();
 		ArrayList<ExprNode> paraList = node.getParaList();
 		if (paraList.size() < argueList.size()) {
 			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		if (paraList.size() > argueList.size()) {
 			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		int i = 0;
-		for (Map.Entry<String, Type> entry : argueList.entrySet()) {
+		for (Map.Entry<String, VarSymbol> entry : argueList.entrySet()) {
 			if (i >= paraList.size()) 
 				break;
-			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
+			Type tmp1 = entry.getValue().getType(), tmp2 = paraList.get(i).getType();
 			if (tmp2 != null) {
-				//int d1 = (tmp1 instanceof ArrayType) ? ((ArrayType)tmp1).getDimension() : 0;
-				//int d2 = (tmp2 instanceof ArrayType) ? ((ArrayType)tmp2).getDimension() : 0;
 				if (!tmp1.toString().equals(tmp2.toString())) {
 					errorReminder.error(paraList.get(i).getLoc(), 
 						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
 					);
-					//return null;
 				}
 			}
 			i++;
@@ -204,37 +193,54 @@ public class GlobalScope extends BaseScope {
 		return null;
 	}
 	
-	public void setBuiltInType(Scope gobalScope) {
+	@Override
+	public FunctSymbol getFunctScope(String identifier) {
+		return functList.get(identifier);
 	}
 	
+	@Override
+	public ClassSymbol getClassScope(String identifier) {
+		return (ClassSymbol)typeList.get(identifier);
+	}
+
 	public void setBuiltInMember(Scope gobalScope, StringType stringTemplate) {
 		typeList.put("bool", new BoolType());
 		typeList.put("int", new IntType());
 		typeList.put("void", new VoidType());
 		typeList.put("string", stringTemplate);
 	
-		LinkedHashMap<String, Type> paraList1 = new LinkedHashMap<String, Type>();
-		paraList1.put("str", stringTemplate);
-		functList.put("print", new FunctSymbol(gobalScope, "print", new VoidType(), paraList1));
+		LinkedHashMap<String, VarSymbol> paraList = new LinkedHashMap<String, VarSymbol>();
+		LinkedHashMap<String, VarSymbol> varList = new LinkedHashMap<String, VarSymbol>();
+		paraList.put("str", new VarSymbol("str", stringTemplate));
+		varList.put("str", new VarSymbol("str", stringTemplate));
+		functList.put("print", new FunctSymbol(gobalScope, "print", new VoidType(), paraList, varList));
 		
-		LinkedHashMap<String, Type> paraList2 = new LinkedHashMap<String, Type>();
-		paraList2.put("str", stringTemplate);
-		functList.put("println", new FunctSymbol(gobalScope, "println", new VoidType(), paraList2));	
+		LinkedHashMap<String, VarSymbol> paraList2 = new LinkedHashMap<String, VarSymbol>();
+		LinkedHashMap<String, VarSymbol> varList2 = new LinkedHashMap<String, VarSymbol>();
+		paraList2.put("str", new VarSymbol("str", stringTemplate));
+		varList2.put("str", new VarSymbol("str", stringTemplate));
+		functList.put("println", new FunctSymbol(gobalScope, "println", new VoidType(), paraList2, varList2));	
 		
-		LinkedHashMap<String, Type> paraList3 = new LinkedHashMap<String, Type>();
-		paraList3.put("n", new IntType());
-		functList.put("printInt", new FunctSymbol(gobalScope, "printInt", new VoidType(), paraList3));
+		LinkedHashMap<String, VarSymbol> paraList3 = new LinkedHashMap<String, VarSymbol>();
+		LinkedHashMap<String, VarSymbol> varList3 = new LinkedHashMap<String, VarSymbol>();
+		paraList3.put("n", new VarSymbol("n", new IntType()));
+		varList3.put("n", new VarSymbol("n", new IntType()));
+		functList.put("printInt", new FunctSymbol(gobalScope, "printInt", new VoidType(), paraList3, varList3));
 		
-		LinkedHashMap<String, Type> paraList4 = new LinkedHashMap<String, Type>();
-		paraList4.put("n", new IntType());
-		functList.put("printlnInt", new FunctSymbol(gobalScope, "printlnInt", stringTemplate, paraList4));	
+		LinkedHashMap<String, VarSymbol> paraList4 = new LinkedHashMap<String, VarSymbol>();
+		LinkedHashMap<String, VarSymbol> varList4 = new LinkedHashMap<String, VarSymbol>();
+		paraList4.put("n", new VarSymbol("n", new IntType()));
+		varList4.put("n", new VarSymbol("n", new IntType()));
+		functList.put("printlnInt", new FunctSymbol(gobalScope, "printlnInt", new VoidType(), paraList4, varList4));	
 		
-		functList.put("getString", new FunctSymbol(gobalScope, "getString", stringTemplate, new LinkedHashMap<String, Type>()));	
+		functList.put("getString", new FunctSymbol(gobalScope, "getString", stringTemplate));	
 		
-		functList.put("getInt", new FunctSymbol(gobalScope, "getInt", new IntType(), new LinkedHashMap<String, Type>()));	
+		functList.put("getInt", new FunctSymbol(gobalScope, "getInt", new IntType()));	
 		
-		LinkedHashMap<String, Type> paraList7 = new LinkedHashMap<String, Type>();
-		paraList7.put("i", new IntType());
-		functList.put("toString", new FunctSymbol(gobalScope, "toString", stringTemplate, paraList7));	
+		LinkedHashMap<String, VarSymbol> paraList7 = new LinkedHashMap<String, VarSymbol>();
+		LinkedHashMap<String, VarSymbol> varList7 = new LinkedHashMap<String, VarSymbol>();
+		paraList7.put("i", new VarSymbol("i", new IntType()));
+		varList7.put("i", new VarSymbol("i", new IntType()));
+		functList.put("toString", new FunctSymbol(gobalScope, "toString", stringTemplate, paraList7, varList7));	
 	}
 }

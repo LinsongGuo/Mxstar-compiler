@@ -31,9 +31,17 @@ abstract public class BaseScope implements Scope {
 		return this.parent;
 	}
 
+	public abstract ClassSymbol declareClass(ClassDefNode node, ErrorReminder errorReminder);
+	
+	public abstract FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder);
+	
+	@Override
+	public void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
+
+	}
+	
 	@Override	
-	public void defineVarList(VarDefListNode node, ErrorReminder errorReminder) {
-		ArrayList<VarDefNode> varList = node.getVarList();
+	public void declareVar(VarDefNode node, ErrorReminder errorReminder) {
 		TypeNode typeNode = node.getType();
 		String typeIdentifier = typeNode.typeString();
 		Type type = resolveType(typeIdentifier);
@@ -42,52 +50,26 @@ abstract public class BaseScope implements Scope {
 			errorReminder.error(node.getLoc(), 
 				"class \'" + typeIdentifier + "\' was not decalred in this scope."
 			);
-			return;
+			//return;
 		}
-		if (type.toString().equals("void")) {
+		if (typeIdentifier.equals("void")) {
 			errorReminder.error(node.getLoc(), "the variable declared void.");
-			return;
+			//return;
 		}
 		if (typeNode instanceof ArrayTypeNode) {
-			type = new ArrayType(typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
+			type = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
 		}
-		for(VarDefNode var : varList) {
-			String identifier = var.getIdentifier();
-			//check variable name
-			if (this.varList.containsKey(identifier)) {
-				errorReminder.error(node.getLoc(), 
-					"redeclaration of variable \'" + identifier + "\'."
-				);
-			}
-			else {
-				//System.err.println("def " + identifier + " " + typeIdentifier);
-				this.varList.put(identifier, new VarSymbol(identifier, type));
-			}
-		}	
-		for (VarDefNode var : varList) {
-			ExprNode initValue = var.getInitValue();
-			if (initValue != null) {
-				Type initType = initValue.getType();
-				if (initType != null) {
-					if (!initType.toString().equals(typeNode.toString())) {
-						errorReminder.error(var.getInitValue().getLoc(), 
-							"cannot convert \'" + initType.toString() + "\' to \'" + type.toString() + "\' in initialization."
-						);
-					}
-				}
-			}
+		String identifier = node.getIdentifier();
+		//check variable name
+		if (this.varList.containsKey(identifier)) {
+			errorReminder.error(node.getLoc(), 
+				"redeclaration of variable \'" + identifier + "\'."
+			);
 		}
-	}
-	
-	public abstract Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder);
-	
-	@Override
-	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
-
+		else 
+			this.varList.put(identifier, new VarSymbol(identifier, type));
 	}
 
-	public abstract Scope defineClass(ClassDefNode node, ErrorReminder errorReminder);
-	
 	public abstract Type resolveType(String identifier); 
 	
 	public abstract VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder);
@@ -103,4 +85,8 @@ abstract public class BaseScope implements Scope {
 	public abstract FunctSymbol getFunctSymbol();
 
 	public abstract ClassSymbol getClassSymbol();
+	
+	public abstract FunctSymbol getFunctScope(String identifier);
+	
+	public abstract ClassSymbol getClassScope(String identifier);
 }

@@ -1,11 +1,13 @@
 package Scope;
 
-public class ArrayType extends Symbol implements Type {
+public class ArrayType extends ClassSymbol implements Type {
 	private int dimension;
 	
-	public ArrayType(String identifier, int dimension) {
-		super(identifier);
+	public ArrayType(Scope parent, String identifier, int dimension) {
+		super(parent, identifier);
 		this.dimension = dimension;
+		
+		functList.put("size", new FunctSymbol(parent, "size", new IntType()));
 	}
 	
 	public int getDimension() {
@@ -25,7 +27,6 @@ public class ArrayType extends Symbol implements Type {
 	public String typeString() {
 		return identifier;
 	}
-	
 	
 	@Override
 	public boolean isVar() {

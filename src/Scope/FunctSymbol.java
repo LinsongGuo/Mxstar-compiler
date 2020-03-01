@@ -14,38 +14,41 @@ import utility.ErrorReminder;
 
 public class FunctSymbol extends ScopedSymbol {
 	private Type type;
-	private LinkedHashMap<String, Type> paraList;
-	private ArrayList<LocalScope> children;
+	private LinkedHashMap<String, VarSymbol> paraList;
 	
 	public FunctSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
 		this.type = null;
-		this.paraList = new LinkedHashMap<String, Type>();
-		this.children = new ArrayList<LocalScope>();
+		this.paraList = new LinkedHashMap<String, VarSymbol>();
 	}
 	
 	public FunctSymbol(Scope parent, String identifier, Type type) {
 		super(parent, identifier);
 		this.type = type;
-		this.paraList = new LinkedHashMap<String, Type>();
-		this.children = new ArrayList<LocalScope>();
+		this.paraList = new LinkedHashMap<String, VarSymbol>();
 	}
-	
-	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, Type> paraList) {
+	/*
+	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, VarSymbol> paraList) {
 		super(parent, identifier);
 		this.type = type;
 		this.paraList = paraList;
-		this.children = new ArrayList<LocalScope>();
+	}
+	*/
+	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, VarSymbol> paraList, LinkedHashMap<String, VarSymbol> varList) {
+		super(parent, identifier);
+		this.type = type;
+		this.paraList = paraList;
+		this.varList = varList;
 	}
 	
 	@Override
-	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
+	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
 		errorReminder.error(node.getLoc(), "invalid function definion.");
 		return null;
 	}
 	
 	@Override
-	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
+	public void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		for(VarDefNode item : paraList) {
 			if (item == null) continue;
 			TypeNode typeNode = item.getType();
@@ -69,12 +72,12 @@ public class FunctSymbol extends ScopedSymbol {
 				}
 				else {
 					if (typeNode instanceof ArrayTypeNode) {
-						ArrayType tmp = new ArrayType(typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
-						this.paraList.put(paraIdentifier, tmp);
+						ArrayType tmp = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
+						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
 						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
 					}
 					else {
-						this.paraList.put(paraIdentifier, paraType);
+						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
 						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
 					}
 				}
@@ -96,7 +99,12 @@ public class FunctSymbol extends ScopedSymbol {
 	public ClassSymbol getClassSymbol() {
 		return parent.getClassSymbol();
 	}
-
+	
+	@Override
+	public FunctSymbol getFunctScope(String identifier) {
+		return null;
+	}
+	
 	@Override
 	public boolean isVar() {
 		return false;
@@ -107,7 +115,7 @@ public class FunctSymbol extends ScopedSymbol {
 		return true;
 	}
 	
-	public LinkedHashMap<String, Type> getParaList() {
+	public LinkedHashMap<String, VarSymbol> getParaList() {
 		return paraList;
 	}
 	

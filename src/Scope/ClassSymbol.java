@@ -34,7 +34,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	}
 	
 	@Override
-	public Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder) {
+	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
 		//check identifier
 		String identifier = node.getIdentifier();
 		if (functList.containsKey(identifier)) {
@@ -56,7 +56,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			}
 			else if (typeNode instanceof ArrayTypeNode) {
 				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				functSymbol = new FunctSymbol(this, identifier, new ArrayType(typeIdentifier, dimension));
+				functSymbol = new FunctSymbol(this, identifier, new ArrayType(getGlobalScope(), typeIdentifier, dimension));
 			}
 			else {
 				functSymbol = new FunctSymbol(this, identifier, type);
@@ -71,7 +71,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	}
 	
 	@Override
-	public void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
+	public void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		
 	}
 	
@@ -82,27 +82,24 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			return parent.resolveFunct(node, errorReminder);
 		}
 		FunctSymbol functSymbol = functList.get(identifier);
-		LinkedHashMap<String, Type> argueList = functSymbol.getParaList();
+		LinkedHashMap<String, VarSymbol> argueList = functSymbol.getParaList();
 		ArrayList<ExprNode> paraList = node.getParaList();
 		if (paraList.size() < argueList.size()) {
 			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		if (paraList.size() > argueList.size()) {
 			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
-			//return null;
 		}
 		int i = 0;
-		for (Map.Entry<String, Type> entry : argueList.entrySet()) {
+		for (Map.Entry<String, VarSymbol> entry : argueList.entrySet()) {
 			if (i >= paraList.size()) 
 				break;
-			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
+			Type tmp1 = entry.getValue().getType(), tmp2 = paraList.get(i).getType();
 			if (tmp2 != null) {
 				if (!tmp1.toString().equals(tmp2.toString())) {
 					errorReminder.error(paraList.get(i).getLoc(), 
 						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
 					);
-					//return null;
 				}
 			}
 			i++;
@@ -118,6 +115,11 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	@Override
 	public ClassSymbol getClassSymbol() {
 		return this;
+	}
+	
+	@Override
+	public FunctSymbol getFunctScope(String identifier) {
+		return functList.get(identifier);
 	}
 	
 	@Override
@@ -150,39 +152,30 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			);
 			return null;
 		}
-
-		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
-		for(ExprNode item : indexExpr) {
-			if(item != null) {
-				Type tmp = item.getType();
-				if (!(tmp instanceof IntType)) {
-					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\' in initilization.");
-				}
+		//check index
+		ExprNode indexExpr = node.getIndexExpr();
+		if (indexExpr != null) {
+			Type indexType = indexExpr.getType();
+			if (!(indexType instanceof IntType)) {
+				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
 			}
-			else {
-				errorReminder.error(item.getLoc(), "empty index of array.");
-			}	
 		}
-		
+		else {
+			errorReminder.error(node.getLoc(), "empty index of array.");
+		}	
+		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
-		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
-				return null;
-			}
-			else {
-				String typeIdentifier = type.typeString();
-				if (dimension == tmp)
-					return new VarSymbol(identifier, resolveType(typeIdentifier));
-				else 
-					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			} 
+			String typeIdentifier = type.typeString();
+			if (tmp == 1)
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			else 
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
+			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
 			return null;
 		}
 	}
@@ -196,7 +189,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			return null;
 		}
 		FunctSymbol functSymbol = functList.get(identifier);
-		LinkedHashMap<String, Type> argueList = functSymbol.getParaList();
+		LinkedHashMap<String, VarSymbol> argueList = functSymbol.getParaList();
 		ArrayList<ExprNode> paraList = node.getParaList();
 		if (paraList.size() < argueList.size()) {
 			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
@@ -205,10 +198,10 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
 		}
 		int i = 0;
-		for (Map.Entry<String, Type> entry : argueList.entrySet()) {
+		for (Map.Entry<String, VarSymbol> entry : argueList.entrySet()) {
 			if (i >= paraList.size()) 
 				break;
-			Type tmp1 = entry.getValue(), tmp2 = paraList.get(i).getType();
+			Type tmp1 = entry.getValue().getType(), tmp2 = paraList.get(i).getType();
 			if (tmp2 != null) {
 				if (!tmp1.toString().equals(tmp2.toString())) {
 					errorReminder.error(paraList.get(i).getLoc(), 

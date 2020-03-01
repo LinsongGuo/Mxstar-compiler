@@ -11,7 +11,6 @@ import AST.ClassDefNode;
 import AST.VarExprNode;
 import AST.ArrayExprNode;
 import utility.ErrorReminder;
-import utility.Location;
 
 public interface Scope {
 	//public abstract Type stringToType(String s);
@@ -19,14 +18,14 @@ public interface Scope {
 	
 	public abstract Scope getEnclosingScope();
 	
-	public abstract void defineVarList(VarDefListNode node, ErrorReminder errorReminder);
+	public abstract ClassSymbol declareClass(ClassDefNode node, ErrorReminder errorReminder);
+	
+	public abstract FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder);
 
-	public abstract Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder);
+	public abstract void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
 
-	public abstract void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
-
-	public abstract Scope defineClass(ClassDefNode node, ErrorReminder errorReminder);
-
+	public abstract void declareVar(VarDefNode node, ErrorReminder errorReminder);
+	
 	public abstract Type resolveType(String identifier); 
 	
 	public abstract VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder);
@@ -42,4 +41,8 @@ public interface Scope {
 	public abstract FunctSymbol getFunctSymbol();
 	
 	public abstract ClassSymbol getClassSymbol();
+	
+	public abstract FunctSymbol getFunctScope(String identifier);
+	
+	public abstract ClassSymbol getClassScope(String identifier);	
 }

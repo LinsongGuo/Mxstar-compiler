@@ -4,25 +4,24 @@ import utility.Location;
 import java.util.ArrayList;
 
 public class ArrayExprNode extends ExprNode {
-	private String identifier;
-	private ArrayList<ExprNode> indexExpr;
+	private ExprNode nameExpr, indexExpr;
 	
-	public ArrayExprNode(Location loc, String identifier, ArrayList<ExprNode> indexExpr) {
+	public ArrayExprNode(Location loc, ExprNode nameExpr, ExprNode indexExpr) {
 		super(loc);
-		this.identifier = identifier;
+		this.nameExpr = nameExpr;
 		this.indexExpr = indexExpr;
 	}
 	
-	public String getIdentifier() {
-		return identifier;
+	public ExprNode getNameExpr() {
+		return nameExpr;
 	}
 	
-	public ArrayList<ExprNode> getIndexExpr() {
+	public ExprNode getIndexExpr() {
 		return indexExpr;
 	}
 	
-	public int getDimension() {
-		return indexExpr.size();
+	public String getIdentifier() {
+		return ((VarExprNode)nameExpr).getIdentifier();
 	}
 	
 	public void accept(ASTVisitor visitor) {

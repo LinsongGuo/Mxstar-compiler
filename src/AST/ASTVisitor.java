@@ -42,4 +42,5 @@ public interface ASTVisitor {
 	public abstract void visit(BoolLiteralNode node);
 	public abstract void visit(IntLiteralNode node);
 	public abstract void visit(StringLiteralNode node);
+	public abstract void visit(NullLiteralNode node);
 }

@@ -14,7 +14,6 @@ import AST.VarDefListNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
 import utility.ErrorReminder;
-import utility.Location;
 
 abstract public class ScopedSymbol extends Symbol implements Scope {
 	protected Scope parent;
@@ -36,9 +35,18 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		return parent;
 	}
 	
+	@Override
+	public ClassSymbol declareClass(ClassDefNode node, ErrorReminder errorReminder) {
+		errorReminder.error(node.getLoc(), "invalid class definition.");
+		return null;
+	}
+	
+	public abstract FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder);
+
+	public abstract void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
+
 	@Override	
-	public void defineVarList(VarDefListNode node, ErrorReminder errorReminder) {
-		ArrayList<VarDefNode> varList = node.getVarList();
+	public void declareVar(VarDefNode node, ErrorReminder errorReminder) {
 		TypeNode typeNode = node.getType();
 		String typeIdentifier = typeNode.typeString();
 		Type type = resolveType(typeIdentifier);
@@ -47,50 +55,24 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			errorReminder.error(node.getLoc(), 
 				"class \'" + typeIdentifier + "\' was not decalred in this scope."
 			);
-			return;
+			//return;
 		}
-		if (type.toString().equals("void")) {
+		if (typeIdentifier.equals("void")) {
 			errorReminder.error(node.getLoc(), "the variable declared void.");
-			return;
+			//return;
 		}
 		if (typeNode instanceof ArrayTypeNode) {
-			type = new ArrayType(typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
+			type = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
 		}
-		for(VarDefNode var : varList) {
-			String identifier = var.getIdentifier();
-			//check variable name
-			if (this.varList.containsKey(identifier)) {
-				errorReminder.error(node.getLoc(), 
-					"redeclaration of variable \'" + identifier + "\'."
-				);
-			}
-			else {
-				this.varList.put(identifier, new VarSymbol(identifier, type));
-			}
-		}	
-		for (VarDefNode var : varList) {
-			ExprNode initValue = var.getInitValue();
-			if (initValue != null) {
-				Type initType = initValue.getType();
-				if (initType != null) {
-					if (!initType.toString().equals(typeNode.toString())) {
-						errorReminder.error(var.getInitValue().getLoc(), 
-							"cannot convert \'" + initType.toString() + "\' to \'" + type.toString() + "\' in initialization."
-						);
-					}
-				}
-			}
+		String identifier = node.getIdentifier();
+		//check variable name
+		if (this.varList.containsKey(identifier)) {
+			errorReminder.error(node.getLoc(), 
+				"redeclaration of variable \'" + identifier + "\'."
+			);
 		}
-	}
-
-	public abstract Scope defineFunct(FunctDefNode node, ErrorReminder errorReminder);
-	
-	public abstract void defineParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
-	
-	@Override
-	public Scope defineClass(ClassDefNode node, ErrorReminder errorReminder) {
-		errorReminder.error(node.getLoc(), "invalid class definition.");
-		return null;
+		else 
+			this.varList.put(identifier, new VarSymbol(identifier, type));
 	}
 	
 	@Override
@@ -117,39 +99,30 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
-
-		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
-		for(ExprNode item : indexExpr) {
-			if(item != null) {
-				Type tmp = item.getType();
-				if (!(tmp instanceof IntType)) {
-					errorReminder.error(item.getLoc(), "cannot convert \'" + tmp.toString() + "\' to \'int\'.");
-				}
+		//check index
+		ExprNode indexExpr = node.getIndexExpr();
+		if (indexExpr != null) {
+			Type indexType = indexExpr.getType();
+			if (!(indexType instanceof IntType)) {
+				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
 			}
-			else {
-				errorReminder.error(node.getLoc(), "empty index of array.");
-			}	
 		}
-		
+		else {
+			errorReminder.error(node.getLoc(), "empty index of array.");
+		}	
+		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
-		int dimension = node.getDimension();
 		if (type instanceof ArrayType) {
 			int tmp = ((ArrayType)type).getDimension();
-			if (dimension > tmp) {
-				errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
-				return null;
-			}
-			else {
-				String typeIdentifier = type.typeString();
-				if (dimension == tmp)
-					return new VarSymbol(identifier, resolveType(typeIdentifier));
-				else 
-					return new VarSymbol(identifier, new ArrayType(typeIdentifier, tmp - dimension));
-			} 
+			String typeIdentifier = type.typeString();
+			if (tmp == 1)
+				return new VarSymbol(identifier, resolveType(typeIdentifier));
+			else 
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
 		} 
 		else {
-			errorReminder.error(node.getLoc(), "invalid dimension of \'" + identifier + "\'.");
+			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
 			return null;
 		}
 	}
@@ -170,6 +143,12 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	
 	public abstract ClassSymbol getClassSymbol();
 	
+	public abstract FunctSymbol getFunctScope(String identifier);
+	
+	@Override
+	public ClassSymbol getClassScope(String identifier) {
+		return null;
+	}
 	
 	@Override
 	public boolean isVar() {
