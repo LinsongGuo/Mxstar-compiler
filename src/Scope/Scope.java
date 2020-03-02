@@ -24,7 +24,7 @@ public interface Scope {
 
 	public abstract void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
 
-	public abstract void declareVar(VarDefNode node, ErrorReminder errorReminder);
+	public abstract VarSymbol declareVar(VarDefNode node, ErrorReminder errorReminder);
 	
 	public abstract Type resolveType(String identifier); 
 	
@@ -38,9 +38,11 @@ public interface Scope {
 	
 	public abstract boolean inIfScope();
 	
-	public abstract FunctSymbol getFunctSymbol();
+	public abstract FunctSymbol InFunctSymbol();
 	
-	public abstract ClassSymbol getClassSymbol();
+	public abstract ClassSymbol InClassSymbol();
+	
+	public abstract VarSymbol getVarSymbol(String identifier);
 	
 	public abstract FunctSymbol getFunctScope(String identifier);
 	

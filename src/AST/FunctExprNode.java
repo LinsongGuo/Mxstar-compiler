@@ -6,11 +6,19 @@ import java.util.ArrayList;
 public class FunctExprNode extends ExprNode {
 	private ExprNode nameExpr;
 	private ArrayList<ExprNode> paraList;
+	private String identifier;
 	
 	public FunctExprNode(Location loc, ExprNode nameExpr, ArrayList<ExprNode> paraList) {
 		super(loc);
 		this.nameExpr = nameExpr;
 		this.paraList = paraList;
+	}
+	
+	public FunctExprNode(Location loc, String identifier, ArrayList<ExprNode> paraList) {
+		super(loc);
+		this.identifier = identifier;
+		this.paraList = paraList;
+		this.nameExpr = null;
 	}
 	
 	public ExprNode getNameExpr() {
@@ -22,7 +30,11 @@ public class FunctExprNode extends ExprNode {
 	}
 	
 	public String getIdentifier() {
-		return ((VarExprNode)nameExpr).getIdentifier();
+		return identifier;
+	}
+	
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 	
 	public void accept(ASTVisitor visitor) {

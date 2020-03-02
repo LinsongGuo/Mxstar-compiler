@@ -46,20 +46,20 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	public abstract void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder);
 
 	@Override	
-	public void declareVar(VarDefNode node, ErrorReminder errorReminder) {
+	public VarSymbol declareVar(VarDefNode node, ErrorReminder errorReminder) {
 		TypeNode typeNode = node.getType();
 		String typeIdentifier = typeNode.typeString();
 		Type type = resolveType(typeIdentifier);
 		if (type == null) { 
 			//check variable type
 			errorReminder.error(node.getLoc(), 
-				"class \'" + typeIdentifier + "\' was not decalred in this scope."
+				"\'" + typeIdentifier + "\' does not name a type."
 			);
-			//return;
+			return null;
 		}
 		if (typeIdentifier.equals("void")) {
 			errorReminder.error(node.getLoc(), "the variable declared void.");
-			//return;
+			return null;
 		}
 		if (typeNode instanceof ArrayTypeNode) {
 			type = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode)typeNode).getDimension());
@@ -70,9 +70,13 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			errorReminder.error(node.getLoc(), 
 				"redeclaration of variable \'" + identifier + "\'."
 			);
+			return null;
 		}
-		else 
-			this.varList.put(identifier, new VarSymbol(identifier, type));
+		else {
+			VarSymbol varSymbol = new VarSymbol(identifier, type);
+			this.varList.put(identifier, varSymbol);
+			return varSymbol;
+		}	
 	}
 	
 	@Override
@@ -99,6 +103,7 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
+		/*
 		//check index
 		ExprNode indexExpr = node.getIndexExpr();
 		if (indexExpr != null) {
@@ -109,7 +114,8 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		}
 		else {
 			errorReminder.error(node.getLoc(), "empty index of array.");
-		}	
+		}
+		*/	
 		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
@@ -139,9 +145,13 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		return false;
 	}
 	
-	public abstract FunctSymbol getFunctSymbol();
+	public abstract FunctSymbol InFunctSymbol();
 	
-	public abstract ClassSymbol getClassSymbol();
+	public abstract ClassSymbol InClassSymbol();
+	
+	public VarSymbol getVarSymbol(String identifier) {
+		return varList.get(identifier);
+	}
 	
 	public abstract FunctSymbol getFunctScope(String identifier);
 	

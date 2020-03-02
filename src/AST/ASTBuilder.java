@@ -61,6 +61,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitVarDef(MxstarParser.VarDefContext ctx) {
+		//System.err.println("visitVarDef: " + ctx.getText());
 		if (ctx.Identifier() == null) {
 			errorReminder.error(new Location(ctx.getStart()), "invalid name of variable.");
 			return null;
@@ -75,6 +76,10 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitFunctDef(MxstarParser.FunctDefContext ctx) {
+		if (ctx.Identifier() == null) {
+			errorReminder.error(new Location(ctx.getStart()), "invalid name of function.");
+			return null;
+		}
 		System.err.println("visitFunctDef: " + ctx.getText());
 		ArrayList<VarDefNode> paraList = new ArrayList<VarDefNode>();
 		for (MxstarParser.ParaContext item : ctx.paraList().para()) {
@@ -105,11 +110,17 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override 
 	public ASTNode visitClassDef(MxstarParser.ClassDefContext ctx) {
+		if (ctx.Identifier() == null) {
+			errorReminder.error(new Location(ctx.getStart()), "invalid name of class.");
+			return null;
+		}
 		System.err.println("visitClassDef: " + ctx.getText());
+		//variable in class.
 		ArrayList<VarDefListNode> varList = new ArrayList<VarDefListNode>();
 		for (MxstarParser.VarDefListContext item : ctx.varDefList()) {
 			varList.add((VarDefListNode)visit(item));
 		}
+		//functions in class.
 		String identifier = ctx.Identifier().getText();
 		ArrayList<FunctDefNode> functList = new ArrayList<FunctDefNode>();
 		for (MxstarParser.FunctDefContext item : ctx.functDef()) {
@@ -121,13 +132,13 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			}
 			functList.add((FunctDefNode)visit(item));
 		}
+		//constructor of class.
 		FunctDefNode constructorDef = null;
 		int count = 0;
 		for (MxstarParser.ConstructorDefContext item : ctx.constructorDef()) {
 			if (!item.Identifier().getText().equals(identifier)) {
 				errorReminder.error(new Location(item.getStart()), 
 					"mismatched constructor name."
-					//"no return type for the function \'" + item.Identifier().getText() + "\'."
 				);
 			}
 			else {
@@ -281,7 +292,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitLiteralExpr(MxstarParser.LiteralExprContext ctx) {
-		System.err.println("visitLiteralExpr: " + ctx.getText());
+		//System.err.println("visitLiteralExpr: " + ctx.getText());
 		if (ctx.literal().BoolLiteral() != null) 
 			return new BoolLiteralNode( new Location(ctx.getStart()), 
 				ctx.literal().BoolLiteral().getText() == "true" ? true : false
@@ -299,17 +310,13 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitMemberExpr(MxstarParser.MemberExprContext ctx) {
+		//System.err.println("visitMemberExpr: " + ctx.getText());
 		return new MemberExprNode( new Location(ctx.getStart()),
-			ctx.expr(0) == null ? null : (ExprNode)visit(ctx.expr(0)),
-			ctx.expr(1) == null ? null : (ExprNode)visit(ctx.expr(1))
+			(ExprNode)visit(ctx.expr()),
+			ctx.Identifier().getText(),
+			new VarExprNode(new Location(ctx.getStart()), ctx.Identifier().getText())
 		);
 	}
-	
-	/*
-	@Override
-	public ASTNode visitIdentifierMember(MxstarParser.IdentifierMemberContext ctx) {
-		return new VarExprNode(new Location(ctx.getStart()), ctx.getText());
-	}*/
 	
 	@Override
 	public ASTNode visitCreatorExpr(MxstarParser.CreatorExprContext ctx) {
@@ -320,7 +327,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override 
 	public ASTNode visitInvalidCreator(MxstarParser.InvalidCreatorContext ctx) {
 		errorReminder.error( new Location(ctx.getStart()), "invalid creator.");
-	//	return null;
 		int dimension = 0;
 		for (var item: ctx.children) {
 			if (item.getText().equals("[")) 
@@ -375,51 +381,27 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitArrayExpr(MxstarParser.ArrayExprContext ctx) {
-		return new ArrayExprNode( new Location(ctx.getStart()),
-			ctx.expr(0) == null ? null : (ExprNode)visit(ctx.expr(0)),
-			ctx.expr(1) == null ? null : (ExprNode)visit(ctx.expr(1))
-		);
-		//return visit(ctx.arrayCall());
-	}
-	
-	/*
-	@Override
-	public ASTNode visitArrayCall(MxstarParser.ArrayCallContext ctx) {
-		ArrayList<ExprNode> indexExpr = new ArrayList<ExprNode>();
-		for (MxstarParser.ExprContext item : ctx.expr()) {
-			indexExpr.add((ExprNode)visit(item));
-		}
-		return new ArrayExprNode( new Location(ctx.getStart()),
-			ctx.Identifier().getText(),
-			indexExpr
+		//System.err.println("visitArrayExpr: " + ctx.getText());
+		return new ArrayExprNode( new Location(ctx.getStart()), 
+			(ExprNode)visit(ctx.expr(0)), 
+			(ExprNode)visit(ctx.expr(1))
 		);
 	}
-	*/
 	
 	@Override
 	public ASTNode visitFunctExpr(MxstarParser.FunctExprContext ctx) {
+		//System.err.println("visitFunctExpr: " + ctx.getText());
 		ArrayList<ExprNode> paraList = new ArrayList<ExprNode>();
-		for (MxstarParser.ExprContext item : ctx.exprList().expr()) {
-			paraList.add((ExprNode)visit(item));
+		if (ctx.exprList() != null) {
+			for (MxstarParser.ExprContext item : ctx.exprList().expr()) {
+				paraList.add((ExprNode)visit(item));
+			}
 		}
 		return new FunctExprNode( new Location(ctx.getStart()),
-			ctx.expr() == null ? null : (ExprNode)visit(ctx.expr()),
+			(ExprNode)visit(ctx.expr()), 
 			paraList
 		);
 	}
-	
-	/*
-	@Override
-	public ASTNode visitFunctCall(MxstarParser.FunctCallContext ctx) {
-		ArrayList<ExprNode> paraList = new ArrayList<ExprNode>();
-		for (MxstarParser.ExprContext item : ctx.expr()) {
-			paraList.add((ExprNode)visit(item));
-		}
-		return new FunctExprNode( new Location(ctx.getStart()),
-			ctx.Identifier().getText(), 
-			paraList
-		);
-	}*/
 	
 	@Override
 	public ASTNode visitBracketExpr(MxstarParser.BracketExprContext ctx) {
@@ -482,9 +464,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitBinaryExpr(MxstarParser.BinaryExprContext ctx) {
 		//System.err.println("visitBinaryExpr: " + ctx.getText());
-		//System.err.println(ctx.op);
-		//System.err.println(ctx.expr(0).getText());
-		//System.err.println(ctx.expr(1).getText());
 		Operator op;
 		String tmp = ctx.op.getText();
 		switch(tmp) {

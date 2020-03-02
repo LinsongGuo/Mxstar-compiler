@@ -56,7 +56,7 @@ public class FunctSymbol extends ScopedSymbol {
 			Type paraType = resolveType(typeIdentifier);
 			if (paraType == null) {
 				errorReminder.error(item.getLoc(), 
-					"the class \'" + typeIdentifier + "\' was not declared in this scope."
+					"\'" + typeIdentifier + "\' does not name a type."
 				);
 			}
 			else if (paraType.equals("void")) {
@@ -91,13 +91,13 @@ public class FunctSymbol extends ScopedSymbol {
 	}
 	
 	@Override
-	public FunctSymbol getFunctSymbol() {
+	public FunctSymbol InFunctSymbol() {
 		return this;
 	}
 	
 	@Override
-	public ClassSymbol getClassSymbol() {
-		return parent.getClassSymbol();
+	public ClassSymbol InClassSymbol() {
+		return parent.InClassSymbol();
 	}
 	
 	@Override

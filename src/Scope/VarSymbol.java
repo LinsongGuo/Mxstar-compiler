@@ -28,7 +28,14 @@ public class VarSymbol extends Symbol{
 	public void checkInitValue(ExprNode initValue, ErrorReminder errorReminder) {
 		Type initType = initValue.getType();
 		if (initType != null) {
-			if (!initType.toString().equals(type.toString())) {
+			if (initType instanceof NullType) {
+				if (!(type instanceof ClassSymbol) || (type instanceof StringType)) {
+					errorReminder.error(initValue.getLoc(), 
+						"\'" + type.toString() + "\' cannot be assigned to \'null\'."
+					);
+				}
+			}
+			else if (!initType.toString().equals(type.toString())) {
 				errorReminder.error(initValue.getLoc(), 
 					"cannot convert \'" + initType.toString() + "\' to \'" + type.toString() + "\' in initialization."
 				);

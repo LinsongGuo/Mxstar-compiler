@@ -35,37 +35,36 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	
 	@Override
 	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		//check identifier
+		//check return type
 		String identifier = node.getIdentifier();
+		TypeNode typeNode = node.getType();
+		Type retType;
+		if (typeNode == null) {
+			errorReminder.error(node.getLoc(), "the function should have return value.");
+			return null;		
+		}
+		else {
+			String typeIdentifier = typeNode.typeString();
+			retType = resolveType(typeIdentifier);
+			if (retType == null) {
+				errorReminder.error(node.getLoc(), 
+					"\'" + typeIdentifier + "\' does not name a type."
+				);
+				return null;
+			}
+			else if (typeNode instanceof ArrayTypeNode) {
+				int dimension = ((ArrayTypeNode) typeNode).getDimension();
+				retType = new ArrayType(getGlobalScope(), typeIdentifier, dimension);
+			}
+		}
+		//check identifier
 		if (functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
 				"redeclaration of function \'" + identifier + "\'."
 			);
+			return null;
 		}		
-		//check return type
-		TypeNode typeNode = node.getType();
-		FunctSymbol functSymbol;
-		if (typeNode != null) {
-			String typeIdentifier = typeNode.typeString();
-			Type type = resolveType(typeIdentifier);
-			if (type == null) {
-				errorReminder.error(node.getLoc(), 
-					"the class \'" + typeIdentifier + "\' was not declared in this scope."
-				);
-				functSymbol = new FunctSymbol(this, identifier, null);
-			}
-			else if (typeNode instanceof ArrayTypeNode) {
-				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				functSymbol = new FunctSymbol(this, identifier, new ArrayType(getGlobalScope(), typeIdentifier, dimension));
-			}
-			else {
-				functSymbol = new FunctSymbol(this, identifier, type);
-			}
-		}
-		else {
-			errorReminder.error(node.getLoc(), "the function should have return value.");
-			functSymbol = new FunctSymbol(this, identifier, null);
-		}
+		FunctSymbol functSymbol = new FunctSymbol(this, identifier, retType);
 		functList.put(identifier, functSymbol);
 		return functSymbol;
 	}
@@ -73,6 +72,13 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	@Override
 	public void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		
+	}
+	
+	public Scope declareConstructor() {
+		String identifier = toString();
+		FunctSymbol functSymbol = new FunctSymbol(this, identifier);
+		functList.put(identifier, functSymbol);
+		return functSymbol;
 	}
 	
 	@Override
@@ -108,12 +114,12 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	}
 		
 	@Override
-	public FunctSymbol getFunctSymbol() {
+	public FunctSymbol InFunctSymbol() {
 		return null;
 	}
 	
 	@Override
-	public ClassSymbol getClassSymbol() {
+	public ClassSymbol InClassSymbol() {
 		return this;
 	}
 	
@@ -136,7 +142,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(),
-				"the class \'" + toString() + "\" has no member named " + node.getIdentifier()
+				"class \'" + toString() + "\' has no member named " + node.getIdentifier()
 			);
 			return null;
 		}
@@ -148,7 +154,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(),
-				"the class \'" + toString() + "\" has no member named " + identifier + "."
+				"class \'" + toString() + "\' has no member named " + identifier + "."
 			);
 			return null;
 		}
@@ -184,7 +190,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		String identifier = node.getIdentifier();
 		if (!functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(),
-				"the type \'" + toString() + "\" has no member named \'" + node.getIdentifier() + "\'."
+				"class \'" + toString() + "\' has no member named \'" + node.getIdentifier() + "\'."
 			);
 			return null;
 		}
@@ -211,13 +217,6 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			}
 			i++;
 		}
-		return functSymbol;
-	}
-	
-	public Scope defineConstructor() {
-		String identifier = toString();
-		FunctSymbol functSymbol = new FunctSymbol(this, identifier);
-		functList.put(identifier, functSymbol);
 		return functSymbol;
 	}
 }

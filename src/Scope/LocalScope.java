@@ -61,6 +61,7 @@ public class LocalScope extends BaseScope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
+		/*
 		//check index
 		ExprNode indexExpr = node.getIndexExpr();
 		if (indexExpr != null) {
@@ -72,6 +73,7 @@ public class LocalScope extends BaseScope {
 		else {
 			errorReminder.error(node.getLoc(), "empty index of array.");
 		}	
+		*/
 		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
@@ -107,13 +109,13 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
-	public FunctSymbol getFunctSymbol() {
-		return parent.getFunctSymbol();
+	public FunctSymbol InFunctSymbol() {
+		return parent.InFunctSymbol();
 	}
 	
 	@Override
-	public ClassSymbol getClassSymbol() {
-		return parent.getClassSymbol();
+	public ClassSymbol InClassSymbol() {
+		return parent.InClassSymbol();
 	}
 
 	@Override

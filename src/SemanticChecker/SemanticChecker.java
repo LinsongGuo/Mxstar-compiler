@@ -1,94 +1,161 @@
 package SemanticChecker;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import AST.*;
 import Scope.*;
 import parser.MxstarParser.ConstructorDefContext;
 import utility.*;
 
 public class SemanticChecker implements ASTVisitor {
-	private Scope currentScope;
+	private Scope currentScope, globalScope;
 	private ErrorReminder errorReminder;
 	private StringType stringTemplate;
+	private HashSet<String> classSet; 
 	private String[] reservedWordList = {"int", "bool", "string", "null", "void", "true", "false", "if", "else", "for", "while", "break", "continue", "return", "new", "class", "this"};
 	
 	public SemanticChecker(ErrorReminder errorReminder) {
 		this.errorReminder = errorReminder;
-		currentScope = new GlobalScope(null);
+		currentScope = globalScope = new GlobalScope(null);
 		stringTemplate = new StringType(currentScope);
+		classSet = new HashSet<String>();
 		((GlobalScope)currentScope).setBuiltInMember(currentScope, stringTemplate);
 	}
 	
-	private boolean IsReservedWord(String identifier) {
+	private boolean isReservedWord(String identifier) {
 		for (int i = 0; i < 17; ++i) {
-			if (identifier.equals(reservedWordList[i]));
+			if (identifier.equals(reservedWordList[i]))
 				return true;
 		}
 		return false;
 	}
+	
+	private boolean duplicateClass(String identifier) {
+		return globalScope.getClassScope(identifier) != null;
+	} 
+	
 	@Override
 	public void visit(ProgramNode node){
 		ArrayList<DefNode> defList = node.getDefList();
 		
-		//define all classes.
-		for (DefNode classItem : defList) {
-			if (classItem instanceof ClassDefNode) {
-				currentScope.declareClass((ClassDefNode)classItem, errorReminder);
-			}
-		}
-		
-		//define all members in class.
+		//declare classes.
 		for (DefNode classItem : defList) {
 			if (classItem instanceof ClassDefNode) {
 				String identifier = ((ClassDefNode) classItem).getIdentifier();
-				ClassSymbol classScope = currentScope.getClassScope(identifier);
-				
-				ArrayList<VarDefListNode> varList =  ((ClassDefNode) classItem).getVarList();
-				for (VarDefListNode item : varList) {
-					classScope.declareVarList(item, errorReminder);
+				if (isReservedWord(identifier)) {
+					errorReminder.error(classItem.getLoc(), 
+						"class name \'" + identifier + "\' is a reserved word."
+					);
 				}
-				
-				classScope.defineConstructor();
-				ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
-				for (FunctDefNode item : functList) {
-					FunctSymbol functSymbol = (FunctSymbol) classScope.declareFunct(item, errorReminder);
-					functSymbol.declareParaList(item.getParaList(), errorReminder);
+				else {
+					currentScope.declareClass((ClassDefNode)classItem, errorReminder);					
 				}
+			}
+		}
+		
+		//declare members in classes.
+		for (DefNode classItem : defList) {
+			if (classItem instanceof ClassDefNode) {
+				String identifier = ((ClassDefNode) classItem).getIdentifier();
+				if (classSet.contains(identifier)) continue;
+				//declare members in the class
+				if (!isReservedWord(identifier)) {
+					ClassSymbol classScope = currentScope.getClassScope(identifier);
+					//declare variables in the class
+					ArrayList<VarDefListNode> varLists =  ((ClassDefNode) classItem).getVarList();
+					for (VarDefListNode varListItem : varLists) {
+						ArrayList<VarDefNode> varList = varListItem.getVarList();
+						for (VarDefNode varItem : varList) {
+							String varIdentifier = varItem.getIdentifier();
+							if (isReservedWord(varIdentifier)) {
+								errorReminder.error(varItem.getLoc(), 
+									"variable name \'" + varIdentifier + "\' is a reserved word."
+								);
+							} 
+							else if (duplicateClass(varIdentifier)) {
+								errorReminder.error(varItem.getLoc(), 
+									"duplicate name for variable \'" + varIdentifier + "\' and type \'" + varIdentifier + "\'."
+								);
+							}
+							else {
+								classScope.declareVar(varItem, errorReminder);		
+							}
+						}
+					}
+					//declare constructor in the class
+					classScope.declareConstructor();
+					//declare functions in the class
+					ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
+					for (FunctDefNode functItem : functList) {
+						String functIdentifier = functItem.getIdentifier();
+						if (isReservedWord(functIdentifier)) {
+							errorReminder.error(functItem.getLoc(), 
+								"variable name \'" + functIdentifier + "\' is a reserved word."
+							);
+						}
+						else if (duplicateClass(functIdentifier)) {
+							errorReminder.error(functItem.getLoc(), 
+								"duplicate name for function \'" + functIdentifier + "\' and type \'" + functIdentifier + "\'."
+							);
+						}
+						else {
+							FunctSymbol functSymbol = classScope.declareFunct(functItem, errorReminder);
+							functSymbol.declareParaList(functItem.getParaList(), errorReminder);
+						}
+					}
+				}
+				classSet.add(identifier);
 			}
 		}
 		
 		//define all functions in global scope.
 		boolean hasMain = false;
-		for (DefNode item : defList) {
-			if (item instanceof FunctDefNode) {
-				if (((FunctDefNode) item).getIdentifier().equals("main")) {
-					boolean can = true;
-					if (!((FunctDefNode) item).getType().toString().equals("int")) {
-						errorReminder.error(item.getLoc(), 
-							"\'main\' function must return \'int\'."
-						);
-						can = false;
-					}
-					if (!((FunctDefNode) item).getParaList().isEmpty()) {
-						errorReminder.error(item.getLoc(), 
-							"\'main\' function should not have parameters."
-						);
-						can = false;
-					}
-					if (can) {
-						if (hasMain) {
-							errorReminder.error(item.getLoc(), 
-								"\'int main\' previously declared here."  
+		for (DefNode functItem : defList) {
+			if (functItem instanceof FunctDefNode) {
+				String identifier = ((FunctDefNode) functItem).getIdentifier();
+				if (isReservedWord(identifier)) {
+					errorReminder.error(functItem.getLoc(), 
+						"class name \'" + identifier + "\' is a reserved word."
+					);
+				}
+				else if (duplicateClass(identifier)) {
+					errorReminder.error(functItem.getLoc(), 
+						"duplicate name for function \'" + identifier + "\' and class \'" + identifier + "\'."
+					);
+				}
+				else {
+					if (identifier.equals("main")) {
+						boolean can = true;
+						if (!((FunctDefNode) functItem).getType().toString().equals("int")) {
+							errorReminder.error(functItem.getLoc(), 
+								"\'main\' function must return \'int\'."
 							);
+							can = false;
 						}
-						else {
-							hasMain = true;
-							currentScope.defineFunct((FunctDefNode)item, errorReminder);
+						if (!((FunctDefNode) functItem).getParaList().isEmpty()) {
+							errorReminder.error(functItem.getLoc(), 
+								"\'main\' function should not have parameters."
+							);
+							can = false;
 						}
+						if (can) {
+							if (hasMain) {
+								errorReminder.error(functItem.getLoc(), 
+									"\'int main\' previously declared here."  
+								);
+							}
+							else {
+								hasMain = true;
+								FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
+								functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
+							}
+						}	
+					}
+					else {
+						FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
+						functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
 					}	
 				}
-				else 
-					currentScope.defineFunct((FunctDefNode)item, errorReminder);
 			}	
 		}
 		if (!hasMain) {
@@ -96,81 +163,113 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		
 		for (DefNode item : defList) {
-			item.accept(this);
+			if ((item instanceof ClassDefNode) || (item instanceof FunctDefNode) || (item instanceof VarDefListNode)) {
+				item.accept(this);
+			}
 		}
 	}
 	
 	@Override
 	public void visit(VarDefListNode node){
+		System.err.println("visit varDefList node ");
 		ArrayList<VarDefNode> varList = node.getVarList();
 		for (VarDefNode item : varList) {
-			ExprNode initValue = item.getInitValue();
-			if (initValue != null)
-				initValue.accept(this);
-			//System.err.println("INIT" + initValue.getType().toString());
+			String identifier = item.getIdentifier();
+			System.err.println("item " + identifier + " " + item.getType().toString());
+			if (isReservedWord(identifier)) {
+				errorReminder.error(item.getLoc(), 
+					"variable name \'" + identifier + "\' is a reserved word."
+				);
+			}
+			else if (duplicateClass(identifier)) {
+				errorReminder.error(item.getLoc(), 
+					"duplicate name for variable \'" + identifier + "\' and class \'" + identifier + "\'."
+				);
+			}
+			else {
+				System.err.println("visit else ");
+				
+				VarSymbol varSymbol = currentScope.declareVar(item, errorReminder);
+				if (varSymbol != null) {
+					ExprNode initValue = item.getInitValue();
+					if (initValue != null) {
+						initValue.accept(this);
+						varSymbol.checkInitValue(initValue, errorReminder);
+					}
+					varSymbol.beenDefined();
+				}
+			}
 		}
-		currentScope.defineVarList((VarDefListNode)node, errorReminder);
+	}
+	
+	@Override
+	public void visit(VarDefNode node) {
+		String identifier = node.getIdentifier();
+		System.err.println("visit varDef " + identifier + " " + node.getType().toString());
+		if (!isReservedWord(identifier) && !duplicateClass(identifier)) {
+			VarSymbol varSymbol = currentScope.getVarSymbol(identifier);
+			if (varSymbol != null && !varSymbol.definedOrNot()) {
+				ExprNode initValue = node.getInitValue();
+				if(initValue != null) {
+					initValue.accept(this);
+					varSymbol.checkInitValue(initValue, errorReminder);
+				}
+				varSymbol.beenDefined();
+			}
+		}
 	}
 	
 	@Override
 	public void visit(FunctDefNode node){
-		currentScope = currentScope.defineFunct(node, errorReminder);
-		
-		currentScope.defineParaList(node.getParaList(), errorReminder);
-		ArrayList<StmtNode> stmtList = node.getStmtList();
-		for (StmtNode stmt : stmtList) {
-			stmt.accept(this);
+		String identifier = node.getIdentifier();
+		//System.err.println("visit function " + identifier);
+		if (!isReservedWord(identifier)) {
+			if (!duplicateClass(identifier) || (duplicateClass(identifier) && node.getType() == null)) {
+				FunctSymbol functSymbol = currentScope.getFunctScope(identifier);
+				if (functSymbol != null && !functSymbol.definedOrNot()) {
+					currentScope = functSymbol;
+					ArrayList<StmtNode> stmtList = node.getStmtList();
+					for (StmtNode stmt : stmtList) {
+						if (stmt != null)
+							stmt.accept(this);
+					}
+					functSymbol.beenDefined();
+					currentScope = currentScope.getEnclosingScope();
+				}
+			}
 		}
-		
-		currentScope = currentScope.getEnclosingScope();
 	}
 	
 	@Override
 	public void visit(ClassDefNode node){
-		currentScope = currentScope.defineClass(node, errorReminder);
-		
-		//define variables in class.
-		ArrayList<VarDefListNode> varList = node.getVarList();
-		for (VarDefListNode item : varList) {
-			ArrayList<VarDefNode> initList = item.getVarList();
-			for (VarDefNode initVar : initList) {
-				ExprNode initValue = initVar.getInitValue();
-				if (initValue != null)
-					initValue.accept(this);
+		String identifier = node.getIdentifier();
+		//System.err.println("visit class " + identifier);
+		if (!isReservedWord(identifier)) {
+			ClassSymbol classSymbol = currentScope.getClassScope(identifier);
+			if (classSymbol != null && !classSymbol.definedOrNot()) {
+				currentScope = classSymbol;
+				//define variables;
+				ArrayList<VarDefListNode> varLists = node.getVarList();
+				for (VarDefListNode varListNode : varLists) {
+					ArrayList<VarDefNode> varList = varListNode.getVarList();
+					for (VarDefNode varItem : varList) {
+						varItem.accept(this);
+					}
+				}
+				//define constructor.
+				FunctDefNode constructorDef = node.getConstructorDef();
+				if (constructorDef != null) {
+					constructorDef.accept(this);
+				}
+				//define functions.
+				ArrayList<FunctDefNode> functList = node.getFunctList();
+				for (FunctDefNode item : functList) {
+					item.accept(this);
+				}
+				classSymbol.beenDefined();
+				currentScope = currentScope.getEnclosingScope();
 			}
-			currentScope.defineVarList(item, errorReminder);
 		}
-		
-		//define constructor in class.
-		FunctDefNode constructorDef = node.getConstructorDef();
-		currentScope = ((ClassSymbol)currentScope).defineConstructor();
-		if (constructorDef != null) {
-			ArrayList<StmtNode> stmtList = constructorDef.getStmtList();
-			for (StmtNode stmt : stmtList) {
-				stmt.accept(this);
-			}
-		}
-		currentScope = currentScope.getEnclosingScope();
-		
-		//define functions in class.
-		ArrayList<FunctDefNode> functList = node.getFunctList();
-		for (FunctDefNode item : functList) {
-			currentScope = currentScope.defineFunct(item, errorReminder);
-			currentScope.defineParaList(item.getParaList(), errorReminder);
-			ArrayList<StmtNode> stmtList1 = item.getStmtList();
-			for (StmtNode stmt : stmtList1) {
-				stmt.accept(this);
-			}
-			currentScope = currentScope.getEnclosingScope();
-		}
-		
-		currentScope = currentScope.getEnclosingScope();
-	}
-	
-
-	@Override
-	public void visit(VarDefNode node) {
-		
 	}
 	
 	@Override
@@ -307,7 +406,7 @@ public class SemanticChecker implements ASTVisitor {
 		
 	@Override
 	public void visit(ReturnStmtNode node) {
-		FunctSymbol functSymbol = currentScope.getFunctSymbol();
+		FunctSymbol functSymbol = currentScope.InFunctSymbol();
 		ExprNode expr = node.getExpr();
 		if (functSymbol == null) {
 			errorReminder.error(node.getLoc(),
@@ -318,22 +417,22 @@ public class SemanticChecker implements ASTVisitor {
 			expr.accept(this);
 			Type retType = functSymbol.getType();
 			Type exprType = expr.getType();
-			if (exprType == null) return;
-			//System.err.println("return " + retType.toString());
-			if (retType == null) {
-				errorReminder.error(node.getLoc(), 
-					"should have return value."
-				);
-			}
-			else if (retType instanceof VoidType) {
-				errorReminder.error(node.getLoc(), 
-					"return-statement with a value, in function returning \'void\'."
-				);
-			}
-			else if(!retType.toString().equals(exprType.toString())){
-				errorReminder.error(expr.getLoc(),
-					"cannot convert \'" + exprType.toString() + "\' to \'" + retType.toString() + "\' in initialization."
-				);
+			if (exprType != null) { 
+				if (retType == null) {
+					errorReminder.error(node.getLoc(), 
+						"returning a value from a constructor."
+					);
+				}
+				else if (retType instanceof VoidType) {
+					errorReminder.error(node.getLoc(), 
+						"return-statement with a value, in function returning \'void\'."
+					);
+				}
+				else if(!retType.toString().equals(exprType.toString())){
+					errorReminder.error(expr.getLoc(),
+						"cannot convert \'" + exprType.toString() + "\' to \'" + retType.toString() + "\' in initialization."
+					);
+				}
 			}
 		}
 		else {
@@ -355,7 +454,7 @@ public class SemanticChecker implements ASTVisitor {
 	//expression--------------------------------------------------
 	@Override
 	public void visit(ThisExprNode node) {
-		ClassSymbol classSymbol = currentScope.getClassSymbol();
+		ClassSymbol classSymbol = currentScope.InClassSymbol();
 		if (classSymbol == null) {
 			errorReminder.error(node.getLoc(), 
 				"invalid use of \'this\' in non-member function."
@@ -376,16 +475,119 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ArrayExprNode node) {
-		ArrayList<ExprNode> indexExpr = node.getIndexExpr();
-		//System.err.println(indexExpr.size());
-		for (ExprNode item : indexExpr) {
-			if (item != null)
-				item.accept(this);
+		//check index.
+		ExprNode indexExpr = node.getIndexExpr();
+		if (indexExpr != null) {
+			indexExpr.accept(this);
+			Type indexType = indexExpr.getType();
+			if (!(indexType instanceof IntType)) {
+				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
+			}
 		}
-		VarSymbol var = currentScope.resovleArray(node, errorReminder);
-		if (var != null) {
-			node.setType(var.getType());
+		else {
+			errorReminder.error(node.getLoc(), "empty index of array.");
+		}
+		
+		ExprNode nameExpr = node.getNameExpr();
+		if (nameExpr instanceof MemberExprNode) {
+			node.setIdentifier(((MemberExprNode) nameExpr).getIdentifier());
+			((MemberExprNode) nameExpr).setMemberExpr(node);
+			nameExpr.accept(this);
+			node.setType(nameExpr.getType());
 			node.setLvalue(true);
+		}
+		else if (nameExpr instanceof VarExprNode){
+			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
+			VarSymbol varSymbol = currentScope.resovleArray(node, errorReminder);
+			if (varSymbol != null) {
+				node.setType(varSymbol.getType());
+				node.setLvalue(true);
+			}
+		}
+		else {
+			nameExpr.accept(this);
+			Type type = nameExpr.getType();
+			if (type != null) {
+				if (type instanceof ArrayType) {
+					int dimension = ((ArrayType) type).getDimension();
+					if (dimension == 1) {
+						type = currentScope.resolveType(type.typeString());
+					}
+					else {
+						type = new ArrayType(globalScope, type.typeString(), dimension - 1);
+					}
+					node.setType(type);
+					node.setLvalue(true);
+				}
+				else {
+					errorReminder.error(indexExpr.getLoc(), "invalid dimension.");
+				}
+			}
+		} 
+	}
+	
+	@Override
+	public void visit(FunctExprNode node) {
+		//check parameters
+		ArrayList<ExprNode> paraList = node.getParaList();
+		for (ExprNode item : paraList) {
+			item.accept(this);
+		}
+		
+		ExprNode nameExpr = node.getNameExpr();
+		if (nameExpr instanceof MemberExprNode) {
+			node.setIdentifier(((MemberExprNode) nameExpr).getIdentifier());
+			((MemberExprNode) nameExpr).setMemberExpr(node);
+			nameExpr.accept(this);
+			node.setType(nameExpr.getType());
+			node.setLvalue(false);
+		}
+		else if (nameExpr instanceof VarExprNode) {
+			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
+			FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
+			if (functSymbol != null) {
+				node.setType(functSymbol.getType());
+				node.setLvalue(false);
+			}
+		}
+		else {
+			errorReminder.error(node.getLoc(), "error in FunctExprNode!");
+		}
+	}
+	
+	@Override
+	public void visit(MemberExprNode node) { 
+		//System.err.println("visit memberexpr node.");
+		ExprNode nameExpr = node.getNameExpr(), memberExpr = node.getMemberExpr();
+		nameExpr.accept(this);
+		Type type = nameExpr.getType();
+		if (type != null) {
+			if(!(type instanceof ClassSymbol)) {
+				errorReminder.error(memberExpr.getLoc(), "invalid member call in a non-class type \'" + type.toString() + "\'.");
+			}
+			else {
+				if (memberExpr instanceof VarExprNode) {
+					VarSymbol varSymbol = ((ClassSymbol)type).findVar((VarExprNode)memberExpr, errorReminder);
+					if (varSymbol != null) {
+						node.setType(varSymbol.getType());
+						node.setLvalue(true);
+					}
+				}
+				else if (memberExpr instanceof ArrayExprNode) {
+					VarSymbol arraySymbol = ((ClassSymbol)type).findArray((ArrayExprNode)memberExpr, errorReminder);
+					if (arraySymbol != null) {
+						node.setType(arraySymbol.getType());
+						node.setLvalue(true);
+					}
+				}
+				else if (memberExpr instanceof FunctExprNode) {
+					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct((FunctExprNode)memberExpr, errorReminder);
+					if (functSymbol != null) {
+						node.setType(functSymbol.getType());
+						node.setLvalue(false);
+					}
+				}
+			}
 		}
 	}
 	
@@ -395,16 +597,16 @@ public class SemanticChecker implements ASTVisitor {
 		expr.accept(this);
 		node.setType(expr.getType());
 		node.setLvalue(expr.getLvalue());
-		//System.err.println("bracket: " + node.getType().toString());
 	}
 	
 	@Override
 	public void visit(CreatorExprNode node) {
+		System.err.println("visit creator ");
 		ArrayList<ExprNode> indexList = node.getIndexList();
 		for (ExprNode item : indexList) {
 			item.accept(this);
 			Type tmp = item.getType();
-			if (!(tmp instanceof IntType)) {
+			if (tmp != null && !(tmp instanceof IntType)) {
 				errorReminder.error(item.getLoc(), 
 					"cannot convert \'" + tmp.toString() + "\' to \'int\' in initialization."	
 				);
@@ -413,72 +615,13 @@ public class SemanticChecker implements ASTVisitor {
 		String tmp = node.getTypeNode().typeString();
 		Type type = currentScope.resolveType(tmp);
 		if (type != null) {
-			node.setType(new ArrayType(tmp, node.getDimension()));
+			node.setType(new ArrayType(globalScope, tmp, node.getDimension()));
 		}
 		else {
 			errorReminder.error(node.getLoc(), 
 				"class \'" + tmp + "\' was not declared in this scope."
 			);
 		}
-		//System.err.println("creator: " + node.getType().toString());
-	}
-	
-	@Override
-	public void visit(FunctExprNode node) {
-		ArrayList<ExprNode> paraList = node.getParaList();
-		for (ExprNode item : paraList) {
-			item.accept(this);
-		}
-		FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
-		if (functSymbol != null)
-			node.setType(functSymbol.getType());
-	}
-	
-	@Override
-	public void visit(MemberExprNode node) { 
-		ExprNode expr = node.getExpr();
-		expr.accept(this);
-		Type type = expr.getType();
-		if (type != null) {
-			//System.err.println("MemberExpr " + type.toString());
-			if(!(type instanceof ClassSymbol)) {
-				errorReminder.error(node.getLoc(), "invalid member call in a non-class type \'" + type.toString() + "\'.");
-			}
-			else {
-				if (node.getVarExpr() != null) {
-					VarExprNode varExpr = node.getVarExpr();
-					VarSymbol varSymbol = ((ClassSymbol)type).findVar(varExpr, errorReminder);
-					if (varSymbol != null) {
-						node.setType(varSymbol.getType());
-						node.setLvalue(true);
-					}
-				}
-				else if (node.getArrayExpr() != null) {
-					ArrayExprNode arrayExpr = node.getArrayExpr();
-					ArrayList<ExprNode> indexExpr = arrayExpr.getIndexExpr();
-					for (ExprNode item : indexExpr) {
-						item.accept(this);
-					}
-					VarSymbol arraySymbol = ((ClassSymbol)type).findArray(arrayExpr, errorReminder);
-					if (arraySymbol != null) {
-						node.setType(arraySymbol.getType());
-						node.setLvalue(true);
-					}
-				}
-				else if (node.getFunctExpr() != null) {
-					FunctExprNode functExpr = node.getFunctExpr();
-					ArrayList<ExprNode> paraList = functExpr.getParaList();
-					for (ExprNode item : paraList) {
-						item.accept(this);
-					}
-					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct(functExpr, errorReminder);
-					if (functSymbol != null) {
-						node.setType(functSymbol.getType());
-					}
-				}
-			}
-		}
-		
 	}
 	
 	@Override
@@ -675,6 +818,12 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(StringLiteralNode node) {
 		node.setType(stringTemplate);
+		node.setLvalue(false);
+	}
+
+	@Override
+	public void visit(NullLiteralNode node) {
+		node.setType(new NullType());
 		node.setLvalue(false);
 	}
 	

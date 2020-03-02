@@ -24,4 +24,5 @@ arrray-8
 misc-32:ltree[i][2 * x + 1]->mint = ltree[i][2 * x + 1].mint * mtag + ptag;
 
 
-   
+array-8.mx
+basic-57.mx 有毒   

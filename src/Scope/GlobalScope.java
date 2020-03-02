@@ -40,6 +40,7 @@ public class GlobalScope extends BaseScope {
 			errorReminder.error(node.getLoc(), 
 				"redeclaration of the class \'" + identifier + "\'." 
 			);
+			return null;
 		}
 		ClassSymbol classSymbol = new ClassSymbol(this, identifier);
 		typeList.put(identifier, classSymbol);
@@ -48,42 +49,39 @@ public class GlobalScope extends BaseScope {
 	
 	@Override
 	public FunctSymbol declareFunct(FunctDefNode node, ErrorReminder errorReminder) {
-		//check identifier
+		//check return type
 		String identifier = node.getIdentifier();
+		TypeNode typeNode = node.getType();
+		Type retType;
+		if (typeNode == null) {
+			errorReminder.error(node.getLoc(), "function should have return value.");
+			return null;		
+		}
+		else {
+			String typeIdentifier = typeNode.typeString();
+			retType = resolveType(typeIdentifier);
+			if (retType == null) {
+				errorReminder.error(node.getLoc(), 
+					"\'" + typeIdentifier + "\' does not name a type."
+				);
+				return null;
+			}
+			else if (typeNode instanceof ArrayTypeNode) {
+				int dimension = ((ArrayTypeNode) typeNode).getDimension();
+				retType = new ArrayType(getGlobalScope(), typeIdentifier, dimension);
+			}
+		}
+		//check identifier
 		if (functList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), 
 				"redeclaration of function \'" + identifier + "\'."
 			);
+			return null;
 		}		
-		//check return type
-		TypeNode typeNode = node.getType();
-		FunctSymbol functSymbol;
-		if (typeNode != null) {
-			String typeIdentifier = typeNode.typeString();
-			Type type = resolveType(typeIdentifier);
-			if (type == null) {
-				errorReminder.error(node.getLoc(), 
-					"the class \'" + typeIdentifier + "\' was not declared in this scope."
-				);
-				functSymbol = new FunctSymbol(this, identifier, null);
-			}
-			else if (typeNode instanceof ArrayTypeNode) {
-				int dimension = ((ArrayTypeNode) typeNode).getDimension();
-				functSymbol = new FunctSymbol(this, identifier, new ArrayType(getGlobalScope(), typeIdentifier, dimension));
-			}
-			else {
-				functSymbol = new FunctSymbol(this, identifier, type);
-			}
-		}
-		else {
-			errorReminder.error(node.getLoc(), "the function should have return value.");
-			functSymbol = new FunctSymbol(this, identifier, null);
-		}
+		FunctSymbol functSymbol = new FunctSymbol(this, identifier, retType);
 		functList.put(identifier, functSymbol);
 		return functSymbol;
 	}
-	
-
 	
 	@Override
 	public Type resolveType(String identifier) {
@@ -97,7 +95,7 @@ public class GlobalScope extends BaseScope {
 	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the variable \'" + identifier + "\' was not declared in this scope.");
+			errorReminder.error(node.getLoc(), "variable \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
 		else
@@ -109,9 +107,10 @@ public class GlobalScope extends BaseScope {
 		String identifier = node.getIdentifier();
 		//check identifier
 		if(!varList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the variable \'" + identifier + "\' was not declared in this scope.");
+			errorReminder.error(node.getLoc(), "variable \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
+		/*
 		//check index
 		ExprNode indexExpr = node.getIndexExpr();
 		if (indexExpr != null) {
@@ -122,7 +121,8 @@ public class GlobalScope extends BaseScope {
 		}
 		else {
 			errorReminder.error(node.getLoc(), "empty index of array.");
-		}	
+		}
+		*/	
 		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
@@ -144,7 +144,7 @@ public class GlobalScope extends BaseScope {
 	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if (!functList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "the function \'" + identifier + "\' was not declared in this scope.");
+			errorReminder.error(node.getLoc(), "function \'" + identifier + "\' was not declared in this scope.");
 			return null;
 		}
 		FunctSymbol functSymbol = functList.get(identifier);
@@ -184,12 +184,12 @@ public class GlobalScope extends BaseScope {
 	}
 	
 	@Override
-	public FunctSymbol getFunctSymbol() {
+	public FunctSymbol InFunctSymbol() {
 		return null;
 	}
 	
 	@Override
-	public ClassSymbol getClassSymbol() {
+	public ClassSymbol InClassSymbol() {
 		return null;
 	}
 	

@@ -87,10 +87,10 @@ expr
 	| 'this'                                                 # thisExpr 
 	| literal                                                # literalExpr       
 	| Identifier                                             # varExpr
-	| expr '.' expr    										 # memberExpr                  
-	| 'new' creator                                          # creatorExpr            
+	| expr '.' Identifier   							     # memberExpr                  
 	| expr '[' expr ']'               		   	             # arrayExpr                                
-	| expr '(' exprList? ')'                                 # functExpr               
+	| expr '(' exprList? ')'                                 # functExpr              
+	| 'new' creator                                          # creatorExpr            
 	| expr op = ('++' | '--')                                # suffixExpr                      
 	| op = ('+' | '-') expr                                  # prefixExpr                    
 	| op = ('++' | '--') expr                                # prefixExpr                      
