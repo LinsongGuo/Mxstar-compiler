@@ -18,7 +18,8 @@ import SemanticChecker.*;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		InputStream IS = new FileInputStream("code.Mx");
+		InputStream IS = System.in;
+		//InputStream IS = new FileInputStream("code.Mx");
 		CharStream AIS = CharStreams.fromStream(IS);
       	//ANTLRInputStream AIS = new ANTLRInputStream(IS);
 		
@@ -48,5 +49,8 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
 		System.err.println("Finished.");
+		
+		System.exit(errorReminder.count());
+		//if (errorReminder.hasError()) System.exit(1);
 	}
 }

@@ -46,7 +46,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitVarDefList(MxstarParser.VarDefListContext ctx) {
-		System.err.println("visitVarDefList: " + ctx.getText());
+		//System.err.println("visitVarDefList: " + ctx.getText());
 		TypeNode type = (TypeNode)visit(ctx.type());
 		ArrayList<VarDefNode> varList = new ArrayList<VarDefNode>();
 		for (MxstarParser.VarDefContext item : ctx.varDef()) {
@@ -80,7 +80,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			errorReminder.error(new Location(ctx.getStart()), "invalid name of function.");
 			return null;
 		}
-		System.err.println("visitFunctDef: " + ctx.getText());
+		//System.err.println("visitFunctDef: " + ctx.getText());
 		ArrayList<VarDefNode> paraList = new ArrayList<VarDefNode>();
 		for (MxstarParser.ParaContext item : ctx.paraList().para()) {
 			paraList.add((VarDefNode)visit(item));
@@ -114,7 +114,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			errorReminder.error(new Location(ctx.getStart()), "invalid name of class.");
 			return null;
 		}
-		System.err.println("visitClassDef: " + ctx.getText());
+		//System.err.println("visitClassDef: " + ctx.getText());
 		//variable in class.
 		ArrayList<VarDefListNode> varList = new ArrayList<VarDefListNode>();
 		for (MxstarParser.VarDefListContext item : ctx.varDefList()) {
@@ -197,7 +197,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitVarDefStmt(MxstarParser.VarDefStmtContext ctx) {
-		System.err.println("visitVarDefStmt: " + ctx.getText());
+		//System.err.println("visitVarDefStmt: " + ctx.getText());
 		TypeNode type = (TypeNode)visit(ctx.varDefList().type());
 		ArrayList<VarDefNode> varList = new ArrayList<VarDefNode>();
 		if (ctx.varDefList() != null) {
@@ -326,6 +326,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override 
 	public ASTNode visitInvalidCreator(MxstarParser.InvalidCreatorContext ctx) {
+		//System.err.println("visitInvalidCreator " + ctx.getText());
 		errorReminder.error( new Location(ctx.getStart()), "invalid creator.");
 		int dimension = 0;
 		for (var item: ctx.children) {

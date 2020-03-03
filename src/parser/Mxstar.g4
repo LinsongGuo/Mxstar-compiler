@@ -83,8 +83,7 @@ stmt
 	;
 	
 expr
- 	: '(' expr ')'                                           # bracketExpr
-	| 'this'                                                 # thisExpr 
+ 	: 'this'                                                 # thisExpr 
 	| literal                                                # literalExpr       
 	| Identifier                                             # varExpr
 	| expr '.' Identifier   							     # memberExpr                  
@@ -106,6 +105,7 @@ expr
 	| expr op = '&&' expr                                    # binaryExpr      
 	| expr op = '||' expr                                    # binaryExpr              
 	| <assoc = right> expr op = '=' expr                     # binaryExpr
+	| '(' expr ')'                                           # bracketExpr
 	;        
 
 exprList
@@ -113,10 +113,10 @@ exprList
 	;
 
 creator
-	: varType ('[' expr ']')+ ('[' ']')+ ('[' expr ']')+  # invalidCreator
-	| varType ('[' expr ']')+ ('[' ']')*                  # arrayCreator
-	| varType '(' ')'                                     # classCreator
-	| varType                                             # naiveCreator
+	: varType ('[' expr ']')+ ('[' ']')+ ('[' expr ']')+ (('[' ']')|('[' expr ']'))*  # invalidCreator
+	| varType ('[' expr ']')+ ('[' ']')*                                              # arrayCreator
+	| varType '(' ')'                                                                 # classCreator
+	| varType                                                                         # naiveCreator
 	;
 
 

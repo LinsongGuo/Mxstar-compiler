@@ -1,20 +1,7 @@
-/*
-Test Package: Sema_Local_Preview
-Test Target: Basic
-Author: 10' Youer Pu
-Time: 2019-11-11
-Verdict: Fail
-Comment: Operator + cannot be applied to A objects.
-Origin Package: Semantic Pretest
-*/
-class A {
-    int a;
-};
+# this script is called when the judge is building your compiler.
+# no argument will be passed in.
 
-int main() {
-    A a = new A;
-    A b = new A;
-    A c = new A;
-    c = a + b;
-    return 0;
-}
+set -e
+cd "$(dirname "$0")"
+mkdir -p bin
+find ./src -name *.java | javac -d bin -classpath "./lib/antlr-4.8-complete.jar" @/dev/stdin

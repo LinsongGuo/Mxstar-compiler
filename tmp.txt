@@ -26,3 +26,10 @@ misc-32:ltree[i][2 * x + 1]->mint = ltree[i][2 * x + 1].mint * mtag + ptag;
 
 array-8.mx
 basic-57.mx 有毒   
+basic-36 string-string
+
+  simulator: /Users/peterzheng/ravel/build/bin
+  simulator-executable: /mnt/d/courses/compiler/Compiler-2020/ravel
+  built-in: /Users/peterzheng/Documents/Projects/OldProject/Compiler/localJudge/built-in.s
+
+color_green = "\033[1;32m"

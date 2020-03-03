@@ -171,11 +171,10 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(VarDefListNode node){
-		System.err.println("visit varDefList node ");
+		//System.err.println("visit varDefList node ");
 		ArrayList<VarDefNode> varList = node.getVarList();
 		for (VarDefNode item : varList) {
 			String identifier = item.getIdentifier();
-			System.err.println("item " + identifier + " " + item.getType().toString());
 			if (isReservedWord(identifier)) {
 				errorReminder.error(item.getLoc(), 
 					"variable name \'" + identifier + "\' is a reserved word."
@@ -187,8 +186,6 @@ public class SemanticChecker implements ASTVisitor {
 				);
 			}
 			else {
-				System.err.println("visit else ");
-				
 				VarSymbol varSymbol = currentScope.declareVar(item, errorReminder);
 				if (varSymbol != null) {
 					ExprNode initValue = item.getInitValue();
@@ -205,7 +202,6 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(VarDefNode node) {
 		String identifier = node.getIdentifier();
-		System.err.println("visit varDef " + identifier + " " + node.getType().toString());
 		if (!isReservedWord(identifier) && !duplicateClass(identifier)) {
 			VarSymbol varSymbol = currentScope.getVarSymbol(identifier);
 			if (varSymbol != null && !varSymbol.definedOrNot()) {
@@ -601,7 +597,6 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(CreatorExprNode node) {
-		System.err.println("visit creator ");
 		ArrayList<ExprNode> indexList = node.getIndexList();
 		for (ExprNode item : indexList) {
 			item.accept(this);
