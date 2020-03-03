@@ -1,15 +1,11 @@
 package Scope;
 
-import java.util.ArrayList;
-
 import AST.ArrayExprNode;
 import AST.ClassDefNode;
-import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.VarExprNode;
 import utility.ErrorReminder;
-import utility.Location;
 
 public class LocalScope extends BaseScope {
 	//private ArrayList<LocalScope> children;
@@ -127,4 +123,9 @@ public class LocalScope extends BaseScope {
 	public ClassSymbol getClassScope(String identifier) {
 		return null;
 	}
+	
+	@Override
+	public boolean duplicateClass(String identifier) {
+		return false;
+	} 
 }

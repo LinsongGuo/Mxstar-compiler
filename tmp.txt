@@ -1,35 +1,16 @@
-/mnt/d/courses/compiler/Mxstar-compiler
+array-8 invalid intex
 
-/mnt/d/courses/compiler/Compiler-2020/local-judge
-
-basic-15:null
-basic-42:funct and class不能重名
-函数，类向前引用
-null
-分号
-return type error
-(new int[2][])[0]
-**.this
-Duplicate name for function name and class name.
-Non-void function should return non-null value.(main函数返回Null)
-class int
-Array.size()
-new Class找构造函数. 构造函数不应该有返回值
- The variable A and class A is dumplicated.
-区分返回值错误与构造函数
-检查函数无return;语句
-函数、类名称、变量不是关键字
-
-arrray-8
-misc-32:ltree[i][2 * x + 1]->mint = ltree[i][2 * x + 1].mint * mtag + ptag;
-
-
-array-8.mx
-basic-57.mx 有毒   
+basic-57 有毒   
 basic-36 string-string
+basic-52 return type error?
+basic-68 *.(member)
 
-  simulator: /Users/peterzheng/ravel/build/bin
-  simulator-executable: /mnt/d/courses/compiler/Compiler-2020/ravel
-  built-in: /Users/peterzheng/Documents/Projects/OldProject/Compiler/localJudge/built-in.s
+class-4 不同作用域类与变量不可同名?
 
-color_green = "\033[1;32m"
+function-3 Non-void function must have a return value?
+function-6 int ___? 变量可以以_开头？
+
+condition line22 obj!=obj?
+
+int [] [] graph = new int [][4];
+class int{};

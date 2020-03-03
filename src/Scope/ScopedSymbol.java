@@ -6,11 +6,9 @@ import java.util.LinkedHashMap;
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;
 import AST.ClassDefNode;
-import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.TypeNode;
-import AST.VarDefListNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
 import utility.ErrorReminder;
@@ -160,6 +158,11 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		return null;
 	}
 	
+	@Override
+	public boolean duplicateClass(String identifier) {
+		return false;
+	} 
+
 	@Override
 	public boolean isVar() {
 		return false;

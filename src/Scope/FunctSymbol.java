@@ -3,7 +3,6 @@ package Scope;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import AST.ClassDefNode;
 import AST.FunctDefNode;
 import AST.VarDefNode;
 import AST.TypeNode;
@@ -14,31 +13,30 @@ import utility.ErrorReminder;
 
 public class FunctSymbol extends ScopedSymbol {
 	private Type type;
+	private boolean constructor;
 	private LinkedHashMap<String, VarSymbol> paraList;
-	
-	public FunctSymbol(Scope parent, String identifier) {
-		super(parent, identifier);
-		this.type = null;
-		this.paraList = new LinkedHashMap<String, VarSymbol>();
-	}
 	
 	public FunctSymbol(Scope parent, String identifier, Type type) {
 		super(parent, identifier);
 		this.type = type;
 		this.paraList = new LinkedHashMap<String, VarSymbol>();
+		this.constructor = false;
 	}
-	/*
-	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, VarSymbol> paraList) {
-		super(parent, identifier);
-		this.type = type;
-		this.paraList = paraList;
-	}
-	*/
+
 	public FunctSymbol(Scope parent, String identifier, Type type, LinkedHashMap<String, VarSymbol> paraList, LinkedHashMap<String, VarSymbol> varList) {
 		super(parent, identifier);
 		this.type = type;
 		this.paraList = paraList;
 		this.varList = varList;
+		this.constructor = false;
+	}
+	
+	public void setConstructor() {
+		constructor = true;
+	}
+	
+	public boolean isConstructor() {
+		return constructor;
 	}
 	
 	@Override

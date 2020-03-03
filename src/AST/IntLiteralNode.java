@@ -1,14 +1,17 @@
 package AST;
 
-import Scope.Type;
 import utility.Location;
 
 public class IntLiteralNode extends LiteralExprNode {
-	private long integer;
+	private long value;
 	
-	public IntLiteralNode(Location loc, long integer) {
+	public IntLiteralNode(Location loc, long value) {
 		super(loc);
-		this.integer = integer;
+		this.value = value;
+	}
+	
+	public long getValue() {
+		return value;
 	}
 	
 	public void accept(ASTVisitor visitor) {

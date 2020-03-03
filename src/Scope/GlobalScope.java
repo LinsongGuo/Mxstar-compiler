@@ -1,11 +1,8 @@
 package Scope;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;
 import AST.ClassDefNode;
@@ -13,10 +10,8 @@ import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.TypeNode;
-import AST.VarDefNode;
 import AST.VarExprNode;
 import utility.ErrorReminder;
-import utility.Location;
 
 public class GlobalScope extends BaseScope {
 	private LinkedHashMap<String, Type> typeList;
@@ -143,34 +138,53 @@ public class GlobalScope extends BaseScope {
 	@Override
 	public FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
-		if (!functList.containsKey(identifier)) {
-			errorReminder.error(node.getLoc(), "function \'" + identifier + "\' was not declared in this scope.");
-			return null;
-		}
-		FunctSymbol functSymbol = functList.get(identifier);
-		LinkedHashMap<String, VarSymbol> argueList = functSymbol.getParaList();
-		ArrayList<ExprNode> paraList = node.getParaList();
-		if (paraList.size() < argueList.size()) {
-			errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
-		}
-		if (paraList.size() > argueList.size()) {
-			errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
-		}
-		int i = 0;
-		for (Map.Entry<String, VarSymbol> entry : argueList.entrySet()) {
-			if (i >= paraList.size()) 
-				break;
-			Type tmp1 = entry.getValue().getType(), tmp2 = paraList.get(i).getType();
-			if (tmp2 != null) {
-				if (!tmp1.toString().equals(tmp2.toString())) {
-					errorReminder.error(paraList.get(i).getLoc(), 
-						"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
-					);
-				}
+		if (typeList.containsKey(identifier)) {
+			Type type = typeList.get(identifier);
+			if ((type instanceof BoolType) || (type instanceof IntType) || (type instanceof StringType)) {
+				errorReminder.error(node.getLoc(), "\'" + identifier + "\' cannot be a function name.");
+				return null;
 			}
-			i++;
+			else {
+				return ((ClassSymbol)type).findFunct(node, errorReminder);
+			}
 		}
-		return functSymbol;
+		else {
+			if (!functList.containsKey(identifier)) {
+				errorReminder.error(node.getLoc(), "function \'" + identifier + "\' was not declared in this scope.");
+				return null;
+			}
+			FunctSymbol functSymbol = functList.get(identifier);
+			LinkedHashMap<String, VarSymbol> argueList = functSymbol.getParaList();
+			ArrayList<ExprNode> paraList = node.getParaList();
+			if (paraList.size() < argueList.size()) {
+				errorReminder.error(node.getLoc(), "too few parameters to function \'" + identifier + "\'.");
+			}
+			if (paraList.size() > argueList.size()) {
+				errorReminder.error(node.getLoc(), "too many parameters to function \'" + identifier + "\'.");
+			}
+			int i = 0;
+			for (Map.Entry<String, VarSymbol> entry : argueList.entrySet()) {
+				if (i >= paraList.size()) 
+					break;
+				Type tmp1 = entry.getValue().getType(), tmp2 = paraList.get(i).getType();
+				if (tmp2 != null) {
+					if (tmp2 instanceof NullType) {
+						if (!(tmp1 instanceof ClassSymbol)) {
+							errorReminder.error(paraList.get(i).getLoc(),
+								"null expression cannot be apply to type \'" + tmp1.toString() + "\'."
+							);
+						}
+					}
+					else if (!tmp1.toString().equals(tmp2.toString())) {
+						errorReminder.error(paraList.get(i).getLoc(), 
+							"cannot convert \'" + tmp2.toString() + "\' to \'" + tmp1.toString() + "\' in initialization."
+						);
+					}
+				}
+				i++;
+			}
+			return functSymbol;
+		}
 	}
 	
 	@Override
@@ -201,6 +215,11 @@ public class GlobalScope extends BaseScope {
 	@Override
 	public ClassSymbol getClassScope(String identifier) {
 		return (ClassSymbol)typeList.get(identifier);
+	}
+	
+	@Override
+	public boolean duplicateClass(String identifier) {
+		return typeList.containsKey(identifier);
 	}
 
 	public void setBuiltInMember(Scope gobalScope, StringType stringTemplate) {

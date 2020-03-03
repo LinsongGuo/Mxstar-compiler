@@ -1,14 +1,8 @@
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 
 import parser.*;
 import AST.*;
@@ -18,11 +12,10 @@ import SemanticChecker.*;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		InputStream IS = System.in;
-		//InputStream IS = new FileInputStream("code.Mx");
+		//InputStream IS = System.in;
+		InputStream IS = new FileInputStream("code.Mx");
 		CharStream AIS = CharStreams.fromStream(IS);
-      	//ANTLRInputStream AIS = new ANTLRInputStream(IS);
-		
+      	
 		System.err.println("lexer------------------");
 		MxstarLexer lexer = new MxstarLexer(AIS);
 		lexer.removeErrorListeners();

@@ -6,7 +6,6 @@ import java.util.Map;
 
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;
-import AST.ClassDefNode;
 import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
@@ -63,7 +62,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 				"redeclaration of function \'" + identifier + "\'."
 			);
 			return null;
-		}		
+		}	
 		FunctSymbol functSymbol = new FunctSymbol(this, identifier, retType);
 		functList.put(identifier, functSymbol);
 		return functSymbol;
@@ -72,13 +71,6 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	@Override
 	public void declareParaList(ArrayList<VarDefNode> paraList, ErrorReminder errorReminder) {
 		
-	}
-	
-	public Scope declareConstructor() {
-		String identifier = toString();
-		FunctSymbol functSymbol = new FunctSymbol(this, identifier);
-		functList.put(identifier, functSymbol);
-		return functSymbol;
 	}
 	
 	@Override
@@ -136,6 +128,14 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	@Override
 	public boolean isBuiltInType() {
 		return false;
+	}
+	
+	public Scope declareConstructor() {
+		String identifier = toString();
+		FunctSymbol functSymbol = new FunctSymbol(this, identifier, this);
+		functSymbol.setConstructor();
+		functList.put(identifier, functSymbol);
+		return functSymbol;
 	}
 	
 	public VarSymbol findVar(VarExprNode node, ErrorReminder errorReminder) {

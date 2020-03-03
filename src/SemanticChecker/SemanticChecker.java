@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import AST.*;
 import Scope.*;
-import parser.MxstarParser.ConstructorDefContext;
 import utility.*;
 
 public class SemanticChecker implements ASTVisitor {
@@ -29,10 +28,6 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		return false;
 	}
-	
-	private boolean duplicateClass(String identifier) {
-		return globalScope.getClassScope(identifier) != null;
-	} 
 	
 	@Override
 	public void visit(ProgramNode node){
@@ -72,7 +67,7 @@ public class SemanticChecker implements ASTVisitor {
 									"variable name \'" + varIdentifier + "\' is a reserved word."
 								);
 							} 
-							else if (duplicateClass(varIdentifier)) {
+							else if (classScope.duplicateClass(varIdentifier)) {
 								errorReminder.error(varItem.getLoc(), 
 									"duplicate name for variable \'" + varIdentifier + "\' and type \'" + varIdentifier + "\'."
 								);
@@ -93,7 +88,7 @@ public class SemanticChecker implements ASTVisitor {
 								"variable name \'" + functIdentifier + "\' is a reserved word."
 							);
 						}
-						else if (duplicateClass(functIdentifier)) {
+						else if (classScope.duplicateClass(functIdentifier)) {
 							errorReminder.error(functItem.getLoc(), 
 								"duplicate name for function \'" + functIdentifier + "\' and type \'" + functIdentifier + "\'."
 							);
@@ -118,7 +113,7 @@ public class SemanticChecker implements ASTVisitor {
 						"class name \'" + identifier + "\' is a reserved word."
 					);
 				}
-				else if (duplicateClass(identifier)) {
+				else if (currentScope.duplicateClass(identifier)) {
 					errorReminder.error(functItem.getLoc(), 
 						"duplicate name for function \'" + identifier + "\' and class \'" + identifier + "\'."
 					);
@@ -153,7 +148,8 @@ public class SemanticChecker implements ASTVisitor {
 					}
 					else {
 						FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
-						functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
+						if (functSymbol != null)
+							functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
 					}	
 				}
 			}	
@@ -174,13 +170,19 @@ public class SemanticChecker implements ASTVisitor {
 		//System.err.println("visit varDefList node ");
 		ArrayList<VarDefNode> varList = node.getVarList();
 		for (VarDefNode item : varList) {
+			//initial value
+			ExprNode initValue = item.getInitValue();
+			if (initValue != null) {
+				initValue.accept(this);
+			}
+			//declare
 			String identifier = item.getIdentifier();
 			if (isReservedWord(identifier)) {
 				errorReminder.error(item.getLoc(), 
 					"variable name \'" + identifier + "\' is a reserved word."
 				);
 			}
-			else if (duplicateClass(identifier)) {
+			else if (currentScope.duplicateClass(identifier)) {
 				errorReminder.error(item.getLoc(), 
 					"duplicate name for variable \'" + identifier + "\' and class \'" + identifier + "\'."
 				);
@@ -188,11 +190,8 @@ public class SemanticChecker implements ASTVisitor {
 			else {
 				VarSymbol varSymbol = currentScope.declareVar(item, errorReminder);
 				if (varSymbol != null) {
-					ExprNode initValue = item.getInitValue();
-					if (initValue != null) {
-						initValue.accept(this);
+					if (initValue != null)
 						varSymbol.checkInitValue(initValue, errorReminder);
-					}
 					varSymbol.beenDefined();
 				}
 			}
@@ -202,7 +201,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(VarDefNode node) {
 		String identifier = node.getIdentifier();
-		if (!isReservedWord(identifier) && !duplicateClass(identifier)) {
+		if (!isReservedWord(identifier) && !currentScope.duplicateClass(identifier)) {
 			VarSymbol varSymbol = currentScope.getVarSymbol(identifier);
 			if (varSymbol != null && !varSymbol.definedOrNot()) {
 				ExprNode initValue = node.getInitValue();
@@ -220,7 +219,7 @@ public class SemanticChecker implements ASTVisitor {
 		String identifier = node.getIdentifier();
 		//System.err.println("visit function " + identifier);
 		if (!isReservedWord(identifier)) {
-			if (!duplicateClass(identifier) || (duplicateClass(identifier) && node.getType() == null)) {
+			if (!currentScope.duplicateClass(identifier)) {
 				FunctSymbol functSymbol = currentScope.getFunctScope(identifier);
 				if (functSymbol != null && !functSymbol.definedOrNot()) {
 					currentScope = functSymbol;
@@ -413,8 +412,8 @@ public class SemanticChecker implements ASTVisitor {
 			expr.accept(this);
 			Type retType = functSymbol.getType();
 			Type exprType = expr.getType();
-			if (exprType != null) { 
-				if (retType == null) {
+			if (exprType != null && retType != null) { 
+				if (functSymbol.isConstructor()) {
 					errorReminder.error(node.getLoc(), 
 						"returning a value from a constructor."
 					);
@@ -423,6 +422,13 @@ public class SemanticChecker implements ASTVisitor {
 					errorReminder.error(node.getLoc(), 
 						"return-statement with a value, in function returning \'void\'."
 					);
+				}
+				else if (exprType instanceof NullType) {
+					if (!(retType instanceof ClassSymbol)) {
+						errorReminder.error(node.getLoc(), 
+							"return-statement with null, in function returning \'" + retType.toString() + "\'."	
+						);
+					}
 				}
 				else if(!retType.toString().equals(exprType.toString())){
 					errorReminder.error(expr.getLoc(),
@@ -433,10 +439,12 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		else {
 			Type retType = functSymbol.getType();
-			if (!(retType instanceof VoidType)) {
-				errorReminder.error(node.getLoc(),
-					"return-statement with no value, in function returning \'" + retType.toString() + "\'."
-				);
+			if (retType != null) {
+				if (!(retType instanceof VoidType) && !functSymbol.isConstructor()) {
+					errorReminder.error(node.getLoc(),
+						"return-statement with no value, in function returning \'" + retType.toString() + "\'."
+					);
+				}	
 			}
 		}
 		
@@ -524,6 +532,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(FunctExprNode node) {
+		//System.err.println("visit functexpr.");
 		//check parameters
 		ArrayList<ExprNode> paraList = node.getParaList();
 		for (ExprNode item : paraList) {
@@ -543,6 +552,7 @@ public class SemanticChecker implements ASTVisitor {
 			FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
 			if (functSymbol != null) {
 				node.setType(functSymbol.getType());
+				
 				node.setLvalue(false);
 			}
 		}
@@ -553,7 +563,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(MemberExprNode node) { 
-		//System.err.println("visit memberexpr node.");
+		//System.err.println("visit memberexpr.");
 		ExprNode nameExpr = node.getNameExpr(), memberExpr = node.getMemberExpr();
 		nameExpr.accept(this);
 		Type type = nameExpr.getType();
@@ -610,7 +620,25 @@ public class SemanticChecker implements ASTVisitor {
 		String tmp = node.getTypeNode().typeString();
 		Type type = currentScope.resolveType(tmp);
 		if (type != null) {
-			node.setType(new ArrayType(globalScope, tmp, node.getDimension()));
+			int dimension = node.getDimension();
+			if (dimension > 0) {
+				if (tmp.equals("void")) {
+					errorReminder.error(node.getTypeNode().getLoc(), "new expression cannot apply to void.");
+				}
+				node.setType(new ArrayType(globalScope, tmp, dimension));
+			}
+			else {
+				if (tmp.equals("void")) {
+					errorReminder.error(node.getTypeNode().getLoc(), "new expression cannot apply to void.");
+				}
+				else if (tmp.equals("bool")) {
+					errorReminder.error(node.getTypeNode().getLoc(), "new expression cannot apply to bool.");
+				}
+				else if (tmp.equals("int")) {
+					errorReminder.error(node.getTypeNode().getLoc(), "new expression cannot apply to int.");
+				} 
+				node.setType(type);
+			}	
 		}
 		else {
 			errorReminder.error(node.getLoc(), 
@@ -688,7 +716,6 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(BinaryExprNode node) {
-		//System.err.println("check bianrynode");
 		ExprNode left = node.getLeft(), right = node.getRight();
 		left.accept(this);
 		right.accept(this);
@@ -712,15 +739,6 @@ public class SemanticChecker implements ASTVisitor {
 				}
 			}
 			else {
-				/*node.setType(leftType);
-				int d1 = (leftType instanceof ArrayType) ? ((ArrayType)leftType).getDimension() : 0;
-				int d2 = (rightType instanceof ArrayType) ? ((ArrayType)rightType).getDimension() : 0;
-				if (d1 != d2) {
-					errorReminder.error(right.getLoc(), 
-						"cannot convert \'" + rightType.toString() + "\' to \'" + leftType.toString() + "\' in initialization."
-					);
-				}
-				else */
 				node.setType(leftType);
 			}
 		}
@@ -735,7 +753,7 @@ public class SemanticChecker implements ASTVisitor {
 				   (leftType instanceof NullType && rightType instanceof NullType)) 
 			   ) {
 					errorReminder.error( node.getLoc(),
-						"no match for operator== between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
+						"no match for operator" + op.toString() + " between \'" + leftType.toString() + "\' and \'" + rightType.toString() + "\'."
 					);
 			     }
 			else 

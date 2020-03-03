@@ -2,7 +2,6 @@ package AST;
 
 import java.util.ArrayList;
 
-import Scope.Type;
 import utility.Location;
 
 public class CreatorExprNode extends ExprNode {

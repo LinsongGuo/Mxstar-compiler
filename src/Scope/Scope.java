@@ -4,7 +4,6 @@ package Scope;
 import java.util.ArrayList;
 
 import AST.VarDefNode;
-import AST.VarDefListNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.ClassDefNode;
@@ -47,4 +46,7 @@ public interface Scope {
 	public abstract FunctSymbol getFunctScope(String identifier);
 	
 	public abstract ClassSymbol getClassScope(String identifier);	
+	
+	public abstract boolean duplicateClass(String identifier);
+
 }

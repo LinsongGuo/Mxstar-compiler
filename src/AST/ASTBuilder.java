@@ -1,12 +1,9 @@
 package AST;
 
 import parser.MxstarParser;
-import parser.MxstarParser.ExprContext;
 import parser.MxstarBaseVisitor;
 
 import java.util.ArrayList;
-
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import utility.Location;
 import utility.Operator;
@@ -24,7 +21,6 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	public ASTNode visitProgram(MxstarParser.ProgramContext ctx) {
 		//System.err.println("visitProgram: " + ctx.getText());
 		ArrayList<DefNode> defList = new ArrayList<DefNode>();
-		boolean hasMain = false;
 		for (MxstarParser.DefContext item : ctx.def()) {
 			defList.add((DefNode)visit(item)); 
 		}
@@ -326,7 +322,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override 
 	public ASTNode visitInvalidCreator(MxstarParser.InvalidCreatorContext ctx) {
-		//System.err.println("visitInvalidCreator " + ctx.getText());
+		System.err.println("visitInvalidCreator " + ctx.getText());
 		errorReminder.error( new Location(ctx.getStart()), "invalid creator.");
 		int dimension = 0;
 		for (var item: ctx.children) {
@@ -373,6 +369,7 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	
 	@Override
 	public ASTNode visitNaiveCreator(MxstarParser.NaiveCreatorContext ctx) {
+		//System.err.println("visitNaiveCreator " + ctx.getText() + " " + ctx.varType().getText().toString());
 		return new CreatorExprNode( new Location(ctx.getStart()),
 			(TypeNode)visit(ctx.varType()),
 			new ArrayList<ExprNode>(),

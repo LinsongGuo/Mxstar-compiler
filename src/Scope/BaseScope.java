@@ -3,12 +3,9 @@ package Scope;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import utility.ErrorReminder;
-import utility.Location;
 import AST.ClassDefNode;
-import AST.ExprNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
-import AST.VarDefListNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
 import AST.TypeNode;
@@ -97,4 +94,6 @@ abstract public class BaseScope implements Scope {
 	public abstract FunctSymbol getFunctScope(String identifier);
 	
 	public abstract ClassSymbol getClassScope(String identifier);
+	
+	public abstract boolean duplicateClass(String identifier);
 }

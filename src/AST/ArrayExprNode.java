@@ -1,7 +1,6 @@
 package AST;
 
 import utility.Location;
-import java.util.ArrayList;
 
 public class ArrayExprNode extends ExprNode {
 	private ExprNode nameExpr, indexExpr;

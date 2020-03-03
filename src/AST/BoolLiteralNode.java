@@ -1,14 +1,17 @@
 package AST;
 
-import Scope.Type;
 import utility.Location;
 
 public class BoolLiteralNode extends LiteralExprNode {
-	private boolean bool;
+	private boolean value;
 	
-	public BoolLiteralNode(Location loc, boolean bool) {
+	public BoolLiteralNode(Location loc, boolean value) {
 		super(loc);
-		this.bool = bool;
+		this.value = value;
+	}
+	
+	public boolean getValue() {
+		return value;
 	}
 	
 	public void accept(ASTVisitor visitor) {
