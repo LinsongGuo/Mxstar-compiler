@@ -12,11 +12,11 @@ import SemanticChecker.*;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		//InputStream IS = System.in;
-		InputStream IS = new FileInputStream("code.Mx");
+		InputStream IS = System.in;
+		//InputStream IS = new FileInputStream("code.Mx");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
-		System.err.println("lexer------------------");
+		//System.err.println("lexer------------------");
 		MxstarLexer lexer = new MxstarLexer(AIS);
 		lexer.removeErrorListeners();
 		lexer.addErrorListener(new MxstarErrorListener(errorReminder));
@@ -29,19 +29,19 @@ public class Main {
 			System.out.println(token.getType() + " " + token.getText());
 		}*/
 		
-		System.err.println("parser------------------");
+		//System.err.println("parser------------------");
 		MxstarParser parser = new MxstarParser(tokens);
 		parser.removeErrorListeners();
 		parser.addErrorListener(new MxstarErrorListener(errorReminder));
 		
-		System.err.println("Building AST------------");
+		//System.err.println("Building AST------------");
 		ASTBuilder ast = new ASTBuilder(errorReminder);
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		
-		System.err.println("Semantic checking--------");
+		//System.err.println("Semantic checking--------");
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
-		System.err.println("Finished.");
+		//System.err.println("Finished.");
 		
 		System.exit(errorReminder.count());
 		//if (errorReminder.hasError()) System.exit(1);
