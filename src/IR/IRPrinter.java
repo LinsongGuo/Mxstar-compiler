@@ -151,25 +151,37 @@ public class IRPrinter implements IRVisitor {
 	}
 
 	@Override
-	public void visit(IRConst node) {
+	public void visit(IRConstInt node) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void visit(IRIntConst node) {
+	public void visit(IRConstBool node) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void visit(IRBoolConst node) {
+	public void visit(IRConstString node) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void visit(IRStringConst node) {
+	public void visit(IRModule node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(IRFunction node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(IRGlobalVariable node) {
 		// TODO Auto-generated method stub
 		
 	}

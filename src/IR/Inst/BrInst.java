@@ -9,6 +9,7 @@ public class BrInst extends IRInst {
 	private IRBasicBlock ifTrue, ifFalse;
 	
 	public BrInst(IRSymbol cond, IRBasicBlock ifTrue, IRBasicBlock ifFalse) {
+		super();
 		this.cond = cond;
 		this.ifTrue = ifTrue;
 		this.ifFalse = ifFalse;

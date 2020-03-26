@@ -1,12 +1,13 @@
 package AST;
 
 import utility.Location;
+import IR.Symbol.IRSymbol;
 import Scope.Type;
 
 public abstract class ExprNode extends ASTNode{
 	protected Type type;
 	protected boolean lvalue;
-	
+
 	public ExprNode(Location loc) {
 		super(loc);
 		lvalue = false;
@@ -29,4 +30,15 @@ public abstract class ExprNode extends ASTNode{
 	}
 	
 	public abstract void accept(ASTVisitor visitor);
+	
+	//for IR
+	protected IRSymbol symbol;
+	
+	public void setIRSymbol(IRSymbol symbol) {
+		this.symbol = symbol;
+	}
+	
+	public IRSymbol getIRSymbol() {
+		return symbol;
+	}
 }

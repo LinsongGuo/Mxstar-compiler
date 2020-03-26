@@ -3,10 +3,10 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRInt1Type;
 
-public class IRBoolConst extends IRConst {
+public class IRConstBool extends IRSymbol {
 	private boolean value;
 	
-	public IRBoolConst(boolean value) {
+	public IRConstBool(boolean value) {
 		super(new IRInt1Type());
 		this.value = value;
 	}

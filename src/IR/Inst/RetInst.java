@@ -9,6 +9,7 @@ public class RetInst extends IRInst {
 	private IRSymbol value;
 	
 	public RetInst(IRSymbol value) {
+		super();
 		this.value = value;
 	}
 	

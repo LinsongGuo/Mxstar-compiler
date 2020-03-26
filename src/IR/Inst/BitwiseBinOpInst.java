@@ -28,6 +28,7 @@ public class BitwiseBinOpInst extends IRInst {
 	private IRSymbol result, left, right;
 	
 	public BitwiseBinOpInst(BitwiseBinOpType op, IRSymbol result, IRSymbol left, IRSymbol right) {
+		super();
 		this.op = op;
 		this.result = result;
 		this.left = left;

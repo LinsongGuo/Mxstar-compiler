@@ -7,6 +7,7 @@ public class StoreInst extends IRInst {
 	private IRSymbol reg, ptr;
 	
 	public StoreInst(IRSymbol reg, IRSymbol ptr) {
+		super();
 		this.reg = reg;
 		this.ptr = ptr;
 	}

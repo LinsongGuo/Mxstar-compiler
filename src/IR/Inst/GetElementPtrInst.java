@@ -12,6 +12,7 @@ public class GetElementPtrInst extends IRInst {
 	private ArrayList<IRSymbol> index;
 	
 	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, ArrayList<IRSymbol> index) {
+		super();
 		this.result = result;
 		this.ptr = ptr;
 		this.index = index;

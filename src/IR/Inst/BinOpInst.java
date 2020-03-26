@@ -28,6 +28,7 @@ public class BinOpInst extends IRInst {
 	private IRSymbol result, left, right;
 	
 	public BinOpInst(BinOpType op, IRSymbol result, IRSymbol left, IRSymbol right) {
+		super();
 		this.op = op;
 		this.result = result;
 		this.left = left;

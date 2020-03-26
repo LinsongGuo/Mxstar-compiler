@@ -2,12 +2,15 @@
 package Scope;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import AST.VarDefNode;
 import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.ClassDefNode;
 import AST.VarExprNode;
+import IR.Symbol.IRRegister;
 import AST.ArrayExprNode;
 import utility.ErrorReminder;
 
@@ -49,4 +52,9 @@ public interface Scope {
 	
 	public abstract boolean duplicateClass(String identifier);
 
+	//for IR
+		
+	public abstract void addRegister(String name, IRRegister reg);	
+	
+	public abstract IRRegister resolveRegister(String name);
 }

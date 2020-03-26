@@ -27,6 +27,14 @@ public class IcmpInst extends IRInst {
 	private IcmpOpType op;
 	private IRSymbol result, left, right;
 	
+	public IcmpInst(IcmpOpType op, IRSymbol result, IRSymbol left, IRSymbol right) {
+		super();
+		this.op = op;
+		this.result = result;
+		this.left = left;
+		this.right = right;
+	}
+	
 	@Override
 	public String toString() {
 		return result.toString() + " = icmp " + op.toString() + " " + left.getType().toString() + " " + left.toString() + ", " + right.toString();

@@ -1,6 +1,7 @@
 package Scope;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import utility.ErrorReminder;
 import AST.ClassDefNode;
@@ -8,6 +9,7 @@ import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
+import IR.Symbol.IRRegister;
 import AST.TypeNode;
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;
@@ -19,6 +21,7 @@ abstract public class BaseScope implements Scope {
 	public BaseScope(Scope parent) {
 		this.parent = parent;
 		this.varList = new LinkedHashMap<String, VarSymbol>();
+		this.registerList = new LinkedHashMap<String, IRRegister>();
 	}
 
 	public abstract Scope getGlobalScope();
@@ -96,4 +99,25 @@ abstract public class BaseScope implements Scope {
 	public abstract ClassSymbol getClassScope(String identifier);
 	
 	public abstract boolean duplicateClass(String identifier);
+	
+
+	//for IR
+	protected LinkedHashMap<String, IRRegister> registerList;
+	
+	@Override
+	public void addRegister(String name, IRRegister reg) {
+		if (registerList.containsKey(name)) {
+			System.err.println("error in BaseScope.addRegister");
+		}	
+		registerList.put(name, reg);
+	}
+	
+	@Override
+	public IRRegister resolveRegister(String name) {
+		if (registerList.containsKey(name)) 
+			return registerList.get(name);
+		if (parent != null)
+			return parent.resolveRegister(name);
+		return null;
+	}
 }

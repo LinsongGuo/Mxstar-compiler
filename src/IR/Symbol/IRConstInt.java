@@ -3,10 +3,10 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRInt32Type;
 
-public class IRIntConst extends IRConst {
+public class IRConstInt extends IRSymbol {
 	private long value;
 	
-	public IRIntConst(long value) {
+	public IRConstInt(long value) {
 		super(new IRInt32Type());
 		this.value = value;
 	}

@@ -7,6 +7,7 @@ public class LoadInst extends IRInst {
 	private IRSymbol reg, ptr;
 	
 	public LoadInst(IRSymbol reg, IRSymbol ptr) {
+		super();
 		this.reg = reg;
 		this.ptr = ptr;
 	}

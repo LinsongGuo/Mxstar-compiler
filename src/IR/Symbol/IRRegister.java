@@ -5,7 +5,7 @@ import IR.Type.IRType;
 
 public class IRRegister extends IRSymbol {
 	
-	private String name;
+	protected String name;
 	
 	public IRRegister(IRType type, String name) {
 		super(type);
@@ -22,4 +22,11 @@ public class IRRegister extends IRSymbol {
 		visitor.visit(this);	
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
 }

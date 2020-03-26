@@ -11,6 +11,7 @@ import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
+import IR.Symbol.IRRegister;
 import utility.ErrorReminder;
 
 abstract public class ScopedSymbol extends Symbol implements Scope {
@@ -101,19 +102,6 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 		if(!varList.containsKey(identifier)) {
 			return parent.resovleArray(node, errorReminder);
 		}
-		/*
-		//check index
-		ExprNode indexExpr = node.getIndexExpr();
-		if (indexExpr != null) {
-			Type indexType = indexExpr.getType();
-			if (!(indexType instanceof IntType)) {
-				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
-			}
-		}
-		else {
-			errorReminder.error(node.getLoc(), "empty index of array.");
-		}
-		*/	
 		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
@@ -169,4 +157,24 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	}
 	
 	public abstract boolean isFunct();
+	
+	//for IR
+	protected LinkedHashMap<String, IRRegister> registerList;
+	
+	@Override
+	public void addRegister(String name, IRRegister reg) {
+		if (registerList.containsKey(name)) {
+			System.err.println("error in ScopedSymbol.addRegister");
+		}	
+		registerList.put(name, reg);
+	}
+	
+	@Override
+	public IRRegister resolveRegister(String name) {
+		if (registerList.containsKey(name)) 
+			return registerList.get(name);
+		if (parent != null)
+			return parent.resolveRegister(name);
+		return null;
+	}
 }

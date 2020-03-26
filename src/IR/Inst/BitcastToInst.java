@@ -9,6 +9,7 @@ public class BitcastToInst extends IRInst {
 	private IRSymbol src, dest;
 	
 	public BitcastToInst(IRSymbol src, IRSymbol dest) {
+		super();
 		this.src = src;
 		this.dest = dest;
 	}

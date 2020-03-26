@@ -9,6 +9,7 @@ public class AllocaInst extends IRInst {
 	private IRType type;
 
 	public AllocaInst(IRRegister reg, IRType type) {
+		super();
 		this.reg = reg;
 		this.type = type;
 	}
