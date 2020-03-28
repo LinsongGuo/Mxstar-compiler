@@ -1,6 +1,7 @@
 package Scope;
 
 import AST.ExprNode;
+import IR.Symbol.IRRegister;
 import utility.ErrorReminder;
 
 public class VarSymbol extends Symbol{
@@ -41,5 +42,16 @@ public class VarSymbol extends Symbol{
 				);
 			}
 		}
-	}	
+	}
+	
+	//for IR
+	private IRRegister address;
+	
+	public void setIRAddress(IRRegister address) {
+		this.address = address;
+	}
+	
+	public IRRegister toIRAddress() {
+		return address;
+	}
 }

@@ -30,9 +30,9 @@ public interface Scope {
 	
 	public abstract Type resolveType(String identifier); 
 	
-	public abstract VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder);
+	public abstract VarSymbol resolveVar(VarExprNode node, ErrorReminder errorReminder);
 	
-	public abstract VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder);
+	public abstract VarSymbol resolveArray(ArrayExprNode node, ErrorReminder errorReminder);
 	
 	public abstract FunctSymbol resolveFunct(FunctExprNode node, ErrorReminder errorReminder);
 		
@@ -52,9 +52,9 @@ public interface Scope {
 	
 	public abstract boolean duplicateClass(String identifier);
 
+	/*
 	//for IR
-		
 	public abstract void addRegister(String name, IRRegister reg);	
-	
 	public abstract IRRegister resolveRegister(String name);
+	*/
 }

@@ -8,6 +8,11 @@ import IR.Type.IRVoidType;
 public class RetInst extends IRInst {
 	private IRSymbol value;
 	
+	public RetInst() {
+		super();
+		value = null;
+	}
+	
 	public RetInst(IRSymbol value) {
 		super();
 		this.value = value;
@@ -15,12 +20,11 @@ public class RetInst extends IRInst {
 	
 	@Override
 	public String toString() {
-		IRType type = value.getType();
-		if (type instanceof IRVoidType) {
+		if (value == null) {
 			return "ret void";
 		}
 		else {
-			return "ret " + type.toString() + " " + value.toString();	
+			return "ret " + value.getType().toString() + " " + value.toString();	
 		}		
 	}
 

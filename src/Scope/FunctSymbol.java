@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 
 import AST.FunctDefNode;
 import AST.VarDefNode;
+import IR.IRFunction;
 import AST.TypeNode;
 import AST.ArrayTypeNode;
 import AST.ExprNode;
@@ -124,6 +125,17 @@ public class FunctSymbol extends ScopedSymbol {
 	public boolean matchParameters(FunctExprNode node) {
 		ArrayList<ExprNode> paraList = node.getParaList();
 		return paraList.size() == this.paraList.size();
+	}
+	
+	//for IR
+	private IRFunction IRfunction;
+	
+	public void setIRFunction(IRFunction IRfunction) {
+		this.IRfunction = IRfunction;
+	}
+	
+	public IRFunction toIRFunction() {
+		return IRfunction;
 	}
 
 }

@@ -7,7 +7,7 @@ import IR.IRVisitor;
 public class IRClassType extends IRType {
 	private String name;
 	private ArrayList<IRType> memberList;
-	
+
 	public IRClassType(String name, ArrayList<IRType> memberList) {
 		this.name = name;
 		this.memberList = memberList;
@@ -34,4 +34,10 @@ public class IRClassType extends IRType {
 		builder.append(" }");
 		return builder.toString();
 	}
+	
+	/*
+	public int order(String name) {
+		return 0;
+	}
+	*/
 }

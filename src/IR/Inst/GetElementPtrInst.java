@@ -18,6 +18,23 @@ public class GetElementPtrInst extends IRInst {
 		this.index = index;
 	}
 	
+	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx) {
+		super();
+		this.result = result;
+		this.ptr = ptr;
+		index = new ArrayList<IRSymbol>();
+		index.add(idx);
+	}
+	
+	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx, IRSymbol idx2) {
+		super();
+		this.result = result;
+		this.ptr = ptr;
+		index = new ArrayList<IRSymbol>();
+		index.add(idx);
+		index.add(idx2);
+	}
+	
 	@Override
 	public String toString() {
 		IRType ptrType = ptr.getType(), type;
@@ -31,8 +48,10 @@ public class GetElementPtrInst extends IRInst {
 			}
 			return builder.toString();
 		}
-		else 
-			return "getelementptr error!";
+		else {
+			System.err.println("getelementptr error!");
+			return null;
+		}
 	}
 	@Override
 	public void accept(IRVisitor visitor) {

@@ -1,5 +1,8 @@
 package Scope;
 
+import IR.Type.IRType;
+import IR.Type.IRVoidType;
+
 public class VoidType extends Symbol implements Type {
 	
 	public VoidType() {
@@ -30,4 +33,10 @@ public class VoidType extends Symbol implements Type {
 	public boolean isBuiltInType() {
 		return true;
 	}
+	
+	/*
+	@Override
+	public IRType toIRType() {
+		return new IRVoidType();
+	}*/
 }

@@ -186,4 +186,10 @@ public class IRPrinter implements IRVisitor {
 		
 	}
 
+	@Override
+	public void visit(IRNull node) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

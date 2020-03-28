@@ -1,5 +1,4 @@
 package IR.Symbol;
-
 import IR.Type.IRType;
 
 public class IRGlobalVariable extends IRRegister {

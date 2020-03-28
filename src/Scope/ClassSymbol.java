@@ -12,6 +12,7 @@ import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
+import IR.Type.IRType;
 import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol implements Type {
@@ -218,5 +219,22 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			i++;
 		}
 		return functSymbol;
+	}
+
+	/*
+	@Override
+	public IRType toIRType() {
+		// TODO Auto-generated method stub
+		return null;
+	}*/
+	
+	public int order(String name) {
+		int i = 0;
+		for (Map.Entry<String, VarSymbol> entry : varList.entrySet()) {
+			if (entry.getKey().equals(name))
+				return i;
+			++i;
+		}
+		return 0;
 	}
 }

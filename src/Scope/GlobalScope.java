@@ -87,7 +87,7 @@ public class GlobalScope extends BaseScope {
 	}
 	
 	@Override
-	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveVar(VarExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
 			errorReminder.error(node.getLoc(), "variable \'" + identifier + "\' was not declared in this scope.");
@@ -98,7 +98,7 @@ public class GlobalScope extends BaseScope {
 	}
 	
 	@Override
-	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		//check identifier
 		if(!varList.containsKey(identifier)) {

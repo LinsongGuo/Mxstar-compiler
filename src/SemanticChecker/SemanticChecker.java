@@ -485,7 +485,8 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(VarExprNode node) {
 		node.setScope(currentScope);
-		VarSymbol var = currentScope.resovleVar(node, errorReminder);
+		VarSymbol var = currentScope.resolveVar(node, errorReminder);
+		node.setSymbol(var);
 		if (var != null) {
 			node.setType(var.getType());
 			node.setLvalue(true);
@@ -518,7 +519,8 @@ public class SemanticChecker implements ASTVisitor {
 		}
 		else if (nameExpr instanceof VarExprNode){
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
-			VarSymbol varSymbol = currentScope.resovleArray(node, errorReminder);
+			VarSymbol varSymbol = currentScope.resolveArray(node, errorReminder);
+			((VarExprNode)nameExpr).setSymbol(varSymbol);
 			if (varSymbol != null) {
 				node.setType(varSymbol.getType());
 				node.setLvalue(true);
@@ -566,9 +568,9 @@ public class SemanticChecker implements ASTVisitor {
 		else if (nameExpr instanceof VarExprNode) {
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
 			FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
+			((VarExprNode)nameExpr).setSymbol(functSymbol);
 			if (functSymbol != null) {
 				node.setType(functSymbol.getType());
-				
 				node.setLvalue(false);
 			}
 		}
@@ -591,6 +593,7 @@ public class SemanticChecker implements ASTVisitor {
 			else {
 				if (memberExpr instanceof VarExprNode) {
 					VarSymbol varSymbol = ((ClassSymbol)type).findVar((VarExprNode)memberExpr, errorReminder);
+					node.setSymbol(varSymbol);
 					if (varSymbol != null) {
 						node.setType(varSymbol.getType());
 						node.setLvalue(true);
@@ -598,6 +601,7 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (memberExpr instanceof ArrayExprNode) {
 					VarSymbol arraySymbol = ((ClassSymbol)type).findArray((ArrayExprNode)memberExpr, errorReminder);
+					node.setSymbol(arraySymbol);
 					if (arraySymbol != null) {
 						node.setType(arraySymbol.getType());
 						node.setLvalue(true);
@@ -605,6 +609,7 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (memberExpr instanceof FunctExprNode) {
 					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct((FunctExprNode)memberExpr, errorReminder);
+					node.setSymbol(functSymbol);
 					if (functSymbol != null) {
 						node.setType(functSymbol.getType());
 						node.setLvalue(false);

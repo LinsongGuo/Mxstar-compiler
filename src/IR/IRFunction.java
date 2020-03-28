@@ -16,16 +16,18 @@ public class IRFunction {
 	private IRRegister returnValue;
 	private HashMap<String, ArrayList<IRRegister>> registerHash;
 	private HashMap<String, ArrayList<IRBasicBlock>> blockHash;
+	private ArrayList<IRBasicBlock> blockList;
 	
 	public IRFunction(IRType type, String name, ArrayList<IRRegister> parameters) {
 		this.type = type;
 		this.name = name;
 		this.parameters = parameters;
-		registerHash = new HashMap<String, ArrayList<IRRegister>>();
-		blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
 		entranceBlock = new IRBasicBlock("entranceBlock");
 		exitBlock = new IRBasicBlock("exitBlock");
 		returnBlock = new IRBasicBlock("returnBlock");
+		registerHash = new HashMap<String, ArrayList<IRRegister>>();
+		blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
+		blockList = new ArrayList<IRBasicBlock>();
 		if (type instanceof IRVoidType) {
 			returnValue = null;
 		}
@@ -72,6 +74,10 @@ public class IRFunction {
 		tmp.add(reg);
 	 }
 	
+	public IRRegister getRegister(String name) {
+		return registerHash.get(name).get(0);
+	}
+	
 	public void addBasicBlock(IRBasicBlock block) {
 		String name = block.getName();
 		if (!blockHash.containsKey(name)) {
@@ -80,5 +86,6 @@ public class IRFunction {
 		ArrayList<IRBasicBlock> tmp = blockHash.get(name);
 		block.setName(name);
 		tmp.add(block);
+		blockList.add(block);
 	}
 }

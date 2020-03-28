@@ -41,4 +41,5 @@ public interface IRVisitor {
 	abstract public void visit(IRConstInt node);
 	abstract public void visit(IRConstBool node);
 	abstract public void visit(IRConstString node);
+	abstract public void visit(IRNull node);
 }
