@@ -43,7 +43,8 @@ public class SemanticChecker implements ASTVisitor {
 					);
 				}
 				else {
-					currentScope.declareClass((ClassDefNode)classItem, errorReminder);					
+					ClassSymbol classSymbol = currentScope.declareClass((ClassDefNode)classItem, errorReminder);					
+					((ClassDefNode) classItem).setIRClass(classSymbol);
 				}
 			}
 		}
@@ -73,12 +74,14 @@ public class SemanticChecker implements ASTVisitor {
 								);
 							}
 							else {
-								classScope.declareVar(varItem, errorReminder);		
+								VarSymbol varSymbol = classScope.declareVar(varItem, errorReminder);		
+								varItem.setVarSymbol(varSymbol);
 							}
 						}
 					}
 					//declare constructor in the class
-					classScope.declareConstructor();
+					FunctSymbol constructor = classScope.declareConstructor();
+					((ClassDefNode) classItem).getConstructorDef().setFunctSymbol(constructor);
 					//declare functions in the class
 					ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
 					for (FunctDefNode functItem : functList) {
@@ -96,6 +99,7 @@ public class SemanticChecker implements ASTVisitor {
 						else {
 							FunctSymbol functSymbol = classScope.declareFunct(functItem, errorReminder);
 							functSymbol.declareParaList(functItem.getParaList(), errorReminder);
+							functItem.setFunctSymbol(functSymbol);
 						}
 					}
 				}
@@ -143,14 +147,17 @@ public class SemanticChecker implements ASTVisitor {
 								hasMain = true;
 								FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
 								functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
+								((FunctDefNode) functItem).setFunctSymbol(functSymbol);
 							}
 						}	
 					}
 					else {
 						FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
-						if (functSymbol != null)
+						if (functSymbol != null) {
 							functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
-					}	
+							((FunctDefNode) functItem).setFunctSymbol(functSymbol);
+						}
+					}
 				}
 			}	
 		}
@@ -191,6 +198,7 @@ public class SemanticChecker implements ASTVisitor {
 			else {
 				VarSymbol varSymbol = currentScope.declareVar(item, errorReminder);
 				if (varSymbol != null) {
+					item.setVarSymbol(varSymbol);
 					if (initValue != null)
 						varSymbol.checkInitValue(initValue, errorReminder);
 					varSymbol.beenDefined();
@@ -205,6 +213,7 @@ public class SemanticChecker implements ASTVisitor {
 		String identifier = node.getIdentifier();
 		if (!isReservedWord(identifier) && !currentScope.duplicateClass(identifier)) {
 			VarSymbol varSymbol = currentScope.getVarSymbol(identifier);
+			node.setVarSymbol(varSymbol);
 			if (varSymbol != null && !varSymbol.definedOrNot()) {
 				ExprNode initValue = node.getInitValue();
 				if(initValue != null) {
@@ -520,7 +529,7 @@ public class SemanticChecker implements ASTVisitor {
 		else if (nameExpr instanceof VarExprNode){
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
 			VarSymbol varSymbol = currentScope.resolveArray(node, errorReminder);
-			((VarExprNode)nameExpr).setSymbol(varSymbol);
+			((VarExprNode)nameExpr).setSymbol(currentScope.resolveVar((VarExprNode) nameExpr, errorReminder));
 			if (varSymbol != null) {
 				node.setType(varSymbol.getType());
 				node.setLvalue(true);

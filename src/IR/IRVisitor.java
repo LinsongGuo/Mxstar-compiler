@@ -7,6 +7,7 @@ import IR.Symbol.*;
 public interface IRVisitor {
 	abstract public void visit(IRModule node);
 	abstract public void visit(IRFunction node);
+	abstract public void visit(IRBasicBlock node);
 	
 	//Type
 	abstract public void visit(IRType node);	
@@ -38,6 +39,7 @@ public interface IRVisitor {
 	abstract public void visit(IRSymbol node);
 	abstract public void visit(IRRegister node);
 	abstract public void visit(IRGlobalVariable node);
+	abstract public void visit(IRGlobalString node);
 	abstract public void visit(IRConstInt node);
 	abstract public void visit(IRConstBool node);
 	abstract public void visit(IRConstString node);

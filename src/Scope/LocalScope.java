@@ -77,9 +77,9 @@ public class LocalScope extends BaseScope {
 			int tmp = ((ArrayType)type).getDimension();
 			String typeIdentifier = type.typeString();
 			if (tmp == 1)
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
+				return new VarSymbol(identifier, resolveType(typeIdentifier), null);
 			else 
-				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1), null);
 		} 
 		else {
 			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");

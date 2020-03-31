@@ -41,9 +41,9 @@ public class Main {
 		//System.err.println("Semantic checking--------");
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
-		//System.err.println("Finished.");
 		
-		System.exit(errorReminder.count());
-		//if (errorReminder.hasError()) System.exit(1);
+		if (errorReminder.count() > 0)
+			System.exit(errorReminder.count());
+		
 	}
 }

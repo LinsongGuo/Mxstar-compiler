@@ -12,6 +12,7 @@ import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
+import IR.Type.IRClassType;
 import IR.Type.IRType;
 import utility.ErrorReminder;
 
@@ -131,7 +132,7 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		return false;
 	}
 	
-	public Scope declareConstructor() {
+	public FunctSymbol declareConstructor() {
 		String identifier = toString();
 		FunctSymbol functSymbol = new FunctSymbol(this, identifier, this);
 		functSymbol.setConstructor();
@@ -177,9 +178,9 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			int tmp = ((ArrayType)type).getDimension();
 			String typeIdentifier = type.typeString();
 			if (tmp == 1)
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
+				return new VarSymbol(identifier, resolveType(typeIdentifier), this);
 			else 
-				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1), this);
 		} 
 		else {
 			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
@@ -221,12 +222,16 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		return functSymbol;
 	}
 
-	/*
-	@Override
-	public IRType toIRType() {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
+	//for IR
+	private IRClassType classType;
+	
+	public void setIRClass(IRClassType classType) {
+		this.classType = classType;
+	}
+	
+	public IRClassType toIRClass() {
+		return classType;
+	}
 	
 	public int order(String name) {
 		int i = 0;

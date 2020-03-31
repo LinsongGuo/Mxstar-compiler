@@ -35,6 +35,10 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public IRInst getHead() {
+		return head;
+	}
+	
 	public void addPrev(IRBasicBlock block) {
 		prevList.add(block);
 	}
@@ -42,6 +46,7 @@ public class IRBasicBlock {
 	public void addNext(IRBasicBlock block) {
 		nextList.add(block);
 	}
+	
 	
 	public ArrayList<IRBasicBlock> getPrevList() {
 		return prevList;
@@ -51,4 +56,7 @@ public class IRBasicBlock {
 		return nextList;
 	}
 	
+	public void accept(IRVisitor visitor) {
+		visitor.visit(this);
+	}
 }

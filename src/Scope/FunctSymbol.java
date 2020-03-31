@@ -72,12 +72,12 @@ public class FunctSymbol extends ScopedSymbol {
 				else {
 					if (typeNode instanceof ArrayTypeNode) {
 						ArrayType tmp = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
+						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp, this));
+						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp, this));
 					}
 					else {
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
+						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType, this));
+						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType, this));
 					}
 				}
 			}

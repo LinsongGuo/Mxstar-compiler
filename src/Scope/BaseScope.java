@@ -67,7 +67,7 @@ abstract public class BaseScope implements Scope {
 			return null;
 		}
 		else {
-			VarSymbol varSymbol = new VarSymbol(identifier, type);
+			VarSymbol varSymbol = new VarSymbol(identifier, type, this);
 			this.varList.put(identifier, varSymbol);
 			return varSymbol;
 		}	

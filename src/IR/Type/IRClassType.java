@@ -8,6 +8,11 @@ public class IRClassType extends IRType {
 	private String name;
 	private ArrayList<IRType> memberList;
 
+	public IRClassType(String name) {
+		this.name = name;
+		this.memberList = new ArrayList<IRType>();
+	}
+	
 	public IRClassType(String name, ArrayList<IRType> memberList) {
 		this.name = name;
 		this.memberList = memberList;
@@ -15,7 +20,7 @@ public class IRClassType extends IRType {
 	
 	@Override
 	public String toString() {
-		return "%" + name;
+		return "%class." + name;
 	}
 	
 	@Override
@@ -23,9 +28,9 @@ public class IRClassType extends IRType {
 		visitor.visit(this);
 	}
 	
-	public String declareClassInst() {
-		StringBuilder builder = new StringBuilder(this.toString());
-		builder.append("= type { ");
+	public String declarationString() {
+		StringBuilder builder = new StringBuilder(toString());
+		builder.append(" = type { ");
 		for(int i = 0; i < memberList.size(); ++i) {
 			builder.append(memberList.get(i).toString());
 			if (i + 1 < memberList.size())
@@ -35,9 +40,7 @@ public class IRClassType extends IRType {
 		return builder.toString();
 	}
 	
-	/*
-	public int order(String name) {
-		return 0;
+	public void addMemberType(IRType type) {
+		memberList.add(type);
 	}
-	*/
 }

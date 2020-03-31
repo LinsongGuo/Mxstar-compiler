@@ -44,11 +44,4 @@ public class ArrayType extends ClassSymbol implements Type {
 	public boolean isBuiltInType() {
 		return false;
 	}
-	
-	/*
-	@Override
-	public IRType toIRType() {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
 }

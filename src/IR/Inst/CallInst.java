@@ -11,6 +11,14 @@ public class CallInst extends IRInst {
 	private ArrayList<IRSymbol> parameters;
 	private IRSymbol result;
 	
+
+	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters) {
+		super();
+		this.function = function;
+		this.parameters = parameters;
+		this.result = null;
+	}
+	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRSymbol result) {
 		super();
 		this.function = function;
@@ -20,7 +28,9 @@ public class CallInst extends IRInst {
 	
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder("call " + function.getType().toString() + " " + function.getName() + "(");
+		StringBuilder builder = new StringBuilder();
+		if (result != null) builder.append(result.toString() + " = ");
+		builder.append("call " + function.getType().toString() + " " + function.getName() + "(");
 		for (int i = 0; i < parameters.size(); ++i) {
 			builder.append(parameters.get(i).getType().toString() + " " + parameters.get(i).toString());
 			if (i + 1 < parameters.size()) 
