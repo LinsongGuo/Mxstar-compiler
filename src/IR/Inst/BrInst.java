@@ -28,10 +28,10 @@ public class BrInst extends IRInst {
 	@Override
 	public String toString() {
 		if (cond == null) {
-			return "br label " + ifTrue.getName();
+			return "br label " + ifTrue.toString();
 		}
 		else {
-			return "br i1 " + cond.toString() + ", label " + ifTrue.getName() + ", label " + ifFalse.getName(); 
+			return "br i1 " + cond.toString() + ", label " + ifTrue.toString() + ", label " + ifFalse.toString(); 
 		}
 	}
 

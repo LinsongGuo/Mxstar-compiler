@@ -25,30 +25,48 @@ public class IRPrinter implements IRVisitor {
 	
 	@Override
 	public void visit(IRModule node) {
+		printer.println("; ModuleID = \'test.txt\'");
+		printer.println("source_filename = \"test.txt\"");		
+		printer.println("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\"");
+		printer.println("target triple = \"x86_64-unknown-linux-gnu\"");
+		printer.println("");
+		
 		LinkedHashMap<String, IRClassType> classList = node.getClassList();
 		for (Entry<String, IRClassType> entry : classList.entrySet()) {
 			entry.getValue().accept(this);
 		}
+		if(!classList.isEmpty())
+			printer.println("");
 		
 		LinkedHashMap<String, IRGlobalString> stringList = node.getStringList();
 		for (Entry<String, IRGlobalString> entry : stringList.entrySet()) {
 			entry.getValue().accept(this);
 		}
+		if(!stringList.isEmpty())
+			printer.println("");
 		
 		LinkedHashMap<String, IRGlobalVariable> globalVarList = node.getGlobalVarList();
 		for (Entry<String, IRGlobalVariable> entry : globalVarList.entrySet()) {
 			entry.getValue().accept(this);
 		}
+		if(!globalVarList.isEmpty())
+			printer.println("");
 		
 		LinkedHashMap<String, IRFunction> builtInFunctList = node.getBuiltInFunctList();
 		for (Entry<String, IRFunction> entry : builtInFunctList.entrySet()) {
+			//System.err.println(entry.getValue().declarationString());
 			printer.println(entry.getValue().declarationString());
 		}
+		if(!builtInFunctList.isEmpty())
+			printer.println("");
 		
 		LinkedHashMap<String, IRFunction> functList = node.getFunctList();
-		for (Entry<String, IRFunction> entry : builtInFunctList.entrySet()) {
+		for (Entry<String, IRFunction> entry : functList.entrySet()) {
+			//System.err.println(entry.getKey());
 			entry.getValue().accept(this);
 		}
+		if(!functList.isEmpty())
+			printer.close();
 	}
 	
 	@Override
@@ -68,12 +86,14 @@ public class IRPrinter implements IRVisitor {
 	
 	@Override
 	public void visit(IRFunction node) {
-		printer.println(node.declarationString() + " {");
+		//System.err.println("IRPrinter::vist(IRFunction) " + node.getName());		
+		printer.println(node.definitionString() + " {");
 		ArrayList<IRBasicBlock> blockList = node.getBlockList();
 		for (IRBasicBlock block : blockList) {
 			block.accept(this);
 		}
 		printer.println("}");
+		printer.println("");
 	}
 	
 	@Override

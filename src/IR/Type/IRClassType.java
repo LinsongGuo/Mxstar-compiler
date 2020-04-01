@@ -20,7 +20,7 @@ public class IRClassType extends IRType {
 	
 	@Override
 	public String toString() {
-		return "%class." + name;
+		return "%" + name;
 	}
 	
 	@Override

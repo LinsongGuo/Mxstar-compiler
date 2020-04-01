@@ -6,7 +6,7 @@ public class IRInt32Type extends IRIntType {
 
 	@Override
 	public String toString() {
-		return "int32";
+		return "i32";
 	}
 
 	@Override

@@ -1,8 +1,7 @@
 package IR.Symbol;
 
-import java.io.PrintWriter;
-
 import IR.IRVisitor;
+import IR.Type.IRPtrType;
 import IR.Type.IRType;
 
 public class IRGlobalString extends IRRegister {
@@ -24,6 +23,6 @@ public class IRGlobalString extends IRRegister {
 	}
 	
 	public String declarationString() {
-		return "@" + name + " = private unnamed_addr constant " + type.toString() + " " + value.toString();
+		return "@" + name + " = private unnamed_addr constant " + ((IRPtrType) type).getType().toString() + " " + value.toString();
 	}
 }

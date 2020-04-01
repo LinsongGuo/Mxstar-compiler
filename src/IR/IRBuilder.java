@@ -1,6 +1,8 @@
 package IR;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import AST.*;
 import IR.Symbol.*;
@@ -23,13 +25,17 @@ public class IRBuilder implements ASTVisitor {
 	private IRRegister returnAddress;
 	private ClassSymbol currentClass;
 	
-	public IRBuilder(GlobalScope globalScope, ErrorReminder errorReminder, StringType stringTemplate) {
+	public IRBuilder(GlobalScope globalScope, StringType stringTemplate, ErrorReminder errorReminder) {
 		this.globalScope = globalScope;
 		this.errorReminder = errorReminder;
 		this.currentFunction = null;
 		this.currentBlock = null;
 		this.module = new IRModule(globalScope, stringTemplate);
 		afterLoop = nextLoop = null;
+	}
+	
+	public IRModule getModule() {
+		return module;
 	}
 	
 	private IRType toIRType(TypeNode typeNode) {
@@ -72,17 +78,18 @@ public class IRBuilder implements ASTVisitor {
 		for (DefNode defNode : defList) {
 			if (defNode instanceof ClassDefNode) {
 				ClassSymbol classSymbol = ((ClassDefNode) defNode).getClassSymbol();
-				String identifier = "class." + defNode.toString();
+				String identifier = "class." + ((ClassDefNode) defNode).getIdentifier();
 				IRClassType IRClass = new IRClassType(identifier);
 				classSymbol.setIRClass(IRClass);
 				module.addClass(identifier, IRClass);
 			}
 		}
 		
-		IRFunction function = new IRFunction(new IRVoidType(), "__init__");
-		module.addFunct("__int__", function);
+		IRFunction initFunction = new IRFunction(new IRVoidType(), "__init__");
+		module.addFunct("__init__", initFunction);
+		currentFunction = initFunction;
 		IRBasicBlock entranceBlock = new IRBasicBlock("entranceBlock");
-		function.addBasicBlock(entranceBlock);
+		currentFunction.addBasicBlock(entranceBlock);
 		currentBlock = entranceBlock;
 		
 		for (DefNode defNode : defList) {
@@ -97,7 +104,19 @@ public class IRBuilder implements ASTVisitor {
 					module.addGlobalVariable(globalVariable);
 					ExprNode init = var.getInitValue();
 					if (init != null) {
-						currentBlock.addInst(new StoreInst(init.getResult(), globalVariable));
+						init.accept(this);
+						IRSymbol initRes = init.getResult();
+						if (initRes instanceof IRConstInt)
+							globalVariable.setInit(initRes);
+						else
+							globalVariable.setInit(new IRNull());
+						currentBlock.addInst(new StoreInst(initRes, globalVariable));
+					}
+					else {
+						if(type instanceof IRInt32Type) 
+							globalVariable.setInit(new IRConstInt(0));
+						else 
+							globalVariable.setInit(new IRNull());
 					}
 				}
 			}
@@ -139,17 +158,22 @@ public class IRBuilder implements ASTVisitor {
 		for (FunctDefNode item : functList) {
 			item.accept(this);
 		}
+		FunctDefNode constructorDef = node.getConstructorDef();
+		if (constructorDef != null)
+			constructorDef.accept(this);
 	}
 
 	@Override
 	public void visit(FunctDefNode node) {
+		//System.err.println("IRBuilder::visit(FunctDefNode)");
 		Scope parentScope = node.getScope().getEnclosingScope();
 		if  (parentScope == globalScope) {
 			//function in global scope.
 			IRType returnType = toIRType(node.getType());
 			String identifier = node.getIdentifier();
 			IRFunction function = new IRFunction(returnType, identifier);
-			node.getFunctSymbol().setIRFunction(function);
+			FunctSymbol functSymbol = node.getFunctSymbol();
+			functSymbol.setIRFunction(function);
 			module.addFunct(identifier, function);
 			currentFunction = function;
 			//entranceBlock
@@ -157,21 +181,29 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addBasicBlock(entranceBlock);
 			currentBlock = entranceBlock;
 			if (node.getIdentifier().equals("main")) {
-				currentBlock.addInst(new CallInst(module.getFunct("__int__"), new ArrayList<IRSymbol>()));
+				currentBlock.addInst(new CallInst(module.getFunct("__init__"), new ArrayList<IRSymbol>()));
 			}
 			//returnAddress
-			returnAddress = new IRRegister(new IRPtrType(returnType), "returnValue$");
-			currentFunction.addRegister(returnAddress);
-			currentBlock.addInst(new AllocaInst(returnAddress, returnType));
+			if (!(returnType instanceof IRVoidType)) {
+				returnAddress = new IRRegister(new IRPtrType(returnType), "returnValue$");
+				currentFunction.addRegister(returnAddress);
+				currentBlock.addInst(new AllocaInst(returnAddress, returnType));	
+			}
 			//parameters
 			ArrayList<VarDefNode> parameters = node.getParaList();
-			for (VarDefNode parameter : parameters) {
+			LinkedHashMap<String, VarSymbol> parameterSymbols = functSymbol.getParaList();
+			int i = 0;
+			for (Map.Entry<String, VarSymbol> entry : parameterSymbols.entrySet()) {
+				VarDefNode parameter = parameters.get(i++);
+				VarSymbol parameterSymbol = entry.getValue();
 				IRType paraType = toIRType(parameter.getType());
 				IRRegister address = new IRRegister(new IRPtrType(paraType), parameter.getIdentifier() + "$");
 				currentFunction.addRegister(address);
 				currentBlock.addInst(new AllocaInst(address, paraType));
+				parameterSymbol.setAddress(address);
+				parameterSymbol.setIRType(paraType);
 				
-				IRRegister reg = new IRRegister(paraType, parameter.getIdentifier() + "$");
+				IRRegister reg = new IRRegister(paraType, parameter.getIdentifier());
 				currentFunction.addRegister(reg);
 				currentFunction.addParameter(reg);
 				currentBlock.addInst(new StoreInst(reg, address));
@@ -198,10 +230,11 @@ public class IRBuilder implements ASTVisitor {
 		}
 		else if (parentScope instanceof ClassSymbol){
 			//function in class scope.
-			IRType returnType = toIRType(node.getType());
+			IRType returnType = node.getType() == null ? new IRVoidType() : toIRType(node.getType());
 			String identifier = ((ClassSymbol) parentScope).toString() + "." + node.getIdentifier();
 			IRFunction function = new IRFunction(returnType, identifier);
-			node.getFunctSymbol().setIRFunction(function);
+			FunctSymbol functSymbol = node.getFunctSymbol();
+			functSymbol.setIRFunction(function);
 			module.addFunct(identifier, function);
 			currentFunction = function;
 			//entranceBlock
@@ -209,11 +242,13 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addBasicBlock(entranceBlock);
 			currentBlock = entranceBlock;
 			//returnValue
-			returnAddress = new IRRegister(new IRPtrType(returnType), "returnValue$");
-			currentFunction.addRegister(returnAddress);
-			currentBlock.addInst(new AllocaInst(returnAddress, returnType));
+			if (!(returnType instanceof IRVoidType)) {
+				returnAddress = new IRRegister(new IRPtrType(returnType), "returnValue$");
+				currentFunction.addRegister(returnAddress);
+				currentBlock.addInst(new AllocaInst(returnAddress, returnType));	
+			}
 			//this
-			IRType thisType = ((ClassSymbol) parentScope).toIRClass();
+			IRType thisType = new IRPtrType(((ClassSymbol) parentScope).toIRClass());
 			IRRegister thisAddress = new IRRegister(new IRPtrType(thisType), "this$");
 			currentFunction.addRegister(thisAddress);
 			currentBlock.addInst(new AllocaInst(thisAddress, thisType)); 
@@ -224,13 +259,19 @@ public class IRBuilder implements ASTVisitor {
 			currentBlock.addInst(new StoreInst(thisRegister, thisAddress));
 			//parameters	
 			ArrayList<VarDefNode> parameters = node.getParaList();
-			for (VarDefNode parameter : parameters) {
+			LinkedHashMap<String, VarSymbol> parameterSymbols = functSymbol.getParaList();
+			int i = 0;
+			for (Map.Entry<String, VarSymbol> entry : parameterSymbols.entrySet()) {
+				VarDefNode parameter = parameters.get(i++);
+				VarSymbol parameterSymbol = entry.getValue();
 				IRType paraType = toIRType(parameter.getType());
 				IRRegister address = new IRRegister(new IRPtrType(paraType), parameter.getIdentifier() + "$");
 				currentFunction.addRegister(address);
 				currentBlock.addInst(new AllocaInst(address, paraType));
+				parameterSymbol.setAddress(address);
+				parameterSymbol.setIRType(paraType);
 				
-				IRRegister reg = new IRRegister(paraType, parameter.getIdentifier() + "$");
+				IRRegister reg = new IRRegister(paraType, parameter.getIdentifier());
 				currentFunction.addRegister(reg);
 				currentFunction.addParameter(reg);
 				currentBlock.addInst(new StoreInst(reg, address));
@@ -270,10 +311,16 @@ public class IRBuilder implements ASTVisitor {
 		VarSymbol varSymbol = node.getVarSymbol();
 		IRType type = toIRType(node.getType());
 		varSymbol.setIRType(type);
-		IRRegister address = new IRRegister(new IRPtrType(type), node.getIdentifier());
+		IRRegister address = new IRRegister(new IRPtrType(type), node.getIdentifier() + "$");
 		varSymbol.setAddress(address);
 		currentFunction.addRegister(address);
 		currentBlock.addInst(new AllocaInst(address, type));
+		
+		ExprNode init = node.getInitValue();
+		if (init != null) {
+			init.accept(this);
+			currentBlock.addInst(new StoreInst(init.getResult(), address));
+		}
 	}
 
 	@Override
@@ -297,9 +344,12 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock afterForBlock = new IRBasicBlock("afterForBlock");
 		
 		node.getInitExpr().accept(this);
-		node.getCondExpr().accept(this);
+
+		currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
+	
 		currentFunction.addBasicBlock(forCondBlock);
 		currentBlock = forCondBlock;
+		node.getCondExpr().accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, node.getCondExpr().getResult(), forBodyBlock, afterForBlock));
 		
 		currentFunction.addBasicBlock(forBodyBlock);
@@ -331,9 +381,11 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock elseBodyBlock = new IRBasicBlock("elseBodyBlock");
 		IRBasicBlock afterIfBlock = new IRBasicBlock("afterIfBlock");
 		
-		condExpr.accept(this);
+		currentBlock.addInst(new BrInst(currentBlock, ifCondBlock));
+		
 		currentFunction.addBasicBlock(ifCondBlock);
 		currentBlock = ifCondBlock;
+		condExpr.accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), thenBodyBlock, elseStmt == null ? afterIfBlock : elseBodyBlock));
 		
 		currentFunction.addBasicBlock(thenBodyBlock);
@@ -358,10 +410,12 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock whileBodyBlock = new IRBasicBlock("whileBodyBlock");
 		IRBasicBlock afterWhileBlock = new IRBasicBlock("afterWhileBlock");
 		
+		currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
+		
 		ExprNode condExpr = node.getExpr();
-		condExpr.accept(this);
 		currentFunction.addBasicBlock(whileCondBlock);
 		currentBlock = whileCondBlock;
+		condExpr.accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), whileBodyBlock, afterWhileBlock));
 		
 		currentFunction.addBasicBlock(whileBodyBlock);
@@ -401,9 +455,12 @@ public class IRBuilder implements ASTVisitor {
 	@Override
 	public void visit(ReturnStmtNode node) {
 		ExprNode returnExpr = node.getExpr();
-		returnExpr.accept(this);
-		currentBlock.addInst(new StoreInst(returnExpr.getResult(), returnAddress));
+		if(returnExpr != null) {
+			returnExpr.accept(this);
+			currentBlock.addInst(new StoreInst(returnExpr.getResult(), returnAddress));
+		}
 		
+		/*
 		IRBasicBlock returnBlock = new IRBasicBlock("returnBlock");
 		currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 		currentFunction.addBasicBlock(returnBlock);
@@ -419,6 +476,7 @@ public class IRBuilder implements ASTVisitor {
 			currentBlock.addInst(new LoadInst(returnValue, returnAddress));
 			currentBlock.addInst(new RetInst(returnValue));
 		}
+		*/
 	}
 
 	@Override
@@ -1034,7 +1092,7 @@ public class IRBuilder implements ASTVisitor {
 	public void visit(StringLiteralNode node) {
 	    IRGlobalString globalString = module.addGlobalString(node.getString());
 	    globalString.getType();
-	    IRRegister res = new IRRegister(((IRPtrType)globalString.getType()).getType(), "stringLiteral");
+	    IRRegister res = new IRRegister(new IRPtrType(new IRInt8Type()), "stringLiteral");
 	    currentFunction.addRegister(res);
 	    currentBlock.addInst(new GetElementPtrInst(res, globalString, new IRConstInt(0), new IRConstInt(0)));
 	    

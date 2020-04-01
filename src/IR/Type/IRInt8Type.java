@@ -6,7 +6,7 @@ public class IRInt8Type extends IRIntType {
 	
 	@Override
 	public String toString() {
-		return "int8";
+		return "i8";
 	}
 
 	@Override

@@ -7,7 +7,8 @@ import Scope.*;
 import utility.*;
 
 public class SemanticChecker implements ASTVisitor {
-	private Scope currentScope, globalScope;
+	private Scope currentScope;
+	private GlobalScope globalScope;
 	private ErrorReminder errorReminder;
 	private StringType stringTemplate;
 	private HashSet<String> classSet; 
@@ -19,6 +20,14 @@ public class SemanticChecker implements ASTVisitor {
 		stringTemplate = new StringType(currentScope);
 		classSet = new HashSet<String>();
 		((GlobalScope)currentScope).setBuiltInMember(currentScope, stringTemplate);
+	}
+	
+	public GlobalScope getGlobalScope() {
+		return globalScope;
+	}
+	
+	public StringType getStringTemplate() {
+		return stringTemplate;
 	}
 	
 	private boolean isReservedWord(String identifier) {
@@ -81,7 +90,9 @@ public class SemanticChecker implements ASTVisitor {
 					}
 					//declare constructor in the class
 					FunctSymbol constructor = classScope.declareConstructor();
-					((ClassDefNode) classItem).getConstructorDef().setFunctSymbol(constructor);
+					FunctDefNode constructorDef = ((ClassDefNode) classItem).getConstructorDef(); 
+					if(constructorDef != null)
+						constructorDef.setFunctSymbol(constructor);
 					//declare functions in the class
 					ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
 					for (FunctDefNode functItem : functList) {

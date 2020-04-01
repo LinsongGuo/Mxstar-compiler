@@ -1,0 +1,36 @@
+class A {
+	int value;
+	A() {value = 1;}
+};
+
+string s1 = "sfajasifjdsahdska";
+class B {
+	A a;
+	int value;
+	B() {
+		A b;
+		a = b;
+		value++;
+	}
+	int f(int x) {
+		return x;
+	}
+	void g(int x) {
+		value = f(x);
+	}
+};
+
+void dfs(int x) {
+	dfs(x + 1);
+}
+
+int main() {
+	int i = 0;
+	int n;
+	++n;
+	for (i = 0; i < 10; ++i) {
+		int n = 0;
+		++n;
+	}
+	return 0;
+}

@@ -64,7 +64,7 @@ public class FunctSymbol extends ScopedSymbol {
 			}
 			else {
 				String paraIdentifier = item.getIdentifier();
-				if(this.paraList.containsKey(paraIdentifier)) {
+				if(this.varList.containsKey(paraIdentifier)) {
 					errorReminder.error(item.getLoc(),
 						"redeclaration of \'" + paraIdentifier + "\'."
 					);
@@ -72,12 +72,14 @@ public class FunctSymbol extends ScopedSymbol {
 				else {
 					if (typeNode instanceof ArrayTypeNode) {
 						ArrayType tmp = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp, this));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp, this));
+						VarSymbol varSymbol = new VarSymbol(paraIdentifier, tmp, this);
+						this.paraList.put(paraIdentifier, varSymbol);
+						this.varList.put(paraIdentifier, varSymbol);
 					}
 					else {
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType, this));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType, this));
+						VarSymbol varSymbol = new VarSymbol(paraIdentifier, paraType, this);
+						this.paraList.put(paraIdentifier, varSymbol);
+						this.varList.put(paraIdentifier, varSymbol);
 					}
 				}
 			}

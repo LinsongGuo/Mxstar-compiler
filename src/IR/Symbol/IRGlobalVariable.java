@@ -1,13 +1,18 @@
 package IR.Symbol;
-import java.io.PrintWriter;
 
 import IR.IRVisitor;
+import IR.Type.IRPtrType;
 import IR.Type.IRType;
 
 public class IRGlobalVariable extends IRRegister {
+	private IRSymbol init;
 	
 	public IRGlobalVariable(IRType type, String name) {
 		super(type, name);
+	}
+	
+	public void setInit(IRSymbol init) {
+		this.init = init;
 	}
 	
 	@Override
@@ -21,6 +26,6 @@ public class IRGlobalVariable extends IRRegister {
 	}
 	
 	public String declarationString() {
-		return "@" + name + " = global " + type.toString();
+		return "@" + name + " = global " + ((IRPtrType) type).getType().toString() + " " + init.toString();
 	}
 }

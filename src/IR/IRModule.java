@@ -29,46 +29,47 @@ public class IRModule {
 		globalVarList = new LinkedHashMap<String, IRGlobalVariable>();
 		stringList = new LinkedHashMap<String, IRGlobalString>();
 		functList = new LinkedHashMap<String, IRFunction>();
+		builtInFunctList = new LinkedHashMap<String, IRFunction>();
 		classList = new LinkedHashMap<String, IRClassType>();
 		
 		ArrayList<IRRegister> parameters1 = new ArrayList<IRRegister>();
 		parameters1.add(new IRRegister(new IRPtrType(new IRInt8Type()), "str"));
-		IRFunction funct1 = new IRFunction(new IRVoidType(), "print", parameters1);
-		builtInFunctList.put("print", funct1);
+		IRFunction funct1 = new IRFunction(new IRVoidType(), "__print", parameters1);
+		builtInFunctList.put("__print", funct1);
 		functSymbols.get("print").setIRFunction(funct1);
 		
 		ArrayList<IRRegister> parameters2 = new ArrayList<IRRegister>();
 		parameters2.add(new IRRegister(new IRPtrType(new IRInt8Type()), "str"));
-		IRFunction funct2 = new IRFunction(new IRVoidType(), "println", parameters2);
-		builtInFunctList.put("println", funct2);
+		IRFunction funct2 = new IRFunction(new IRVoidType(), "__println", parameters2);
+		builtInFunctList.put("__println", funct2);
 		functSymbols.get("println").setIRFunction(funct2);
 		
 		ArrayList<IRRegister> parameters3 = new ArrayList<IRRegister>();
 		parameters3.add(new IRRegister(new IRInt32Type(), "n"));
-		IRFunction funct3 = new IRFunction(new IRVoidType(), "printInt", parameters3);
-		builtInFunctList.put("printInt", funct3);
+		IRFunction funct3 = new IRFunction(new IRVoidType(), "__printInt", parameters3);
+		builtInFunctList.put("__printInt", funct3);
 		functSymbols.get("printInt").setIRFunction(funct3);		
 		
 		ArrayList<IRRegister> parameters4 = new ArrayList<IRRegister>();
 		parameters4.add(new IRRegister(new IRInt32Type(), "n"));
-		IRFunction funct4 = new IRFunction(new IRVoidType(), "printlnInt", parameters4);
-		builtInFunctList.put("printlnInt", funct4);
-		functSymbols.get("printIntln").setIRFunction(funct4);
+		IRFunction funct4 = new IRFunction(new IRVoidType(), "__printlnInt", parameters4);
+		builtInFunctList.put("__printlnInt", funct4);
+		functSymbols.get("printlnInt").setIRFunction(funct4);
 		
 		ArrayList<IRRegister> parameters5 = new ArrayList<IRRegister>();
-		IRFunction funct5 = new IRFunction(new IRPtrType(new IRInt8Type()), "getString", parameters5);
-		builtInFunctList.put("getString", funct5);
+		IRFunction funct5 = new IRFunction(new IRPtrType(new IRInt8Type()), "__getString", parameters5);
+		builtInFunctList.put("__getString", funct5);
 		functSymbols.get("getString").setIRFunction(funct5);
 		
 		ArrayList<IRRegister> parameters6 = new ArrayList<IRRegister>();
-		IRFunction funct6 = new IRFunction(new IRInt32Type(), "getInt", parameters6);
-		builtInFunctList.put("getInt", funct6);
+		IRFunction funct6 = new IRFunction(new IRInt32Type(), "__getInt", parameters6);
+		builtInFunctList.put("__getInt", funct6);
 		functSymbols.get("getInt").setIRFunction(funct6);	
 		
 		ArrayList<IRRegister> parameters7 = new ArrayList<IRRegister>();
 		parameters7.add(new IRRegister(new IRInt32Type(), "i"));
-		IRFunction funct7 = new IRFunction(new IRPtrType(new IRInt8Type()), "toString", parameters7);
-		builtInFunctList.put("toString", funct7);
+		IRFunction funct7 = new IRFunction(new IRPtrType(new IRInt8Type()), "__toString", parameters7);
+		builtInFunctList.put("__toString", funct7);
 		functSymbols.get("toString").setIRFunction(funct7);
 		/*
 		ArrayList<IRRegister> parameters8 = new ArrayList<IRRegister>();
@@ -104,8 +105,8 @@ public class IRModule {
 		ArrayList<IRRegister> parameters12 = new ArrayList<IRRegister>();
 		parameters12.add(new IRRegister(new IRPtrType(new IRInt8Type()), "str"));
 		parameters12.add(new IRRegister(new IRInt32Type(), "pos"));
-		IRFunction funct12 = new IRFunction(new IRInt32Type(), "ord", parameters12);
-		builtInFunctList.put("ord", funct12);
+		IRFunction funct12 = new IRFunction(new IRInt32Type(), "__stringOrd", parameters12);
+		builtInFunctList.put("__StringOrd", funct12);
 		stringFuncts.get("ord").setIRFunction(funct12);
 		
 		//string.add(str1, str2)

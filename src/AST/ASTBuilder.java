@@ -293,10 +293,12 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 			return new BoolLiteralNode( new Location(ctx.getStart()), 
 				ctx.literal().BoolLiteral().getText() == "true" ? true : false
 			);
-		else if (ctx.literal().StringLiteral() != null)
+		else if (ctx.literal().StringLiteral() != null) {
+			String value = ctx.literal().StringLiteral().getText();
 			return new StringLiteralNode( new Location(ctx.getStart()),
-				ctx.literal().StringLiteral().getText()
+				value.substring(1, value.length() - 1)
 			);
+		}	
 		else if (ctx.literal().IntLiteral() != null) 
 			return new IntLiteralNode( new Location(ctx.getStart()),
 				Long.parseLong(ctx.literal().IntLiteral().getText())   

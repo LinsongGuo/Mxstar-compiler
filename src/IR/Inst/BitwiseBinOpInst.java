@@ -37,7 +37,7 @@ public class BitwiseBinOpInst extends IRInst {
 	
 	@Override
 	public String toString() {
-		return result.toString() + " = " + op.toString() + " " + result.getType().toString() + " " + left.toString() + "," + right.toString();
+		return result.toString() + " = " + op.toString() + " " + result.getType().toString() + " " + left.toString() + ", " + right.toString();
 	}
 
 	@Override

@@ -40,7 +40,8 @@ public class GetElementPtrInst extends IRInst {
 		IRType ptrType = ptr.getType(), type;
 		if (ptrType instanceof IRPtrType) {
 			type = ((IRPtrType) ptrType).getType();
-			StringBuilder builder = new StringBuilder("getelementptr " + type.toString() + ", " + ptrType.toString() + " " + ptr.toString() + ", ");
+			StringBuilder builder = new StringBuilder(result.toString() + " = ");
+			builder.append("getelementptr " + type.toString() + ", " + ptrType.toString() + " " + ptr.toString() + ", ");
 			for (int i = 0; i < index.size(); ++i) {
 				builder.append(index.get(i).getType().toString() + " " + index.get(i).toString());
 				if (i + 1 < index.size()) 

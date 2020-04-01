@@ -17,9 +17,12 @@ public class IRBasicBlock {
 	}
 	
 	public String getName() {
-		return "%" + name;
+		return name;
 	}
 
+	public String toString() {
+		return "%" + name;
+	}
 	public void setName(String name) {
 		this.name = name;
 	}
