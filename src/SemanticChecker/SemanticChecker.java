@@ -621,7 +621,7 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (memberExpr instanceof ArrayExprNode) {
 					VarSymbol arraySymbol = ((ClassSymbol)type).findArray((ArrayExprNode)memberExpr, errorReminder);
-					node.setSymbol(arraySymbol);
+					node.setSymbol(((ClassSymbol) type).findArray(node.getIdentifier()));
 					if (arraySymbol != null) {
 						node.setType(arraySymbol.getType());
 						node.setLvalue(true);

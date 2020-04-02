@@ -253,4 +253,8 @@ public class GlobalScope extends BaseScope {
 	public LinkedHashMap<String, FunctSymbol> getFunctList() {
 		return functList;
 	}
+	
+	public Type findClassSymbol(String name) {
+		return typeList.get(name);
+	}
 }

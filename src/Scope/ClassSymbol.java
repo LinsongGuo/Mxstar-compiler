@@ -152,6 +152,10 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			return varList.get(identifier);
 	}
 	
+	public VarSymbol findArray(String name) {
+		return varList.get(name);
+	}
+	
 	public VarSymbol findArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
