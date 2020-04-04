@@ -43,4 +43,13 @@ public class IRClassType extends IRType {
 	public void addMemberType(IRType type) {
 		memberList.add(type);
 	}
+
+	@Override
+	public int bytes() {
+		int res = 0;
+		for (IRType member : memberList) {
+			res += member.bytes();
+		}
+		return res;
+	}
 }

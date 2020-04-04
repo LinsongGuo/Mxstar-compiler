@@ -18,6 +18,7 @@ import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol implements Type {
 	protected LinkedHashMap<String, FunctSymbol> functList;
+	private FunctSymbol constructor;
 	
 	public ClassSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
@@ -134,10 +135,14 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 	
 	public FunctSymbol declareConstructor() {
 		String identifier = toString();
-		FunctSymbol functSymbol = new FunctSymbol(this, identifier, this);
-		functSymbol.setConstructor();
-		functList.put(identifier, functSymbol);
-		return functSymbol;
+		constructor = new FunctSymbol(this, identifier, this);
+		constructor.setConstructor();
+		functList.put(identifier, constructor);
+		return constructor;
+	}
+	
+	public FunctSymbol getConstructor() {
+		return constructor;
 	}
 	
 	public VarSymbol findVar(VarExprNode node, ErrorReminder errorReminder) {

@@ -14,4 +14,10 @@ public class IRVoidType extends IRType {
 		visitor.visit(this);
 	}
 
+	@Override
+	public int bytes() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

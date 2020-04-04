@@ -8,4 +8,6 @@ abstract public class IRType {
 	abstract public String toString();
 	
 	abstract public void accept(IRVisitor visitor);
+	
+	abstract public int bytes();
 }

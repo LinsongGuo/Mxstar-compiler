@@ -31,6 +31,11 @@ public class IRModule {
 		functList = new LinkedHashMap<String, IRFunction>();
 		builtInFunctList = new LinkedHashMap<String, IRFunction>();
 		classList = new LinkedHashMap<String, IRClassType>();
+	
+		ArrayList<IRRegister> parameters0 = new ArrayList<IRRegister>();
+		parameters0.add(new IRRegister(new IRInt32Type(), "n"));
+		IRFunction funct0 = new IRFunction(new IRPtrType(new IRInt8Type()), "__malloc", parameters0);
+		builtInFunctList.put("malloc", funct0);
 		
 		ArrayList<IRRegister> parameters1 = new ArrayList<IRRegister>();
 		parameters1.add(new IRRegister(new IRPtrType(new IRInt8Type()), "str"));
@@ -205,6 +210,10 @@ public class IRModule {
 	
 	public IRFunction getFunct(String name) {
 		return functList.get(name);
+	}
+	
+	public IRFunction getBuiltInFunction(String name) {
+		return builtInFunctList.get(name);
 	}
 	
 	public LinkedHashMap<String, IRFunction> getFunctList() {

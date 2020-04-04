@@ -18,7 +18,7 @@ import utility.Operator;
 public class IRBuilder implements ASTVisitor {
 	private GlobalScope globalScope;
 	private ErrorReminder errorReminder;
-	private IRFunction currentFunction;
+	private IRFunction currentFunction, mallocFunction;
 	private IRBasicBlock currentBlock, currentReturnBlock; 
 	private IRModule module;
 	private IRBasicBlock afterLoop, nextLoop;
@@ -32,7 +32,8 @@ public class IRBuilder implements ASTVisitor {
 		this.currentReturnBlock = null;
 		this.currentBlock = null;
 		this.module = new IRModule(globalScope, stringTemplate);
-		afterLoop = nextLoop = null;
+		this.mallocFunction = module.getBuiltInFunct("malloc");
+		this.afterLoop = this.nextLoop = null;
 	}
 	
 	public IRModule getModule() {
@@ -41,7 +42,6 @@ public class IRBuilder implements ASTVisitor {
 	
 	private IRType toIRType(TypeNode typeNode) {
 		String name = typeNode.typeString();
-		//System.err.println("name " + name);
 		if (typeNode instanceof PrimTypeNode) {
 			if (name.equals("int"))
 				return new IRInt32Type();
@@ -54,7 +54,6 @@ public class IRBuilder implements ASTVisitor {
 		}
 		else if (typeNode instanceof ArrayTypeNode) {
 			IRType res;
-			//System.err.println("ArrayTypeNode");
 			if (name.equals("int"))
 				res = new IRInt32Type();
 			else if (name.equals("bool"))
@@ -65,7 +64,6 @@ public class IRBuilder implements ASTVisitor {
 				res = new IRVoidType();
 			else 
 				res = new IRPtrType(((ClassSymbol) globalScope.findClassSymbol(name)).toIRClass());
-			//System.err.println(res);
 			for (int i = 0; i < ((ArrayTypeNode) typeNode).getDimension(); ++i) {
 				res = new IRPtrType(res);
 			}
@@ -75,6 +73,7 @@ public class IRBuilder implements ASTVisitor {
 			//typeNode instanceof ClassTypeNode
 			ClassSymbol classSymbol = (ClassSymbol) globalScope.resolveType(name);
 			return new IRPtrType(classSymbol.toIRClass());
+			//return classSymbol.toIRClass();
 		}
 	}
 	
@@ -106,9 +105,19 @@ public class IRBuilder implements ASTVisitor {
 						IRType type = toIRType(item2.getType());
 						IRClass.addMemberType(type);
 						varSymbol.setIRType(type);
-						//IRRegister address = new IRRegister(new IRPtrType(type), item2.getIdentifier());
-						//varSymbol.setAddress(address);
+						IRRegister address = new IRRegister(new IRPtrType(type), item2.getIdentifier());
+						varSymbol.setAddress(address);
 					}
+				}
+				//declare constructor in class
+				FunctDefNode constructor = ((ClassDefNode) defNode).getConstructorDef();
+				if (constructor != null) {
+					IRType returnType = new IRVoidType();
+					String identifier = ((ClassDefNode) defNode).getIdentifier() + "." + constructor.getIdentifier();
+					IRFunction function = new IRFunction(returnType, identifier);
+					FunctSymbol functSymbol = constructor.getFunctSymbol();
+					functSymbol.setIRFunction(function);
+					module.addFunct(identifier, function);	
 				}
 				//declare function in class
 				ArrayList<FunctDefNode> functList = ((ClassDefNode) defNode).getFunctList();
@@ -159,9 +168,10 @@ public class IRBuilder implements ASTVisitor {
 						IRSymbol initRes = init.getResult();
 						if (initRes instanceof IRConstInt)
 							globalVariable.setInit(initRes);
-						else
+						else {
 							globalVariable.setInit(new IRNull());
-						currentBlock.addInst(new StoreInst(initRes, globalVariable));
+							currentBlock.addInst(new StoreInst(initRes, globalVariable));
+						}	
 					}
 					else {
 						if(type instanceof IRInt32Type) 
@@ -249,12 +259,15 @@ public class IRBuilder implements ASTVisitor {
 			}
 			
 			ArrayList<StmtNode> stmtList = node.getStmtList();
+			StmtNode lastStmt = null;
 			for (StmtNode stmt : stmtList) {
 				stmt.accept(this);
+				lastStmt = stmt;
 			}
 			
 			//returnBlock
-			currentBlock.addInst(new BrInst(currentBlock, returnBlock));
+			if (lastStmt != null && !(lastStmt instanceof ReturnStmtNode))
+				currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 			currentFunction.addBasicBlock(returnBlock);
 			currentBlock = returnBlock;
 			if (returnType instanceof IRVoidType) {
@@ -316,11 +329,15 @@ public class IRBuilder implements ASTVisitor {
 			}
 			
 			ArrayList<StmtNode> stmtList = node.getStmtList();
+			StmtNode lastStmt = null;
 			for (StmtNode stmt : stmtList) {
 				stmt.accept(this);
+				lastStmt = stmt;
 			}
+			
 			//returnBlock
-			currentBlock.addInst(new BrInst(currentBlock, returnBlock));
+			if (lastStmt != null && !(lastStmt instanceof ReturnStmtNode))
+				currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 			currentFunction.addBasicBlock(returnBlock);
 			currentBlock = returnBlock;
 			if (returnType instanceof IRVoidType) {
@@ -379,17 +396,19 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock forBodyBlock = new IRBasicBlock("forBodyBlock");
 		IRBasicBlock forStepBlock = new IRBasicBlock("forStepBlock");
 		IRBasicBlock afterForBlock = new IRBasicBlock("afterForBlock");
+		currentFunction.addBasicBlock(forCondBlock);
+		currentFunction.addBasicBlock(forBodyBlock);
+		currentFunction.addBasicBlock(forStepBlock);
+		currentFunction.addBasicBlock(afterForBlock);
 		
 		node.getInitExpr().accept(this);
 
 		currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
 	
-		currentFunction.addBasicBlock(forCondBlock);
 		currentBlock = forCondBlock;
 		node.getCondExpr().accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, node.getCondExpr().getResult(), forBodyBlock, afterForBlock));
 		
-		currentFunction.addBasicBlock(forBodyBlock);
 		currentBlock = forBodyBlock;
 		IRBasicBlock tmpNextLoop = nextLoop, tmpAfterLoop = afterLoop;
 		nextLoop = forCondBlock; 
@@ -399,12 +418,10 @@ public class IRBuilder implements ASTVisitor {
 		afterLoop = tmpAfterLoop;
 		currentBlock.addInst(new BrInst(currentBlock, forStepBlock));
 		
-		currentFunction.addBasicBlock(forStepBlock);
 		currentBlock = forStepBlock;
 		node.getStepExpr().accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
 		
-		currentFunction.addBasicBlock(afterForBlock);
 		currentBlock = afterForBlock;
 	}
 
@@ -417,27 +434,28 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock thenBodyBlock = new IRBasicBlock("thenBodyBlock");
 		IRBasicBlock elseBodyBlock = new IRBasicBlock("elseBodyBlock");
 		IRBasicBlock afterIfBlock = new IRBasicBlock("afterIfBlock");
+		currentFunction.addBasicBlock(ifCondBlock);
+		currentFunction.addBasicBlock(thenBodyBlock);
+		if (elseStmt != null)
+			currentFunction.addBasicBlock(elseBodyBlock);
+		currentFunction.addBasicBlock(afterIfBlock);
 		
 		currentBlock.addInst(new BrInst(currentBlock, ifCondBlock));
 		
-		currentFunction.addBasicBlock(ifCondBlock);
 		currentBlock = ifCondBlock;
 		condExpr.accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), thenBodyBlock, elseStmt == null ? afterIfBlock : elseBodyBlock));
 		
-		currentFunction.addBasicBlock(thenBodyBlock);
 		currentBlock = thenBodyBlock;
 		thenStmt.accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
 		
 		if (elseStmt != null) {
-			currentFunction.addBasicBlock(elseBodyBlock);
 			currentBlock = elseBodyBlock;
 			elseStmt.accept(this);
 			currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
 		}
 		
-		currentFunction.addBasicBlock(afterIfBlock);
 		currentBlock = afterIfBlock;	
 	}
 
@@ -446,16 +464,17 @@ public class IRBuilder implements ASTVisitor {
 		IRBasicBlock whileCondBlock = new IRBasicBlock("whileCondBlock");
 		IRBasicBlock whileBodyBlock = new IRBasicBlock("whileBodyBlock");
 		IRBasicBlock afterWhileBlock = new IRBasicBlock("afterWhileBlock");
+		currentFunction.addBasicBlock(whileCondBlock);
+		currentFunction.addBasicBlock(whileBodyBlock);
+		currentFunction.addBasicBlock(afterWhileBlock);
 		
 		currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
 		
 		ExprNode condExpr = node.getExpr();
-		currentFunction.addBasicBlock(whileCondBlock);
 		currentBlock = whileCondBlock;
 		condExpr.accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), whileBodyBlock, afterWhileBlock));
 		
-		currentFunction.addBasicBlock(whileBodyBlock);
 		currentBlock = whileBodyBlock;
 		IRBasicBlock tmpNextLoop = nextLoop, tmpAfterLoop = afterLoop;
 		nextLoop = whileCondBlock;
@@ -465,7 +484,6 @@ public class IRBuilder implements ASTVisitor {
 		afterLoop = tmpAfterLoop;
 		currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
 		
-		currentFunction.addBasicBlock(afterWhileBlock);
 		currentBlock = afterWhileBlock;
 	}
 
@@ -500,29 +518,10 @@ public class IRBuilder implements ASTVisitor {
 		else {
 			currentBlock.addInst(new BrInst(currentBlock, currentReturnBlock));
 		}
-		
-		/*
-		IRBasicBlock returnBlock = new IRBasicBlock("returnBlock");
-		currentBlock.addInst(new BrInst(currentBlock, returnBlock));
-		currentFunction.addBasicBlock(returnBlock);
-		currentBlock = returnBlock;
-		
-		IRType returnType = currentFunction.getType();
-		if (returnType instanceof IRVoidType) {
-			currentBlock.addInst(new RetInst());
-		}
-		else {
-			IRRegister returnValue = new IRRegister(returnType, "returnValue"); 
-			currentFunction.addRegister(returnValue);
-			currentBlock.addInst(new LoadInst(returnValue, returnAddress));
-			currentBlock.addInst(new RetInst(returnValue));
-		}
-		*/
 	}
 
 	@Override
 	public void visit(BinaryExprNode node) {
-		// TODO Auto-generated method stub
 		Operator op = node.getOp();
 		ExprNode left = node.getLeft();
 		ExprNode right = node.getRight();
@@ -793,11 +792,9 @@ public class IRBuilder implements ASTVisitor {
 			}
 			else if (op == Operator.ASSIGN) {
 				currentBlock.addInst(new StoreInst(rightRes, node.getLeft().getAddress()));
+				
 				node.setResult(rightRes);
-			}	/*
-			else {
-				System.err.println("error in visit(BinaryExprNode)!");
-			}*/
+			}
 		}
 	}
 
@@ -882,18 +879,228 @@ public class IRBuilder implements ASTVisitor {
 		node.setResult(expr.getResult());
 		node.setAddress(expr.getAddress());
 	}
+	
+	private IRRegister createInt(IRType baseType, int dimension, ArrayList<ExprNode> indexes) {
+		IRType type = baseType;
+		for (int i = 0; i < dimension; ++i) 
+			type = new IRPtrType(type);
+		ExprNode index = indexes.get(0);
+		
+		IRSymbol mul = new IRRegister(new IRInt32Type(), "mul");
+		currentFunction.addRegister((IRRegister)mul);
+		currentBlock.addInst(new BinOpInst(BinOpInst.BinOpType.mul, mul, new IRConstInt(((IRPtrType) type).getType().bytes()), index.getResult()));
+		
+		IRRegister add = new IRRegister(new IRInt32Type(), "add");
+		currentFunction.addRegister(add);
+		currentBlock.addInst(new BinOpInst(BinOpInst.BinOpType.add, add, mul, new IRConstInt(4)));
+		
+		IRRegister malloc8 = new IRRegister(new IRPtrType(new IRInt8Type()), "malloc8");
+		currentFunction.addRegister(malloc8);
+		currentBlock.addInst(new CallInst(mallocFunction, add, malloc8));
+		
+		IRRegister malloc32 = new IRRegister(new IRPtrType(new IRInt32Type()), "malloc32");
+		currentFunction.addRegister(malloc32);
+		currentBlock.addInst(new BitcastToInst(malloc8, malloc32));
+		
+		currentBlock.addInst(new StoreInst(index.getResult(), malloc32));
+		
+		IRRegister arrayHead32 = new IRRegister(new IRPtrType(new IRInt32Type()), "arrayHead32");
+		currentFunction.addRegister(arrayHead32);
+		currentBlock.addInst(new GetElementPtrInst(arrayHead32, malloc32, new IRConstInt(1)));
+		
+		IRRegister arrayHead;
+		if (((IRPtrType)type).getType() instanceof IRInt32Type) 
+			arrayHead = arrayHead32;
+		else {
+			arrayHead = new IRRegister(type, "arrayHead");
+			currentFunction.addRegister(arrayHead);
+			currentBlock.addInst(new BitcastToInst(arrayHead32, arrayHead));
+		}
+		
+		if (indexes.size() > 1) {
+			ArrayList<ExprNode> newIndexes = new ArrayList<ExprNode>();
+			for (int i = 1; i < indexes.size(); ++i) 
+				newIndexes.add(indexes.get(i));
+			
+			IRBasicBlock creatorCondBlock = new IRBasicBlock("creatorCondBlock");
+			IRBasicBlock creatorBodyBlock = new IRBasicBlock("creatorBodyBlock");
+			IRBasicBlock creatorStepBlock = new IRBasicBlock("creatorStepBlock");
+			IRBasicBlock afterCreatorBlock = new IRBasicBlock("afterCreatorBlock");
+			currentFunction.addBasicBlock(creatorCondBlock);
+			currentFunction.addBasicBlock(creatorBodyBlock);
+			currentFunction.addBasicBlock(creatorStepBlock);
+			currentFunction.addBasicBlock(afterCreatorBlock);
+			
+			IRRegister arrayTail = new IRRegister(type, "arrayTail");
+			currentFunction.addRegister(arrayTail);
+			IRRegister arrayNext = new IRRegister(type, "arrayNext");
+			currentFunction.addRegister(arrayNext);
+			IRRegister arrayNow = new IRRegister(type, "arrayNow");
+			currentFunction.addRegister(arrayNow);
+			
+			currentBlock.addInst(new GetElementPtrInst(arrayTail, arrayHead, index.getResult()));
+			
+			IRBasicBlock tmp = currentBlock;
+			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			currentBlock = creatorCondBlock;
+			
+			PhiInst inst = new PhiInst(arrayNow);
+			inst.addBranch(arrayHead, tmp);
+			inst.addBranch(arrayNext, creatorStepBlock);
+			currentBlock.addInst(inst);
+			
+			IRRegister ne = new IRRegister(new IRInt1Type(), "ne");
+			currentFunction.addRegister(ne);
+			currentBlock.addInst(new IcmpInst(IcmpInst.IcmpOpType.ne, ne, arrayNow, arrayTail));
+			
+			currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
+			currentBlock = creatorBodyBlock;
+	
+			IRRegister subCreator = createInt(baseType, dimension - 1, newIndexes);
+			
+			currentBlock.addInst(new StoreInst(subCreator, arrayNow));
+			
+			currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
+			currentBlock = creatorStepBlock; 
+			
+			currentBlock.addInst(new GetElementPtrInst(arrayNext, arrayNow, new IRConstInt(1)));
+			
+			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
 
+			currentBlock = afterCreatorBlock;
+		}
+		return arrayHead;
+	}
+	
+	
+	private IRRegister createClassType(IRType baseType, int dimension, ArrayList<ExprNode> indexes, IRFunction constructor) {
+		if (dimension == 0) {
+			IRRegister malloc8 = new IRRegister(new IRPtrType(new IRInt8Type()), "malloc8");
+			currentFunction.addRegister(malloc8);
+			currentBlock.addInst(new CallInst(mallocFunction, new IRConstInt(baseType.bytes()), malloc8));
+			
+			IRRegister malloc = new IRRegister(new IRPtrType(baseType), "malloc");
+			currentFunction.addRegister(malloc);
+			currentBlock.addInst(new BitcastToInst(malloc8, malloc));
+			
+			if (constructor != null) {
+				currentBlock.addInst(new CallInst(constructor, malloc));
+			}
+			return malloc;
+		}
+		
+		IRType type = new IRPtrType(baseType);
+		for (int i = 0; i < dimension; ++i) {
+			type = new IRPtrType(type);
+		}
+		ExprNode index = indexes.get(0);
+		
+		IRSymbol mul = new IRRegister(new IRInt32Type(), "mul");
+		currentFunction.addRegister((IRRegister)mul);
+		currentBlock.addInst(new BinOpInst(BinOpInst.BinOpType.mul, mul, new IRConstInt(8), index.getResult()));
+		
+		IRRegister add = new IRRegister(new IRInt32Type(), "add");
+		currentFunction.addRegister(add);
+		currentBlock.addInst(new BinOpInst(BinOpInst.BinOpType.add, add, mul, new IRConstInt(4)));
+		
+		IRRegister malloc8 = new IRRegister(new IRPtrType(new IRInt8Type()), "malloc8");
+		currentFunction.addRegister(malloc8);
+		currentBlock.addInst(new CallInst(mallocFunction, add, malloc8));
+		
+		IRRegister malloc32 = new IRRegister(new IRPtrType(new IRInt32Type()), "malloc32");
+		currentFunction.addRegister(malloc32);
+		currentBlock.addInst(new BitcastToInst(malloc8, malloc32));
+		
+		currentBlock.addInst(new StoreInst(index.getResult(), malloc32));
+		
+		IRRegister arrayHead32 = new IRRegister(new IRPtrType(new IRInt32Type()), "arrayHead32");
+		currentFunction.addRegister(arrayHead32);
+		currentBlock.addInst(new GetElementPtrInst(arrayHead32, malloc32, new IRConstInt(1)));
+		
+		IRRegister arrayHead = new IRRegister(type, "arrayHead");
+		currentFunction.addRegister(arrayHead);
+		currentBlock.addInst(new BitcastToInst(arrayHead32, arrayHead));
+		
+		if ((indexes.size() == 1 && dimension == 1) || indexes.size() > 1) {
+			ArrayList<ExprNode> newIndexes = new ArrayList<ExprNode>();
+			for (int i = 1; i < indexes.size(); ++i) 
+				newIndexes.add(indexes.get(i));
+			
+			IRBasicBlock creatorCondBlock = new IRBasicBlock("creatorCondBlock");
+			IRBasicBlock creatorBodyBlock = new IRBasicBlock("creatorBodyBlock");
+			IRBasicBlock creatorStepBlock = new IRBasicBlock("creatorStepBlock");
+			IRBasicBlock afterCreatorBlock = new IRBasicBlock("afterCreatorBlock");
+			currentFunction.addBasicBlock(creatorCondBlock);
+			currentFunction.addBasicBlock(creatorBodyBlock);
+			currentFunction.addBasicBlock(creatorStepBlock);
+			currentFunction.addBasicBlock(afterCreatorBlock);
+			
+			IRRegister arrayTail = new IRRegister(type, "arrayTail");
+			currentFunction.addRegister(arrayTail);
+			IRRegister arrayNext = new IRRegister(type, "arrayNext");
+			currentFunction.addRegister(arrayNext);
+			IRRegister arrayNow = new IRRegister(type, "arrayNow");
+			currentFunction.addRegister(arrayNow);
+			
+			currentBlock.addInst(new GetElementPtrInst(arrayTail, arrayHead, index.getResult()));
+			
+			IRBasicBlock tmp = currentBlock;
+			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			currentBlock = creatorCondBlock;
+			
+			PhiInst inst = new PhiInst(arrayNow);
+			inst.addBranch(arrayHead, tmp);
+			inst.addBranch(arrayNext, creatorStepBlock);
+			currentBlock.addInst(inst);
+			
+			IRRegister ne = new IRRegister(new IRInt1Type(), "ne");
+			currentFunction.addRegister(ne);
+			currentBlock.addInst(new IcmpInst(IcmpInst.IcmpOpType.ne, ne, arrayNow, arrayTail));
+			
+			currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
+			currentBlock = creatorBodyBlock;
+			
+			IRRegister subCreator = createClassType(baseType, dimension - 1, newIndexes, constructor);
+					
+			currentBlock.addInst(new StoreInst(subCreator, arrayNow));
+			
+			currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
+			currentBlock = creatorStepBlock; 
+			
+			currentBlock.addInst(new GetElementPtrInst(arrayNext, arrayNow, new IRConstInt(1)));
+			
+			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			
+			currentBlock = afterCreatorBlock;
+		}
+		return arrayHead;
+	}
+	
 	@Override
 	public void visit(CreatorExprNode node) {
-		//#############################################################
-		//#                                                           #
-		//#                                                           #
-		//#                                                           #
-		//#         Pretend the function has been implemented         #
-		//#                                                           #
-		//#                                                           #
-		//#                                                           #
-		//#############################################################
+		int dimension = node.getDimension();
+		ArrayList<ExprNode> indexes = node.getIndexList();
+		for (ExprNode index : indexes) {
+			index.accept(this);
+		}
+		
+		TypeNode typeNode = node.getTypeNode();
+		String typeName = typeNode.typeString();
+		
+		if (typeName.equals("int")) {
+			IRRegister res = createInt(new IRInt32Type(), dimension, indexes);
+			node.setResult(res);
+		}
+		else if (typeName.equals("bool")) {
+			IRRegister res = createInt(new IRInt1Type(), dimension, indexes);
+			node.setResult(res);
+		}
+		else {
+			ClassSymbol classSymbol = globalScope.getClassScope(node.getType().typeString());
+			IRFunction constructor = classSymbol.getConstructor().toIRFunction();
+			IRRegister res = createClassType(classSymbol.toIRClass(), dimension, indexes, constructor);
+			node.setResult(res);
+		}
 	}
 
 	@Override
@@ -939,6 +1146,11 @@ public class IRBuilder implements ASTVisitor {
 				currentBlock.addInst(new CallInst(functSymbol.toIRFunction(), parametersRes, res));
 				node.setResult(res);
 			}
+		}
+		else if (nameExpr instanceof CreatorExprNode) {
+			nameExpr.accept(this);
+			node.setAddress(nameExpr.getAddress());
+			node.setResult(nameExpr.getResult());
 		}
 	}
 
@@ -1028,28 +1240,49 @@ public class IRBuilder implements ASTVisitor {
 			 node.setAddress(memberAddress);
 		}
 		else if (memberExpr instanceof FunctExprNode) {
-			if (nameExpr.getType() instanceof ArrayType) {
-				//to do
+			if (identifier.equals("size")) {
+				IRRegister arrayHead = (IRRegister) nameExpr.getResult();
+				IRPtrType arrayType = (IRPtrType) arrayHead.getType();
+				IRRegister arrayHead32;
+				if (arrayType.getType() instanceof IRInt32Type)
+					arrayHead32 = arrayHead;
+				else {
+					arrayHead32 = new IRRegister(new IRPtrType(new IRInt32Type()), "arrayHead32");
+					currentFunction.addRegister(arrayHead32);
+					currentBlock.addInst(new BitcastToInst(arrayHead, arrayHead32));
+				}
+				IRRegister sizePtr = new IRRegister(new IRPtrType(new IRInt32Type()), "sizePtr");
+				currentFunction.addRegister(sizePtr);
+				currentBlock.addInst(new GetElementPtrInst(sizePtr, arrayHead32, new IRConstInt(-1)));
+				
+				IRRegister size = new IRRegister(new IRInt32Type(), "size");
+				currentFunction.addRegister(size);
+				currentBlock.addInst(new LoadInst(size, sizePtr));
+				
+				node.setResult(size);
 			}
-			FunctSymbol functSymbol = (FunctSymbol) node.getSymbol();
-			IRFunction function = functSymbol.toIRFunction();
-			IRType returnType = function.getType();
-			IRRegister base = (IRRegister) nameExpr.getResult();
+			else {
+				FunctSymbol functSymbol = (FunctSymbol) node.getSymbol();
+				IRFunction function = functSymbol.toIRFunction();
+				IRType returnType = function.getType();
+				IRRegister base = (IRRegister) nameExpr.getResult();
+				
+				ArrayList<ExprNode> parameters = ((FunctExprNode) memberExpr).getParaList();
+				ArrayList<IRSymbol> parametersRes = new ArrayList<IRSymbol>();
+				parametersRes.add(base);
+				for(ExprNode parameter : parameters) {
+					parameter.accept(this);
+					parametersRes.add(parameter.getResult());
+				}
+				
+				//call --> member
+				IRRegister member = returnType instanceof IRVoidType ? null : new IRRegister(returnType, "call");
+				if (member != null)
+					currentFunction.addRegister(member);
+				currentBlock.addInst(new CallInst(function, parametersRes, member));
 			
-			ArrayList<ExprNode> parameters = ((FunctExprNode) memberExpr).getParaList();
-			ArrayList<IRSymbol> parametersRes = new ArrayList<IRSymbol>();
-			parametersRes.add(base);
-			for(ExprNode parameter : parameters) {
-				parameter.accept(this);
-				parametersRes.add(parameter.getResult());
+				node.setResult(member);
 			}
-			
-			//call --> member
-			IRRegister member = returnType instanceof IRVoidType ? null : new IRRegister(returnType, "call");
-			currentFunction.addRegister(member);
-			currentBlock.addInst(new CallInst(function, parametersRes, member));
-		
-			node.setResult(member);
 		}
 		else if (memberExpr instanceof ArrayExprNode) {
 			ExprNode indexExpr = ((ArrayExprNode) memberExpr).getIndexExpr();

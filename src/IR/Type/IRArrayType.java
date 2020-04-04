@@ -1,5 +1,7 @@
 package IR.Type;
 
+import java.util.ArrayList;
+
 import IR.IRVisitor;
  
 public class IRArrayType extends IRType {
@@ -20,5 +22,10 @@ public class IRArrayType extends IRType {
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
 	}
-	
+
+	@Override
+	public int bytes() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

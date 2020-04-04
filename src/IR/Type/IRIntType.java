@@ -9,4 +9,7 @@ abstract public class IRIntType extends IRType {
 
 	@Override
 	abstract public void accept(IRVisitor visitor);
+	
+	@Override
+	abstract public int bytes();
 }

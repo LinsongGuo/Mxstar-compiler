@@ -11,12 +11,27 @@ public class CallInst extends IRInst {
 	private ArrayList<IRSymbol> parameters;
 	private IRSymbol result;
 	
-
+	public CallInst(IRFunction function, IRSymbol parameter) {
+		super();
+		this.function = function;
+		this.parameters = new ArrayList<IRSymbol>();
+		this.parameters.add(parameter);
+		this.result = null;
+	}
+	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters) {
 		super();
 		this.function = function;
 		this.parameters = parameters;
 		this.result = null;
+	}
+	
+	public CallInst(IRFunction function, IRSymbol parameter, IRSymbol result) {
+		super();
+		this.function = function;
+		this.parameters = new ArrayList<IRSymbol>();
+		this.parameters.add(parameter);
+		this.result = result;
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRSymbol result) {

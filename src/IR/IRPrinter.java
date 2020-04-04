@@ -20,7 +20,7 @@ public class IRPrinter implements IRVisitor {
 	
 	public IRPrinter() throws FileNotFoundException {
 		//printer = new PrintWriter(System.out);
-		printer = new PrintWriter(new FileOutputStream("test.ll"));
+		printer = new PrintWriter(new FileOutputStream("test/test.ll"));
 	}
 	
 	@Override

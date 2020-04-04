@@ -22,4 +22,9 @@ public class IRPtrType extends IRType {
 	public IRType getType() {
 		return type;
 	}
+
+	@Override
+	public int bytes() {
+		return 8;
+	}
 }

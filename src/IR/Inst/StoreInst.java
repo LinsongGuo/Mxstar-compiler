@@ -14,7 +14,10 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public String toString() {
-		return "store " + reg.getType().toString() + " " + reg.toString() + ", " + ptr.getType().toString() + " " + ptr.toString();
+		return "store " + reg.getType().toString() + " " + 
+				reg.toString() + ", " + 
+				ptr.getType().toString() + " " + 
+				ptr.toString();
 	}
 
 	@Override

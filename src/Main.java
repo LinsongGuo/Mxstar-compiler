@@ -14,8 +14,8 @@ import IR.*;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		//InputStream IS = System.in;
-		InputStream IS = new FileInputStream("test.txt");
+		InputStream IS = System.in;
+		//InputStream IS = new FileInputStream("test/test.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		//System.err.println("lexer------------------");
@@ -40,20 +40,20 @@ public class Main {
 		ASTBuilder ast = new ASTBuilder(errorReminder);
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		
-		System.err.println("Semantic checking--------");
+		//System.err.println("Semantic checking--------");
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
 		
 		if (errorReminder.count() > 0)
 			System.exit(errorReminder.count());
 		
-		System.err.println("Building IR--------------");
+		//System.err.println("Building IR--------------");
 		GlobalScope globalScope = checker.getGlobalScope();
 		StringType stringTemplate = checker.getStringTemplate();
 		IRBuilder ir = new IRBuilder(globalScope, stringTemplate, errorReminder);
 		ir.visit(root);
 		
-		System.err.println("Printing IR--------------");
+		//System.err.println("Printing IR--------------");
 		IRModule module = ir.getModule(); 
 		IRPrinter printer = new IRPrinter();
 		printer.visit(module);

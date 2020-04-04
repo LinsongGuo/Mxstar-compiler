@@ -14,4 +14,9 @@ public class IRInt32Type extends IRIntType {
 		visitor.visit(this);
 	}
 
+	@Override
+	public int bytes() {
+		return 4;
+	}
+
 }
