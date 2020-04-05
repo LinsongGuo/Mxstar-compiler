@@ -166,8 +166,14 @@ public class IRBuilder implements ASTVisitor {
 					if (init != null) {
 						init.accept(this);
 						IRSymbol initRes = init.getResult();
-						if (initRes instanceof IRConstInt)
-							globalVariable.setInit(initRes);
+						if (type instanceof IRInt32Type)  {
+							if (initRes instanceof IRConstInt)
+								globalVariable.setInit(initRes);	
+							else {
+								globalVariable.setInit(new IRConstInt(0));
+								currentBlock.addInst(new StoreInst(initRes, globalVariable));
+							}
+						}
 						else {
 							globalVariable.setInit(new IRNull());
 							currentBlock.addInst(new StoreInst(initRes, globalVariable));
@@ -183,7 +189,8 @@ public class IRBuilder implements ASTVisitor {
 			}
 		}
 		IRBasicBlock returnBlock = new IRBasicBlock("returnBlock");
-		currentBlock.addInst(new BrInst(currentBlock, returnBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 		currentFunction.addBasicBlock(returnBlock);
 		currentBlock = returnBlock;
 		currentBlock.addInst(new RetInst());
@@ -259,14 +266,12 @@ public class IRBuilder implements ASTVisitor {
 			}
 			
 			ArrayList<StmtNode> stmtList = node.getStmtList();
-			StmtNode lastStmt = null;
 			for (StmtNode stmt : stmtList) {
 				stmt.accept(this);
-				lastStmt = stmt;
 			}
 			
 			//returnBlock
-			if (lastStmt != null && !(lastStmt instanceof ReturnStmtNode))
+			if(!(currentBlock.getTail() instanceof BrInst))
 				currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 			currentFunction.addBasicBlock(returnBlock);
 			currentBlock = returnBlock;
@@ -329,14 +334,12 @@ public class IRBuilder implements ASTVisitor {
 			}
 			
 			ArrayList<StmtNode> stmtList = node.getStmtList();
-			StmtNode lastStmt = null;
 			for (StmtNode stmt : stmtList) {
 				stmt.accept(this);
-				lastStmt = stmt;
 			}
 			
 			//returnBlock
-			if (lastStmt != null && !(lastStmt instanceof ReturnStmtNode))
+			if(!(currentBlock.getTail() instanceof BrInst))
 				currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 			currentFunction.addBasicBlock(returnBlock);
 			currentBlock = returnBlock;
@@ -401,13 +404,20 @@ public class IRBuilder implements ASTVisitor {
 		currentFunction.addBasicBlock(forStepBlock);
 		currentFunction.addBasicBlock(afterForBlock);
 		
-		node.getInitExpr().accept(this);
+		if (node.getInitExpr() != null)
+			node.getInitExpr().accept(this);
 
-		currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
+		if (!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
 	
 		currentBlock = forCondBlock;
-		node.getCondExpr().accept(this);
-		currentBlock.addInst(new BrInst(currentBlock, node.getCondExpr().getResult(), forBodyBlock, afterForBlock));
+		if (node.getCondExpr() != null) {
+			node.getCondExpr().accept(this);
+			currentBlock.addInst(new BrInst(currentBlock, node.getCondExpr().getResult(), forBodyBlock, afterForBlock));
+		}
+		else {
+			currentBlock.addInst(new BrInst(currentBlock, forBodyBlock));
+		}
 		
 		currentBlock = forBodyBlock;
 		IRBasicBlock tmpNextLoop = nextLoop, tmpAfterLoop = afterLoop;
@@ -416,10 +426,12 @@ public class IRBuilder implements ASTVisitor {
 		node.getStmt().accept(this);
 		nextLoop = tmpNextLoop;
 		afterLoop = tmpAfterLoop;
-		currentBlock.addInst(new BrInst(currentBlock, forStepBlock));
+		if (!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, forStepBlock));
 		
 		currentBlock = forStepBlock;
-		node.getStepExpr().accept(this);
+		if (node.getStepExpr() != null)
+			node.getStepExpr().accept(this);
 		currentBlock.addInst(new BrInst(currentBlock, forCondBlock));
 		
 		currentBlock = afterForBlock;
@@ -440,20 +452,24 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addBasicBlock(elseBodyBlock);
 		currentFunction.addBasicBlock(afterIfBlock);
 		
-		currentBlock.addInst(new BrInst(currentBlock, ifCondBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, ifCondBlock));
 		
 		currentBlock = ifCondBlock;
 		condExpr.accept(this);
-		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), thenBodyBlock, elseStmt == null ? afterIfBlock : elseBodyBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), thenBodyBlock, elseStmt == null ? afterIfBlock : elseBodyBlock));
 		
 		currentBlock = thenBodyBlock;
 		thenStmt.accept(this);
-		currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
 		
 		if (elseStmt != null) {
 			currentBlock = elseBodyBlock;
 			elseStmt.accept(this);
-			currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, afterIfBlock));
 		}
 		
 		currentBlock = afterIfBlock;	
@@ -468,12 +484,14 @@ public class IRBuilder implements ASTVisitor {
 		currentFunction.addBasicBlock(whileBodyBlock);
 		currentFunction.addBasicBlock(afterWhileBlock);
 		
-		currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
 		
 		ExprNode condExpr = node.getExpr();
 		currentBlock = whileCondBlock;
 		condExpr.accept(this);
-		currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), whileBodyBlock, afterWhileBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, condExpr.getResult(), whileBodyBlock, afterWhileBlock));
 		
 		currentBlock = whileBodyBlock;
 		IRBasicBlock tmpNextLoop = nextLoop, tmpAfterLoop = afterLoop;
@@ -482,7 +500,8 @@ public class IRBuilder implements ASTVisitor {
 		node.getStmt().accept(this);
 		nextLoop = tmpNextLoop;
 		afterLoop = tmpAfterLoop;
-		currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, whileCondBlock));
 		
 		currentBlock = afterWhileBlock;
 	}
@@ -494,12 +513,14 @@ public class IRBuilder implements ASTVisitor {
 
 	@Override
 	public void visit(BreakStmtNode node) {
-		currentBlock.addInst(new BrInst(currentBlock, afterLoop));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, afterLoop));
 	}
 
 	@Override
 	public void visit(ContinueStmtNode node) {
-		currentBlock.addInst(new BrInst(currentBlock, nextLoop));
+		if(!(currentBlock.getTail() instanceof BrInst))
+			currentBlock.addInst(new BrInst(currentBlock, nextLoop));
 	}
 
 	@Override
@@ -513,10 +534,12 @@ public class IRBuilder implements ASTVisitor {
 		if(returnExpr != null) {
 			returnExpr.accept(this);
 			currentBlock.addInst(new StoreInst(returnExpr.getResult(), returnAddress));
-			currentBlock.addInst(new BrInst(currentBlock, currentReturnBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, currentReturnBlock));
 		}
 		else {
-			currentBlock.addInst(new BrInst(currentBlock, currentReturnBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, currentReturnBlock));
 		}
 	}
 
@@ -532,13 +555,15 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addBasicBlock(logicalAnd);
 			IRBasicBlock afterLogicalAnd = new IRBasicBlock("afterLogicalAnd");
 			currentFunction.addBasicBlock(afterLogicalAnd);
-			currentBlock.addInst(new BrInst(currentBlock, leftRes, logicalAnd, afterLogicalAnd));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, leftRes, logicalAnd, afterLogicalAnd));
 			
 			IRBasicBlock tmp = currentBlock;
 			currentBlock = logicalAnd;
 			right.accept(this);
 			IRSymbol rightRes = right.getResult();
-			currentBlock.addInst(new BrInst(currentBlock, afterLogicalAnd));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, afterLogicalAnd));
 			
 			currentBlock = afterLogicalAnd;
 			IRRegister res = new IRRegister(new IRInt1Type(), "phi");
@@ -792,7 +817,6 @@ public class IRBuilder implements ASTVisitor {
 			}
 			else if (op == Operator.ASSIGN) {
 				currentBlock.addInst(new StoreInst(rightRes, node.getLeft().getAddress()));
-				
 				node.setResult(rightRes);
 			}
 		}
@@ -941,7 +965,8 @@ public class IRBuilder implements ASTVisitor {
 			currentBlock.addInst(new GetElementPtrInst(arrayTail, arrayHead, index.getResult()));
 			
 			IRBasicBlock tmp = currentBlock;
-			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
 			currentBlock = creatorCondBlock;
 			
 			PhiInst inst = new PhiInst(arrayNow);
@@ -953,19 +978,22 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addRegister(ne);
 			currentBlock.addInst(new IcmpInst(IcmpInst.IcmpOpType.ne, ne, arrayNow, arrayTail));
 			
-			currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
 			currentBlock = creatorBodyBlock;
 	
 			IRRegister subCreator = createInt(baseType, dimension - 1, newIndexes);
 			
 			currentBlock.addInst(new StoreInst(subCreator, arrayNow));
 			
-			currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
 			currentBlock = creatorStepBlock; 
 			
 			currentBlock.addInst(new GetElementPtrInst(arrayNext, arrayNow, new IRConstInt(1)));
 			
-			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
 
 			currentBlock = afterCreatorBlock;
 		}
@@ -1045,7 +1073,8 @@ public class IRBuilder implements ASTVisitor {
 			currentBlock.addInst(new GetElementPtrInst(arrayTail, arrayHead, index.getResult()));
 			
 			IRBasicBlock tmp = currentBlock;
-			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
 			currentBlock = creatorCondBlock;
 			
 			PhiInst inst = new PhiInst(arrayNow);
@@ -1057,19 +1086,22 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addRegister(ne);
 			currentBlock.addInst(new IcmpInst(IcmpInst.IcmpOpType.ne, ne, arrayNow, arrayTail));
 			
-			currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
 			currentBlock = creatorBodyBlock;
 			
 			IRRegister subCreator = createClassType(baseType, dimension - 1, newIndexes, constructor);
 					
 			currentBlock.addInst(new StoreInst(subCreator, arrayNow));
 			
-			currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorStepBlock));
 			currentBlock = creatorStepBlock; 
 			
 			currentBlock.addInst(new GetElementPtrInst(arrayNext, arrayNow, new IRConstInt(1)));
 			
-			currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
+			if(!(currentBlock.getTail() instanceof BrInst))
+				currentBlock.addInst(new BrInst(currentBlock, creatorCondBlock));
 			
 			currentBlock = afterCreatorBlock;
 		}
@@ -1109,6 +1141,7 @@ public class IRBuilder implements ASTVisitor {
 		if (nameExpr instanceof MemberExprNode) {
 			nameExpr.accept(this);
 			node.setResult(nameExpr.getResult());
+			node.setAddress(nameExpr.getAddress());
 		}
 		else if (nameExpr instanceof VarExprNode){
 			FunctSymbol functSymbol = (FunctSymbol) ((VarExprNode)nameExpr).getSymbol();
@@ -1159,12 +1192,14 @@ public class IRBuilder implements ASTVisitor {
 		ExprNode nameExpr = node.getNameExpr();
 		if (nameExpr instanceof MemberExprNode) {
 			nameExpr.accept(this);
+			node.setAddress(nameExpr.getAddress());
 			node.setResult(nameExpr.getResult());
 		}
 		else if (nameExpr instanceof VarExprNode){
+			nameExpr.accept(this);
 			ExprNode indexExpr = node.getIndexExpr();
 			indexExpr.accept(this);
-			
+			/*
 			VarSymbol arraySymbol = (VarSymbol) ((VarExprNode) nameExpr).getSymbol();
 			IRRegister arrayAddress = arraySymbol.toIRAddress();
 			IRPtrType arrayType = (IRPtrType) ((IRPtrType) arrayAddress.getType()).getType();
@@ -1173,8 +1208,11 @@ public class IRBuilder implements ASTVisitor {
 			IRRegister array = new IRRegister(arrayType, ((VarExprNode) nameExpr).getIdentifier());
 			currentFunction.addRegister(array);
 			currentBlock.addInst(new LoadInst(array, arrayAddress));
-			
+			*/
 			//getelementptr --> elementAddress
+			IRRegister array = (IRRegister) nameExpr.getResult();
+			//System.err.println("array" + array);
+			IRPtrType arrayType = (IRPtrType) array.getType();
 			IRRegister elementAddress = new IRRegister(arrayType, "element$");
 			currentFunction.addRegister(elementAddress);
 			currentBlock.addInst(new GetElementPtrInst(elementAddress, array, indexExpr.getResult()));
@@ -1329,6 +1367,9 @@ public class IRBuilder implements ASTVisitor {
 	@Override
 	public void visit(VarExprNode node) {
 		VarSymbol varSymbol = (VarSymbol) node.getSymbol();
+		//System.err.println("print " + varSymbol.getIdentifier());
+		//System.err.println(node.getScope().InClassSymbol());
+		//System.err.println(currentClass);
 		if (node.getScope().InClassSymbol() == currentClass && varSymbol.getScope() == currentClass) {
 			//call member in own class
 			//load --> this

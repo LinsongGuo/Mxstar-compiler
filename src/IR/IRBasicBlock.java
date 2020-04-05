@@ -62,4 +62,8 @@ public class IRBasicBlock {
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	public IRInst getTail() {
+		return tail;
+	}
 }

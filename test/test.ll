@@ -43,7 +43,6 @@ thenBodyBlock.0:
     %y.2 = load i32, i32* %y$.0
     store i32 %y.2, i32* %returnValue$.0
     br label %returnBlock.0
-    br label %afterIfBlock.0
 
 elseBodyBlock.0:
     %y.3 = load i32, i32* %y$.0
@@ -53,7 +52,6 @@ elseBodyBlock.0:
     %call.0 = call i32 @gcd(i32 %y.3, i32 %srem.1)
     store i32 %call.0, i32* %returnValue$.0
     br label %returnBlock.0
-    br label %afterIfBlock.0
 
 afterIfBlock.0:
     br label %returnBlock.0

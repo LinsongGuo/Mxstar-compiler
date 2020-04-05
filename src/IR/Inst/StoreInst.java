@@ -2,6 +2,7 @@ package IR.Inst;
 
 import IR.IRVisitor;
 import IR.Symbol.IRSymbol;
+import IR.Type.IRPtrType;
 
 public class StoreInst extends IRInst {
 	private IRSymbol reg, ptr;
@@ -14,7 +15,7 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public String toString() {
-		return "store " + reg.getType().toString() + " " + 
+		return "store " + ((IRPtrType) ptr.getType()).getType().toString() + " " + 
 				reg.toString() + ", " + 
 				ptr.getType().toString() + " " + 
 				ptr.toString();

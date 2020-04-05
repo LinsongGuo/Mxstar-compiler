@@ -538,6 +538,7 @@ public class SemanticChecker implements ASTVisitor {
 			node.setLvalue(true);
 		}
 		else if (nameExpr instanceof VarExprNode){
+			nameExpr.setScope(currentScope);
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
 			VarSymbol varSymbol = currentScope.resolveArray(node, errorReminder);
 			((VarExprNode)nameExpr).setSymbol(currentScope.resolveVar((VarExprNode) nameExpr, errorReminder));
