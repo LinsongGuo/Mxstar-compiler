@@ -904,7 +904,7 @@ public class IRBuilder implements ASTVisitor {
 		node.setAddress(expr.getAddress());
 	}
 	
-	private IRRegister createInt(IRType baseType, int dimension, ArrayList<ExprNode> indexes) {
+	private IRRegister createIntOrString(IRType baseType, int dimension, ArrayList<ExprNode> indexes) {
 		IRType type = baseType;
 		for (int i = 0; i < dimension; ++i) 
 			type = new IRPtrType(type);
@@ -982,7 +982,7 @@ public class IRBuilder implements ASTVisitor {
 				currentBlock.addInst(new BrInst(currentBlock, ne, creatorBodyBlock, afterCreatorBlock));
 			currentBlock = creatorBodyBlock;
 	
-			IRRegister subCreator = createInt(baseType, dimension - 1, newIndexes);
+			IRRegister subCreator = createIntOrString(baseType, dimension - 1, newIndexes);
 			
 			currentBlock.addInst(new StoreInst(subCreator, arrayNow));
 			
@@ -1120,11 +1120,15 @@ public class IRBuilder implements ASTVisitor {
 		String typeName = typeNode.typeString();
 		
 		if (typeName.equals("int")) {
-			IRRegister res = createInt(new IRInt32Type(), dimension, indexes);
+			IRRegister res = createIntOrString(new IRInt32Type(), dimension, indexes);
 			node.setResult(res);
 		}
 		else if (typeName.equals("bool")) {
-			IRRegister res = createInt(new IRInt1Type(), dimension, indexes);
+			IRRegister res = createIntOrString(new IRInt1Type(), dimension, indexes);
+			node.setResult(res);
+		}
+		else if (typeName.equals("string")) {
+			IRRegister res = createIntOrString(new IRPtrType(new IRInt8Type()), dimension, indexes);
 			node.setResult(res);
 		}
 		else {

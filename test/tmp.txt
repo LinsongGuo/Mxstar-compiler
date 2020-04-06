@@ -1,2 +1,1 @@
 t65 segmentation fault
-t12 / t64 new string[]

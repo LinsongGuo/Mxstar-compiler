@@ -66,7 +66,7 @@ public class SemanticChecker implements ASTVisitor {
 				//declare members in the class
 				if (!isReservedWord(identifier)) {
 					ClassSymbol classScope = currentScope.getClassScope(identifier);
-					//declare variables in the class
+					//define variables in the class
 					ArrayList<VarDefListNode> varLists =  ((ClassDefNode) classItem).getVarList();
 					for (VarDefListNode varListItem : varLists) {
 						ArrayList<VarDefNode> varList = varListItem.getVarList();
@@ -118,7 +118,7 @@ public class SemanticChecker implements ASTVisitor {
 			}
 		}
 		
-		//define all functions in global scope.
+		//declare all functions in global scope.
 		boolean hasMain = false;
 		for (DefNode functItem : defList) {
 			if (functItem instanceof FunctDefNode) {
@@ -186,7 +186,6 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(VarDefListNode node){
 		node.setScope(currentScope);		
-		//System.err.println("visit varDefList node ");
 		ArrayList<VarDefNode> varList = node.getVarList();
 		for (VarDefNode item : varList) {
 			//initial value
@@ -239,7 +238,6 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(FunctDefNode node){
 		String identifier = node.getIdentifier();
-		//System.err.println("visit function " + identifier);
 		if (!isReservedWord(identifier)) {
 			if (!currentScope.duplicateClass(identifier)) {
 				FunctSymbol functSymbol = currentScope.getFunctScope(identifier);
@@ -261,7 +259,6 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(ClassDefNode node){
 		String identifier = node.getIdentifier();
-		//System.err.println("visit class " + identifier);
 		if (!isReservedWord(identifier)) {
 			ClassSymbol classSymbol = currentScope.getClassScope(identifier);
 			if (classSymbol != null && !classSymbol.definedOrNot()) {

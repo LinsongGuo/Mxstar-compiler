@@ -12,7 +12,7 @@ public class StoreInst extends IRInst {
 		this.reg = reg;
 		this.ptr = ptr;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "store " + ((IRPtrType) ptr.getType()).getType().toString() + " " + 
@@ -20,6 +20,7 @@ public class StoreInst extends IRInst {
 				ptr.getType().toString() + " " + 
 				ptr.toString();
 	}
+
 
 	@Override
 	public void accept(IRVisitor visitor) {
