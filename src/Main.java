@@ -14,8 +14,8 @@ import IR.*;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		InputStream IS = System.in;
-		//InputStream IS = new FileInputStream("test/test.txt");
+		//InputStream IS = System.in;
+		InputStream IS = new FileInputStream("test/test.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		//System.err.println("lexer------------------");
@@ -44,8 +44,11 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
 		
-		if (errorReminder.count() > 0)
-			System.exit(errorReminder.count());
+		int count = errorReminder.count();
+		System.out.println(count + " error(s) in total.");
+		if (count > 0) {
+			System.exit(count);
+		}
 		
 		//System.err.println("Building IR--------------");
 		GlobalScope globalScope = checker.getGlobalScope();

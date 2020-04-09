@@ -1,12 +1,12 @@
 package IR;
 
-import java.io.PrintWriter;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import IR.Symbol.IRRegister;
 import IR.Type.IRType;
-import IR.Type.IRVoidType;
 
 public class IRFunction {
 	private IRType type;
@@ -14,24 +14,31 @@ public class IRFunction {
 	private ArrayList<IRRegister> parameters;
 	private HashMap<String, ArrayList<IRRegister>> registerHash;
 	private HashMap<String, ArrayList<IRBasicBlock>> blockHash;
-	private ArrayList<IRBasicBlock> blockList;
+	//private ArrayList<IRBasicBlock> blockList;
+	private IRBasicBlock entranceBlock;
+	
+	//for Constructing SSA
+	private ArrayList<IRBasicBlock> dfsSeq;
+	 private HashSet<IRBasicBlock> visited;
 	
 	public IRFunction(IRType type, String name) {
 		this.type = type;
 		this.name = name;
 		this.parameters = new ArrayList<IRRegister>();
-		registerHash = new HashMap<String, ArrayList<IRRegister>>();
-		blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
-		blockList = new ArrayList<IRBasicBlock>();
+		this.entranceBlock = null;
+		this.registerHash = new HashMap<String, ArrayList<IRRegister>>();
+		this.blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
+		//this.blockList = new ArrayList<IRBasicBlock>();
 	}
 	
 	public IRFunction(IRType type, String name, ArrayList<IRRegister> parameters) {
 		this.type = type;
 		this.name = name;
 		this.parameters = parameters;
-		registerHash = new HashMap<String, ArrayList<IRRegister>>();
-		blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
-		blockList = new ArrayList<IRBasicBlock>();
+		this.entranceBlock = null;
+		this.registerHash = new HashMap<String, ArrayList<IRRegister>>();
+		this.blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
+		//this.blockList = new ArrayList<IRBasicBlock>();
 	}
 	
 	public String declarationString () {
@@ -72,23 +79,6 @@ public class IRFunction {
 		return "@" + name;
 	}
 
-	/*
-	public IRBasicBlock getEntranceBlock() {
-		return entranceBlock;
-	} 
-	
-	public IRBasicBlock getExitBlock() {
-		return exitBlock;
-	}
-	
-	public IRBasicBlock getReturnBlock() {
-		return returnBlock;
-	}
-	
-	public IRRegister getReturnValue() {
-		return returnValue;
-	}*/
-	
 	public void addRegister(IRRegister reg) { 
 		String name = reg.getName();
 		if (!registerHash.containsKey(name)) {
@@ -111,14 +101,35 @@ public class IRFunction {
 		ArrayList<IRBasicBlock> tmp = blockHash.get(name);
 		block.setName(name + "." + String.valueOf(tmp.size()));
 		tmp.add(block);
-		blockList.add(block);
+		if (entranceBlock == null)
+			entranceBlock = block;
 	}
 	
 	public ArrayList<IRBasicBlock> getBlockList() {
+		ArrayList<IRBasicBlock> blockList = new ArrayList<IRBasicBlock>();
+		IRBasicBlock block = entranceBlock;
+		while (block != null) {
+			blockList.add(block);
+			block = block.getSucc();
+		}
 		return blockList;
 	}
+
+	public IRBasicBlock getEntranceBlock() {
+		return entranceBlock;
+	} 
 	
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	public ArrayList<IRBasicBlock> getDfsSeq() {
+		return dfsSeq;
+	}
+	
+	public ArrayList<IRBasicBlock> dfsBasicBlock() {
+		entranceBlock.dfs(visited, dfsSeq);
+		return dfsSeq;
+	}
+	
 }

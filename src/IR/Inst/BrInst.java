@@ -10,8 +10,8 @@ public class BrInst extends IRInst {
 	
 	public BrInst(IRBasicBlock currentBlock, IRBasicBlock ifTrue) {
 		this.ifTrue = ifTrue;
-		currentBlock.addNext(ifTrue);
-		ifTrue.addPrev(currentBlock);
+		currentBlock.addSuccessor(ifTrue);
+		ifTrue.addPredecessor(currentBlock);
 	}
 	
 	public BrInst(IRBasicBlock currentBlock, IRSymbol cond, IRBasicBlock ifTrue, IRBasicBlock ifFalse) {
@@ -19,10 +19,10 @@ public class BrInst extends IRInst {
 		this.cond = cond;
 		this.ifTrue = ifTrue;
 		this.ifFalse = ifFalse;
-		currentBlock.addNext(ifTrue);
-		ifTrue.addPrev(currentBlock);
-		currentBlock.addNext(ifFalse);
-		ifFalse.addPrev(currentBlock);
+		currentBlock.addSuccessor(ifTrue);
+		ifTrue.addPredecessor(currentBlock);
+		currentBlock.addSuccessor(ifFalse);
+		ifFalse.addPredecessor(currentBlock);
 	}
 	
 	@Override

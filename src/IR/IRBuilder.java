@@ -1049,7 +1049,7 @@ public class IRBuilder implements ASTVisitor {
 		currentFunction.addRegister(arrayHead);
 		currentBlock.addInst(new BitcastToInst(arrayHead32, arrayHead));
 		
-		if ((indexes.size() == 1 && dimension == 1) || indexes.size() > 1) {
+		if (/*(indexes.size() == 1 && dimension == 1) || */indexes.size() > 1) {
 			ArrayList<ExprNode> newIndexes = new ArrayList<ExprNode>();
 			for (int i = 1; i < indexes.size(); ++i) 
 				newIndexes.add(indexes.get(i));
@@ -1267,14 +1267,14 @@ public class IRBuilder implements ASTVisitor {
 			 IRRegister base = (IRRegister) nameExpr.getResult();
 			 
 			 //getelementptr --> memberAddress
-			 IRRegister memberAddress = new IRRegister(memberAddressType, base.getName() + "." + identifier + "$");
+			 IRRegister memberAddress = new IRRegister(memberAddressType, identifier + "$");
 			 currentFunction.addRegister(memberAddress);
 			 currentBlock.addInst(
 				 new GetElementPtrInst(memberAddress, base, new IRConstInt(0), new IRConstInt(classSymbol.order(identifier)))
 			 );
 			 
 			 //load --> member
-			 IRRegister member = new IRRegister(memberAddressType.getType(), base.getName() + "." + identifier);
+			 IRRegister member = new IRRegister(memberAddressType.getType(), identifier);
 			 currentFunction.addRegister(member);
 			 currentBlock.addInst(new LoadInst(member, memberAddress));
 			 
