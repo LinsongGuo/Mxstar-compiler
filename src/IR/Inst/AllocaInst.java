@@ -2,25 +2,35 @@ package IR.Inst;
 
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
+import IR.Symbol.IRSymbol;
 import IR.Type.IRType;
 
 public class AllocaInst extends IRInst {
-	private IRRegister reg;
+	private IRRegister res;
 	private IRType type;
 
-	public AllocaInst(IRRegister reg, IRType type) {
+	public AllocaInst(IRRegister res, IRType type) {
 		super();
-		this.reg = reg;
+		this.res = res;
 		this.type = type;
 	}
 
 	@Override
 	public String toString() {
-		return reg.toString() + " = alloca " + type.toString();
+		return res.toString() + " = alloca " + type.toString();
 	}
 
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		// TODO Auto-generated method stub
+	}
+	
+	public IRRegister getRes() {
+		return res;
 	}
 }

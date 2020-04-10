@@ -33,6 +33,8 @@ public class IcmpInst extends IRInst {
 		this.result = result;
 		this.left = left;
 		this.right = right;
+		left.addDef(this);
+		right.addDef(this);
 	}
 	
 	@Override
@@ -43,5 +45,13 @@ public class IcmpInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		if (left == old)
+			left = nw;
+		if (right == old)
+			right = nw;
 	}
 }

@@ -13,7 +13,6 @@ import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
 import IR.Type.IRClassType;
-import IR.Type.IRType;
 import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol implements Type {

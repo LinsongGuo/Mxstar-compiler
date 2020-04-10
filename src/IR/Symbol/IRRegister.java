@@ -3,8 +3,7 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRType;
 
-public class IRRegister extends IRSymbol {
-	
+public class IRRegister extends IRSymbol {	
 	protected String name;
 	
 	public IRRegister(IRType type, String name) {
@@ -29,4 +28,5 @@ public class IRRegister extends IRSymbol {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 }

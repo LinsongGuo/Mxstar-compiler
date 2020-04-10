@@ -2,7 +2,6 @@ package IR.Inst;
 
 import IR.IRVisitor;
 import IR.Symbol.IRSymbol;
-import IR.Type.IRType;
 
 public class BitcastToInst extends IRInst {
 
@@ -22,6 +21,12 @@ public class BitcastToInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

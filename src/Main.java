@@ -9,6 +9,9 @@ import parser.*;
 import AST.*;
 import utility.*;
 import SemanticChecker.*;
+import optimize.CFGSimplifier;
+import optimize.DominatorTree;
+import optimize.SSAConstructor;
 import IR.*;
 
 public class Main {
@@ -56,8 +59,14 @@ public class Main {
 		IRBuilder ir = new IRBuilder(globalScope, stringTemplate, errorReminder);
 		ir.visit(root);
 		
-		//System.err.println("Printing IR--------------");
 		IRModule module = ir.getModule(); 
+		
+		System.err.println("optimizing------------------");
+		new CFGSimplifier(module); 
+		new DominatorTree(module);
+		new SSAConstructor(module);
+		
+		//System.err.println("Printing IR--------------");
 		IRPrinter printer = new IRPrinter();
 		printer.visit(module);
 	}

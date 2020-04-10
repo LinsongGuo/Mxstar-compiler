@@ -20,4 +20,8 @@ public class IRConstBool extends IRSymbol {
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	public boolean getValue() {
+		return value;
+	}
 }

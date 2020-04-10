@@ -8,6 +8,4 @@ public abstract class PASS {
     public PASS(IRModule module) {
         this.module = module;
     }
-
-    abstract public void run();
 }

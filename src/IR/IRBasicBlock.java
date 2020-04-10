@@ -2,29 +2,47 @@ package IR;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-
+import IR.Inst.BrInst;
 import IR.Inst.IRInst;
+import IR.Inst.PhiInst;
+import IR.Symbol.IRRegister;
+import utility.Pair;
 
 public class IRBasicBlock {
 	private String name;
 	private IRInst head, tail;
 	private ArrayList<IRBasicBlock> predecessors, successors;
-	private IRBasicBlock succ;
+	private IRBasicBlock prev, next;
+	private IRFunction currentFunction;
 	
 	//for constructing SSA
 	private IRBasicBlock sdom, idom, father;
 	private HashSet<IRBasicBlock> bucket, strictDominators, DF;
+	private ArrayList<IRBasicBlock> dominaces;
 	private int dfn;
+	private ArrayList<Pair<IRRegister, PhiInst>> phiMap;
 	
 	public IRBasicBlock(String name) {
 		this.name = name;
 		head = tail = null;
 		predecessors = new ArrayList<IRBasicBlock>();
 		successors = new ArrayList<IRBasicBlock>();
+		prev = next = null;
+		currentFunction = null;
 		sdom = idom = father = null;
 		bucket = new HashSet<IRBasicBlock>();
 		strictDominators = new HashSet<IRBasicBlock>();
 		DF = new HashSet<IRBasicBlock>();
+		phiMap = new ArrayList<Pair<IRRegister, PhiInst>>();
+		dominaces = new ArrayList<IRBasicBlock>();
+	}
+	
+	public void setCurrentFunction(IRFunction function) {
+		currentFunction = function;
+	}
+	
+	public IRFunction getCurrentFunction() {
+		return currentFunction;
 	}
 	
 	public String getName() {
@@ -39,7 +57,7 @@ public class IRBasicBlock {
 	}
 	
 	public void addInst(IRInst inst) {
-		inst.setBlock(this);
+		inst.setCurrentBlock(this);
 		if (head == null) {
 			head = tail = inst;
 		}
@@ -50,16 +68,32 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public void setHead(IRInst inst) {
+		head = inst;
+	}
+	
+	public void setTail(IRInst inst) {
+		tail = inst;
+	}
+	
 	public IRInst getHead() {
 		return head;
 	}
 	
-	public void setSucc(IRBasicBlock block) {
-		succ = block;
+	public void setPrev(IRBasicBlock block) {
+		prev = block;
 	}
 	
-	public IRBasicBlock getSucc() {
-		return succ;
+	public IRBasicBlock getPrev() {
+		return prev;
+	}
+	
+	public void setNext(IRBasicBlock block) {
+		next = block;
+	}
+	
+	public IRBasicBlock getNext() {
+		return next;
 	}
 	
 	public void addPredecessor(IRBasicBlock block) {
@@ -130,12 +164,29 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public void dfs(HashSet<IRBasicBlock> visitedSet) {
+		visitedSet.add(this);
+		for (IRBasicBlock successor : successors) {
+			if (!visitedSet.contains(successor)) {
+				successor.dfs(visitedSet);
+			}
+		}
+	}
+	
 	public void addSdom(IRBasicBlock block) {
 		bucket.add(block);
 	}
 	
 	public HashSet<IRBasicBlock> getBucket() {
 		return bucket;
+	}
+	
+	public void addDominace(IRBasicBlock block) {
+		dominaces.add(block);
+	}
+	
+	public ArrayList<IRBasicBlock> getDominaces() {
+		return dominaces;
 	}
 	
 	public void addStrictDominator(IRBasicBlock block) {
@@ -152,6 +203,50 @@ public class IRBasicBlock {
 	
 	public HashSet<IRBasicBlock> getDF() {
 		return DF;
+	}
+
+	public ArrayList<IRInst> getInstList() {
+		ArrayList<IRInst> res = new ArrayList<IRInst>();
+		IRInst inst = head;
+		while (inst != null) {
+			res.add(inst);
+			inst = inst.getNext();
+		}
+		return res;
+	} 
+
+	public void removeItself() {
+		if (prev != null) 
+			prev.setNext(next);
+		if (next != null) 
+			next.setPrev(prev);
+		else
+			currentFunction.setLastBlock(prev);
+	}
+	
+	public void union(IRBasicBlock other) {
+		assert tail instanceof BrInst;
+		
+		tail.removeIfself();
+		ArrayList<IRInst> instList = other.getInstList();
+		for (IRInst inst : instList) {
+			addInst(inst);
+		}
+		
+		other.removeItself();
+		successors.remove(other);
+		ArrayList<IRBasicBlock> otherSuccessors = other.getSuccessors();
+		for (IRBasicBlock otherSuccessor : otherSuccessors) {
+			successors.add(otherSuccessor);
+		}
+	}
+	
+	public void addPhi(IRRegister address, PhiInst phi) {
+		phiMap.add(new Pair<IRRegister, PhiInst>(address, phi));
+	}
+	
+	public ArrayList<Pair<IRRegister, PhiInst>> getPhiMap() {
+		return phiMap;
 	}
 	
 	

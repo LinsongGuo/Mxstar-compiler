@@ -12,6 +12,7 @@ public class BrInst extends IRInst {
 		this.ifTrue = ifTrue;
 		currentBlock.addSuccessor(ifTrue);
 		ifTrue.addPredecessor(currentBlock);
+		cond.addDef(this);
 	}
 	
 	public BrInst(IRBasicBlock currentBlock, IRSymbol cond, IRBasicBlock ifTrue, IRBasicBlock ifFalse) {
@@ -23,6 +24,7 @@ public class BrInst extends IRInst {
 		ifTrue.addPredecessor(currentBlock);
 		currentBlock.addSuccessor(ifFalse);
 		ifFalse.addPredecessor(currentBlock);
+		cond.addDef(this);
 	}
 	
 	@Override
@@ -38,5 +40,27 @@ public class BrInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+	
+	public IRSymbol getCond() {
+		return cond;
+	}
+	
+	public void changeTrue() {
+		cond = null;
+		currentBlock.getSuccessors().remove(ifFalse);
+	}
+	
+	public void changeFalse() {
+		cond = null;
+		currentBlock.getSuccessors().remove(ifTrue);
+		ifTrue = ifFalse;
+	}
+
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		if (cond == old)
+			cond = nw;
 	}
 }

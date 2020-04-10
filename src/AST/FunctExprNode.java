@@ -3,8 +3,6 @@ package AST;
 import utility.Location;
 import java.util.ArrayList;
 
-import Scope.Symbol;
-
 public class FunctExprNode extends ExprNode {
 	private ExprNode nameExpr;
 	private ArrayList<ExprNode> paraList;

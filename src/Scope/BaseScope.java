@@ -1,7 +1,6 @@
 package Scope;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import utility.ErrorReminder;
 import AST.ClassDefNode;
@@ -9,7 +8,6 @@ import AST.FunctDefNode;
 import AST.FunctExprNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
-import IR.Symbol.IRRegister;
 import AST.TypeNode;
 import AST.ArrayExprNode;
 import AST.ArrayTypeNode;

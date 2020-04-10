@@ -17,6 +17,9 @@ public class CallInst extends IRInst {
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
 		this.result = null;
+		for (IRSymbol para : parameters) {
+			para.addUse(this);
+		}		
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters) {
@@ -24,6 +27,9 @@ public class CallInst extends IRInst {
 		this.function = function;
 		this.parameters = parameters;
 		this.result = null;
+		for (IRSymbol para : parameters) {
+			para.addUse(this);
+		}		
 	}
 	
 	public CallInst(IRFunction function, IRSymbol parameter, IRSymbol result) {
@@ -32,6 +38,9 @@ public class CallInst extends IRInst {
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
 		this.result = result;
+		for (IRSymbol para : parameters) {
+			para.addUse(this);
+		}		
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRSymbol result) {
@@ -39,6 +48,9 @@ public class CallInst extends IRInst {
 		this.function = function;
 		this.parameters = parameters;
 		this.result = result;
+		for (IRSymbol para : parameters) {
+			para.addUse(this);
+		}		
 	}
 	
 	@Override
@@ -57,5 +69,13 @@ public class CallInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		for (IRSymbol parameter : parameters) {
+			if (parameter == old)
+				parameter = nw;
+		}
 	}
 }

@@ -1,8 +1,5 @@
 package Scope;
 
-import IR.Type.IRInt32Type;
-import IR.Type.IRType;
-
 public class IntType extends Symbol implements Type {
 	
 	public IntType() {

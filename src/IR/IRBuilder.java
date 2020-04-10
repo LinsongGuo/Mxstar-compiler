@@ -17,7 +17,6 @@ import utility.Operator;
 
 public class IRBuilder implements ASTVisitor {
 	private GlobalScope globalScope;
-	private ErrorReminder errorReminder;
 	private IRFunction currentFunction, mallocFunction;
 	private IRBasicBlock currentBlock, currentReturnBlock; 
 	private IRModule module;
@@ -27,7 +26,6 @@ public class IRBuilder implements ASTVisitor {
 	
 	public IRBuilder(GlobalScope globalScope, StringType stringTemplate, ErrorReminder errorReminder) {
 		this.globalScope = globalScope;
-		this.errorReminder = errorReminder;
 		this.currentFunction = null;
 		this.currentReturnBlock = null;
 		this.currentBlock = null;

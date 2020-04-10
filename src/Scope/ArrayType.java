@@ -1,6 +1,5 @@
 package Scope;
 
-import IR.Type.IRType;
 
 public class ArrayType extends ClassSymbol implements Type {
 	private int dimension;

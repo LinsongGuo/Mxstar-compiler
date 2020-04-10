@@ -2,15 +2,16 @@ package IR.Inst;
 
 import IR.IRBasicBlock;
 import IR.IRVisitor;
+import IR.Symbol.IRSymbol;
 
 abstract public class IRInst {
 	
 	protected IRInst prev, next;
-	protected IRBasicBlock block;
+	protected IRBasicBlock currentBlock;
 	
 	public IRInst() {
 		prev = next = null;
-		block = null;
+		currentBlock = null;
 	}
 	
 	@Override
@@ -34,11 +35,25 @@ abstract public class IRInst {
 		return next;
 	}
 	
-	public void setBlock(IRBasicBlock block) {
-		this.block = block;
+	public void setCurrentBlock(IRBasicBlock block) {
+		currentBlock = block;
 	} 
 	
-	public IRBasicBlock getBlock() {
-		return block;
+	public IRBasicBlock getCurrentBlock() {
+		return currentBlock;
 	}
+	
+	public void removeIfself() {
+		if (prev != null) 
+			prev.setNext(next);
+		else
+			currentBlock.setHead(next);
+		if (next != null) 
+			next.setPrev(prev);
+		else 
+			currentBlock.setTail(prev);
+	} 
+	
+	abstract public void replaceUse(IRSymbol old, IRSymbol nw);
+	
 }

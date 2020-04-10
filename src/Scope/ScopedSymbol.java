@@ -11,7 +11,6 @@ import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
-import IR.Symbol.IRRegister;
 import utility.ErrorReminder;
 
 abstract public class ScopedSymbol extends Symbol implements Scope {

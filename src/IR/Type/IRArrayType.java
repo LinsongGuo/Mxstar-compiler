@@ -1,7 +1,5 @@
 package IR.Type;
 
-import java.util.ArrayList;
-
 import IR.IRVisitor;
  
 public class IRArrayType extends IRType {

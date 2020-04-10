@@ -2,8 +2,6 @@ package IR.Inst;
 
 import IR.IRVisitor;
 import IR.Symbol.IRSymbol;
-import IR.Type.IRType;
-import IR.Type.IRVoidType;
 
 public class RetInst extends IRInst {
 	private IRSymbol value;
@@ -16,6 +14,7 @@ public class RetInst extends IRInst {
 	public RetInst(IRSymbol value) {
 		super();
 		this.value = value;
+		value.addDef(this);
 	}
 	
 	@Override
@@ -31,5 +30,11 @@ public class RetInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		if (value == old)
+			value = nw;
 	}
 }

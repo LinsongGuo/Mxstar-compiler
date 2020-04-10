@@ -16,6 +16,10 @@ public class GetElementPtrInst extends IRInst {
 		this.result = result;
 		this.ptr = ptr;
 		this.index = index;
+		ptr.addDef(this);
+		for (IRSymbol s : index) {
+			s.addDef(this);
+		}	
 	}
 	
 	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx) {
@@ -24,6 +28,10 @@ public class GetElementPtrInst extends IRInst {
 		this.ptr = ptr;
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
+		ptr.addDef(this);
+		for (IRSymbol s : index) {
+			s.addDef(this);
+		}	
 	}
 	
 	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx, IRSymbol idx2) {
@@ -33,6 +41,10 @@ public class GetElementPtrInst extends IRInst {
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
 		index.add(idx2);
+		ptr.addDef(this);
+		for (IRSymbol s : index) {
+			s.addDef(this);
+		}	
 	}
 	
 	@Override
@@ -57,5 +69,15 @@ public class GetElementPtrInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		if (ptr == old)
+			ptr = nw;
+		for (IRSymbol s : index) {
+			if (s == old)
+				s = nw;
+		}	
 	}
 }

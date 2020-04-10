@@ -1,7 +1,5 @@
 package Scope;
 
-import IR.Type.IRType;
-
 public class NullType extends Symbol implements Type {
 	
 	public NullType() {

@@ -1,8 +1,5 @@
 package Scope;
 
-import IR.Type.IRInt1Type;
-import IR.Type.IRType;
-
 public class BoolType extends Symbol implements Type {
 	
 	public BoolType() {

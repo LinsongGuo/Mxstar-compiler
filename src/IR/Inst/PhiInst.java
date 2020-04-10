@@ -17,17 +17,30 @@ public class PhiInst extends IRInst {
 		this.res = res;
 		this.symbols = new ArrayList<IRSymbol>();
 		this.bbs = new ArrayList<IRBasicBlock>();
+		for (IRSymbol s : symbols) {
+			s.addDef(this);
+		}
 	}
 
 	public PhiInst(IRRegister res, ArrayList<IRSymbol> symbols, ArrayList<IRBasicBlock> bbs) {
 		this.res = res;
 		this.symbols = symbols;
 		this.bbs = bbs;
+		for (IRSymbol s : symbols) {
+			s.addDef(this);
+		}
 	}
 	
 	public void addBranch(IRSymbol symbol, IRBasicBlock bb) {
 		symbols.add(symbol);
 		bbs.add(bb);
+		for (IRSymbol s : symbols) {
+			s.addDef(this);
+		}
+	}
+	
+	public IRRegister getRes() {
+		return res;
 	}
 	
 	@Override
@@ -44,6 +57,14 @@ public class PhiInst extends IRInst {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);	
+	}
+
+	@Override
+	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		for (IRSymbol symbol : symbols) {
+			if (symbol == old)
+				symbol = nw;
+		}
 	}
 
 }

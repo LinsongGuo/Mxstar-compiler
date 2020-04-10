@@ -1,8 +1,5 @@
 package Scope;
 
-import IR.Type.IRType;
-import IR.Type.IRVoidType;
-
 public class VoidType extends Symbol implements Type {
 	
 	public VoidType() {

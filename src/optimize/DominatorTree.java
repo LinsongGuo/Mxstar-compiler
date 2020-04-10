@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
 
 import IR.IRBasicBlock;
 import IR.IRFunction;
 import IR.IRModule;
-import Scope.VarSymbol;
 import utility.Pair;
 
 public class DominatorTree extends PASS {
@@ -19,10 +17,6 @@ public class DominatorTree extends PASS {
 	 
 	public DominatorTree(IRModule module) {
 		super(module);
-	}
-
-	@Override
-	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			LengauerTarjan(function);
@@ -82,12 +76,14 @@ public class DominatorTree extends PASS {
 			}
 		}
 		
-		IRBasicBlock root = dfsSeq.get(0); 
-		root.setIdom(root);
+		//IRBasicBlock root = dfsSeq.get(0); 
+		//root.setIdom(root);
 		for (int i = 1; i < dfsSeq.size(); ++i) {
 			IRBasicBlock block = dfsSeq.get(i);
 			if (block.getIdom() != block.getSdom()) {
-				block.setIdom(block.getIdom().getIdom());
+				IRBasicBlock idom = block.getIdom().getIdom();
+				block.setIdom(idom);
+				idom.addDominace(block);
 			}
 		}
 	}

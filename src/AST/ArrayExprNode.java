@@ -1,6 +1,5 @@
 package AST;
 
-import Scope.Symbol;
 import utility.Location;
 
 public class ArrayExprNode extends ExprNode {

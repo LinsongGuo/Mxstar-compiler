@@ -1,7 +1,6 @@
 package IR.Symbol;
 
 import IR.IRVisitor;
-import IR.Type.IRType;
 import IR.Type.IRVoidType;
 import IR.Type.IRPtrType;
 

@@ -2,17 +2,14 @@ package IR;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import IR.Inst.*;
 import IR.Symbol.*;
 import IR.Type.*;
-import Scope.VarSymbol;
 
 public class IRPrinter implements IRVisitor {
 	private PrintWriter printer;

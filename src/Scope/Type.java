@@ -1,7 +1,5 @@
 package Scope;
 
-import IR.Type.IRType;
-
 public interface Type {
 	public abstract String toString();
 	
