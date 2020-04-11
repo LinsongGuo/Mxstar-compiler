@@ -73,9 +73,33 @@ public class CallInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		for (IRSymbol parameter : parameters) {
-			if (parameter == old)
-				parameter = nw;
+		boolean flag = false;
+		for (int i = 0; i < parameters.size(); ++i) {
+			if (parameters.get(i) == old) {
+				parameters.set(i, nw);
+				flag = true;
+			}
 		}
+		if (flag) {
+			//old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+	
+	public IRSymbol getRes() {
+		return result;
+	}
+
+	@Override
+	public void removeAllUse() {
+		for (int i = 0; i < parameters.size(); ++i) {
+			parameters.get(i).removeUse(this);
+		}
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

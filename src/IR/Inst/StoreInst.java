@@ -12,6 +12,7 @@ public class StoreInst extends IRInst {
 		this.res = res;
 		this.ptr = ptr;
 		ptr.addDef(this);
+		res.addUse(this);
 	}
 	
 	@Override
@@ -29,8 +30,11 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		// TODO Auto-generated method stub
-		
+		if (res == old) {
+			res = nw;
+		//	old.removeUse(this);
+			nw.addUse(this);		
+		}
 	}
 	
 	public IRSymbol getRes() {
@@ -39,5 +43,15 @@ public class StoreInst extends IRInst {
 	
 	public IRSymbol getPtr() {
 		return ptr;
+	}
+
+	@Override
+	public void removeAllUse() {
+		res.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		ptr.removeDef(this);
 	}
 }

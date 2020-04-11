@@ -30,7 +30,20 @@ public class AllocaInst extends IRInst {
 		// TODO Auto-generated method stub
 	}
 	
+	@Override
+	public void removeAllUse() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public IRRegister getRes() {
 		return res;
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

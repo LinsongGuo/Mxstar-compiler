@@ -23,7 +23,7 @@ void __printlnInt(int n) {
 }
 
 char* __getString() {
-	char* buffer = malloc(sizeof(char) * 256);
+	char* buffer = malloc(sizeof(char) * 512);
     scanf("%s", buffer);
     return buffer;
 } 

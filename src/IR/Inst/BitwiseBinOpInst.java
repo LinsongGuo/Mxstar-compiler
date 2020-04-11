@@ -49,10 +49,31 @@ public class BitwiseBinOpInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (left == old)
+		boolean flag = false;
+		if (left == old) {
 			left = nw;
-		if (right == old)
-			right = nw;
+			flag = true;
+		}
+		if (right == old) {
+			right = nw;		
+			flag = true;
+		}
+		if (flag) nw.addUse(this);
+	}
+	
+	public IRSymbol getRes() {
+		return result;
+	}
+
+	@Override
+	public void removeAllUse() {
+		
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

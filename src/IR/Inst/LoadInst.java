@@ -25,8 +25,11 @@ public class LoadInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		// TODO Auto-generated method stub
-		
+		if (ptr == old) {
+			ptr = nw;
+		//	old.removeUse(this);
+			nw.addUse(this);
+		}
 	}
 	
 	public IRSymbol getRes() {
@@ -35,6 +38,17 @@ public class LoadInst extends IRInst {
 	
 	public IRSymbol getPtr() {
 		return ptr;
+	}
+
+	@Override
+	public void removeAllUse() {
+		ptr.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

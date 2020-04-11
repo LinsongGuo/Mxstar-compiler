@@ -1,0 +1,20 @@
+@main
+%entranceBlock.0 --> %forCondBlock.0  
+%forCondBlock.0 --> %forBodyBlock.0  %afterForBlock.0  
+%forBodyBlock.0 --> %forStepBlock.0  
+%forStepBlock.0 --> 
+%afterForBlock.0 --> %forCondBlock.1  
+%forCondBlock.1 --> %logicalAnd.0  %afterLogicalAnd.0  
+%forBodyBlock.1 --> %forStepBlock.1  
+%forStepBlock.1 --> 
+%afterForBlock.1 --> %returnBlock.0  
+%logicalAnd.0 --> 
+%afterLogicalAnd.0 --> %logicalAnd.1  %afterLogicalAnd.1  
+%logicalAnd.1 --> 
+%afterLogicalAnd.1 --> %forBodyBlock.1  %afterForBlock.1  
+%returnBlock.0 --> 
+
+@__init__
+%entranceBlock.0 --> %returnBlock.0  
+%returnBlock.0 --> 
+

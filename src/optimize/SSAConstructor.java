@@ -12,18 +12,27 @@ import IR.IRBasicBlock;
 import IR.IRFunction;
 import IR.IRModule;
 import IR.Inst.AllocaInst;
+import IR.Inst.BinOpInst;
+import IR.Inst.BitwiseBinOpInst;
+import IR.Inst.GetElementPtrInst;
 import IR.Inst.IRInst;
+import IR.Inst.IcmpInst;
 import IR.Inst.LoadInst;
 import IR.Inst.PhiInst;
 import IR.Inst.StoreInst;
+import IR.Symbol.IRConstBool;
+import IR.Symbol.IRConstInt;
+import IR.Symbol.IRNull;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
+import IR.Type.IRInt1Type;
+import IR.Type.IRInt32Type;
 import IR.Type.IRPtrType;
 import IR.Type.IRType;
 import utility.Pair;
 
 public class SSAConstructor extends PASS {
-	private HashMap<IRRegister, Stack<IRSymbol>> stack; 
+	private HashMap<IRSymbol, Stack<IRSymbol>> stack; 
 	
 	public SSAConstructor(IRModule module) {
 		super(module);
@@ -35,10 +44,48 @@ public class SSAConstructor extends PASS {
 	
 	private void construct(IRFunction function) {
 		ArrayList<IRBasicBlock> blockList = function.getBlockList();
+		stack = new HashMap<IRSymbol, Stack<IRSymbol>>();
+		removeUnusedInst(function, blockList);
 		insertPhiInst(function, blockList);
-		
-		stack = new HashMap<IRRegister, Stack<IRSymbol>>();
 		rename(function.getEntranceBlock());
+		for (IRBasicBlock block : blockList) {
+			block.mergePhiMap();
+		}
+	}
+	
+	private void removeUnusedInst(IRFunction function, ArrayList<IRBasicBlock> blockList) {
+		for (IRBasicBlock block : blockList) {
+			ArrayList<IRInst> instList = block.getInstList();
+			for (IRInst inst : instList) {
+				if (inst instanceof AllocaInst) {
+					if (!inst.getRes().isDefed()) {
+						inst.removeIfself();
+					}
+				}/*
+				else if (inst instanceof StoreInst) {
+					if (!((StoreInst) inst).getPtr().isUsed()) {
+						inst.removeIfself();
+					}
+				}
+				else if (inst instanceof CallInst) {
+					IRSymbol res = inst.getRes();
+					if (res != null && !res.isUsed()) {
+						//inst.removeIfself();
+					}
+				}*/
+				else if (inst instanceof BinOpInst     ||
+					inst instanceof BitwiseBinOpInst   ||
+					inst instanceof GetElementPtrInst  ||
+					inst instanceof IcmpInst           ||
+					inst instanceof LoadInst           ||
+					inst instanceof PhiInst            ) 
+				{
+					if (!inst.getRes().isUsed()) {
+						inst.removeIfself();
+					}
+				}
+			}
+		}
 	}
 	
 	private void insertPhiInst(IRFunction function, ArrayList<IRBasicBlock> blockList) {
@@ -46,9 +93,12 @@ public class SSAConstructor extends PASS {
 			ArrayList<IRInst> instList = block.getInstList();
 			for (IRInst inst : instList) {
 				if (inst instanceof AllocaInst) {
-					IRRegister address = ((AllocaInst) inst).getRes(); 
+					
+					IRRegister address = ((AllocaInst) inst).getRes();
 					IRType type = ((IRPtrType) address.getType()).getType();
 					String name = address.getName().split("\\$")[0];
+				
+					//System.err.println("name : " + name);
 					
 					HashSet<IRInst> defList = address.getDefList();
 					Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
@@ -70,38 +120,81 @@ public class SSAConstructor extends PASS {
 								IRRegister res = new IRRegister(type, name);
 								function.addRegister(res);
 								PhiInst phi = new PhiInst(res);
-								block.addPhi(address, phi);
+								df.addPhi(address, phi);
 								//add dominance frontier
 								queue.add(df);
 								visitedSet.add(df);
+								//System.err.println("insert " + df + " " + res);
 							}
 						}
 					}
+					
+					stack.put(address, new Stack<IRSymbol>());
+					if(type instanceof IRInt32Type) {
+						push(address, new IRConstInt(0));
+					}
+					else if (type instanceof IRInt1Type) {
+						push(address, new IRConstBool(false));
+					}
+					else {
+						push(address, new IRNull());
+					}
+					inst.removeIfself();
 				}
 			}
 		}
 	}
 	
+	private boolean contains(IRSymbol address) {
+		return stack.containsKey(address);
+	}
+	
+	private boolean empty(IRSymbol address) {
+		assert stack.containsKey(address);
+		return stack.get(address).empty();
+	}
+	private void push(IRSymbol address, IRSymbol result) {
+		assert stack.containsKey(address);
+		stack.get(address).push(result);
+	}
+	
+	private IRSymbol top(IRSymbol address) {
+		assert stack.containsKey(address);
+		Stack<IRSymbol> sta = stack.get(address);
+		assert (!sta.isEmpty());
+		return sta.peek();
+	}
+	
+	private void pop(IRSymbol address) {
+		assert stack.containsKey(address);
+		stack.get(address).pop();
+	}
 	
 	private void rename(IRBasicBlock block) {
 		ArrayList<Pair<IRRegister, PhiInst>> phiMap = block.getPhiMap();
+		
 		for (Pair<IRRegister, PhiInst> pair : phiMap) {
 			IRRegister address = pair.first;
 			PhiInst phi = pair.second;
-			stack.get(address).push(phi.getRes());
+			push(address, phi.getRes());
+			//System.err.println("push " + address +  " " + phi.getRes());
 		}
 		
 		ArrayList<IRInst> instList = block.getInstList();
 		for (IRInst inst : instList) {
 			if (inst instanceof StoreInst) {
-				IRRegister address = (IRRegister) ((StoreInst) inst).getPtr();
-				IRRegister res = (IRRegister) ((StoreInst) inst).getRes();
-				stack.get(address).push(res);		
+				IRSymbol address = ((StoreInst) inst).getPtr();
+				IRSymbol res = ((StoreInst) inst).getRes();
+				if (contains(address)) push(address, res);
+				//System.err.println("push " + address +  " " + res);
 			}
 			else if (inst instanceof LoadInst) {
-				IRRegister address = (IRRegister) ((LoadInst) inst).getPtr();
-				IRRegister res = (IRRegister) ((LoadInst) inst).getRes();
-				res.replaceUse(stack.get(address).peek());
+				IRSymbol address = ((LoadInst) inst).getPtr();
+				IRSymbol res = ((LoadInst) inst).getRes();
+				if (contains(address)) {
+					res.replaceUse(top(address));
+				}
+				//System.err.println("replace " + res +  " with " + top(address));
 			}
 		}
 		
@@ -111,10 +204,8 @@ public class SSAConstructor extends PASS {
 			for (Pair<IRRegister, PhiInst> pair : succPhiMap) {
 				IRRegister address = pair.first;
 				PhiInst phi = pair.second;
-				
-				assert stack.containsKey(address) && (!stack.get(address).isEmpty());
-				
-				phi.addBranch(stack.get(address).peek(), block);
+				if (!empty(address))
+					phi.addBranch(top(address), block);
 			}
 		}
 		
@@ -125,13 +216,20 @@ public class SSAConstructor extends PASS {
 		
 		for (IRInst inst : instList) {
 			if (inst instanceof StoreInst) {
-				IRRegister address = (IRRegister) ((StoreInst) inst).getPtr();
-				stack.get(address).pop();		
+				IRSymbol address = ((StoreInst) inst).getPtr();
+				if (contains(address)) {
+					pop(address);		
+					inst.removeIfself();		
+				}
+			}
+			else if (inst instanceof LoadInst) {
+				IRSymbol address = ((LoadInst) inst).getPtr();
+				if (contains(address)) inst.removeIfself();
 			}
 		}
 		for (Pair<IRRegister, PhiInst> pair : phiMap) {
 			IRRegister address = pair.first;
-			stack.get(address).pop();
+			pop(address);
 		}
 	}
 

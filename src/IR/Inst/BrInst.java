@@ -12,7 +12,6 @@ public class BrInst extends IRInst {
 		this.ifTrue = ifTrue;
 		currentBlock.addSuccessor(ifTrue);
 		ifTrue.addPredecessor(currentBlock);
-		cond.addDef(this);
 	}
 	
 	public BrInst(IRBasicBlock currentBlock, IRSymbol cond, IRBasicBlock ifTrue, IRBasicBlock ifFalse) {
@@ -24,7 +23,7 @@ public class BrInst extends IRInst {
 		ifTrue.addPredecessor(currentBlock);
 		currentBlock.addSuccessor(ifFalse);
 		ifFalse.addPredecessor(currentBlock);
-		cond.addDef(this);
+		cond.addUse(this);
 	}
 	
 	@Override
@@ -47,20 +46,45 @@ public class BrInst extends IRInst {
 	}
 	
 	public void changeTrue() {
+		cond.removeUse(this);
 		cond = null;
-		currentBlock.getSuccessors().remove(ifFalse);
+		currentBlock.removeSuccessor(ifFalse);
+		ifFalse.removePredecessor(currentBlock);
+		ifFalse = null;
 	}
 	
 	public void changeFalse() {
+		cond.removeUse(this);
 		cond = null;
-		currentBlock.getSuccessors().remove(ifTrue);
+		currentBlock.removeSuccessor(ifTrue);
+		ifTrue.removePredecessor(currentBlock);
 		ifTrue = ifFalse;
+		ifFalse = null;
 	}
-
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (cond == old)
+		if (cond == old) {
 			cond = nw;
+			old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+
+	@Override
+	public IRSymbol getRes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeAllUse() {
+		if (cond != null) cond.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

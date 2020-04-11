@@ -16,9 +16,9 @@ public class GetElementPtrInst extends IRInst {
 		this.result = result;
 		this.ptr = ptr;
 		this.index = index;
-		ptr.addDef(this);
+		ptr.addUse(this);
 		for (IRSymbol s : index) {
-			s.addDef(this);
+			s.addUse(this);
 		}	
 	}
 	
@@ -28,9 +28,9 @@ public class GetElementPtrInst extends IRInst {
 		this.ptr = ptr;
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
-		ptr.addDef(this);
+		ptr.addUse(this);
 		for (IRSymbol s : index) {
-			s.addDef(this);
+			s.addUse(this);
 		}	
 	}
 	
@@ -41,9 +41,9 @@ public class GetElementPtrInst extends IRInst {
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
 		index.add(idx2);
-		ptr.addDef(this);
+		ptr.addUse(this);
 		for (IRSymbol s : index) {
-			s.addDef(this);
+			s.addUse(this);
 		}	
 	}
 	
@@ -73,11 +73,38 @@ public class GetElementPtrInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (ptr == old)
+		boolean flag = false;
+		if (ptr == old) {
 			ptr = nw;
-		for (IRSymbol s : index) {
-			if (s == old)
-				s = nw;
+			flag = true;
+		}
+		for (int i = 0; i < index.size(); ++i) {
+			if (index.get(i) == old) {
+				index.set(i, nw);
+				flag = true;
+			}
 		}	
+		if (flag) {
+		//	old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+	
+	public IRSymbol getRes() {
+		return result;
+	}
+
+	@Override
+	public void removeAllUse() {
+		ptr.removeUse(this);
+		for (int i = 0; i < index.size(); ++i) {
+			index.get(i).removeUse(this);
+		}	
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -53,9 +53,35 @@ public class BinOpInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (left == old)
+		boolean flag = false;
+		if (left == old) {
 			left = nw;
-		if (right == old)
+			flag = true;
+		}	
+		if (right == old) {
 			right = nw;
+			flag = true;
+		}	
+		if (flag) {
+			nw.addUse(this);
+			//old.removeUse(this);		
+		}
 	}
+	
+	@Override
+	public IRSymbol getRes() {
+		return result;
+	}
+
+	@Override
+	public void removeAllUse() {
+		left.removeUse(this);
+		right.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
+	} 
 }

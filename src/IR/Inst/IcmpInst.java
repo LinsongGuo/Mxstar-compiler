@@ -33,8 +33,8 @@ public class IcmpInst extends IRInst {
 		this.result = result;
 		this.left = left;
 		this.right = right;
-		left.addDef(this);
-		right.addDef(this);
+		left.addUse(this);
+		right.addUse(this);
 	}
 	
 	@Override
@@ -49,9 +49,34 @@ public class IcmpInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (left == old)
+		boolean flag = false;
+		if (left == old) {
 			left = nw;
-		if (right == old)
+			flag = true;
+		}	
+		if (right == old) {
 			right = nw;
+			flag = true;
+		}
+		if (flag) {
+		//	old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+	
+	public IRSymbol getRes() {
+		return result;
+	}
+
+	@Override
+	public void removeAllUse() {
+		left.removeUse(this);
+		right.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

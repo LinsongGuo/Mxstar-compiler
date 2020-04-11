@@ -44,16 +44,23 @@ abstract public class IRInst {
 	}
 	
 	public void removeIfself() {
-		if (prev != null) 
-			prev.setNext(next);
-		else
+		removeAllUse();
+		removeAllDef();
+		if (prev != null) prev.setNext(next);
+		else {
 			currentBlock.setHead(next);
-		if (next != null) 
-			next.setPrev(prev);
-		else 
+		}
+		if (next != null) next.setPrev(prev);
+		else {
 			currentBlock.setTail(prev);
+		}
 	} 
 	
 	abstract public void replaceUse(IRSymbol old, IRSymbol nw);
 	
+	abstract public void removeAllUse();
+	
+	abstract public void removeAllDef();
+	
+	abstract public IRSymbol getRes();
 }

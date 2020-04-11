@@ -1,5 +1,8 @@
 package optimize;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,45 +19,19 @@ import IR.Symbol.IRSymbol;
 
 public class CFGSimplifier extends PASS {
 
-	public CFGSimplifier(IRModule module) {
+	public CFGSimplifier(IRModule module) throws FileNotFoundException {
 		super(module);
+		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
-			removeUnusefulBlock(function);
-			removeUnconditionalBranch(function);
-		}
-	}
-	
-	//remove unreachable block and union connected blocks
-	public void removeUnusefulBlock(IRFunction function) {
-		HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>();
-		Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
-		IRBasicBlock entranceBlock = function.getEntranceBlock();
-		visitedSet.add(entranceBlock);
-		queue.add(entranceBlock);
-		while(!queue.isEmpty()) {
-			IRBasicBlock block = queue.poll();
-			ArrayList<IRBasicBlock> successors = block.getSuccessors();
-			for (IRBasicBlock successor : successors) {
-				if (successor.getPredecessors().size() == 1 && successors.size() == 1)  {
-					block.union(successor);
-				}
-				else if (!visitedSet.contains(successor)){
-					visitedSet.add(successor);
-					queue.offer(successor);
-				}
-			}
+			removeConstantBranch(function);
+			removeUnusedBlock(function);
 		}
 		
-		ArrayList<IRBasicBlock> blockList = function.getBlockList();
-		for (IRBasicBlock block : blockList) {
-			if (!visitedSet.contains(block)) {
-				block.removeItself();
-			}
-		}
+		print();
 	}
 
-	public void removeUnconditionalBranch(IRFunction function) {
+	public void removeConstantBranch(IRFunction function) {
 		ArrayList<IRBasicBlock> blockList = function.getBlockList();
 		for (IRBasicBlock block : blockList) {
 			IRInst tail = block.getTail();
@@ -71,5 +48,66 @@ public class CFGSimplifier extends PASS {
 			}
 		}
 	}
+	
+	//remove unreachable block and union connected blocks
+	public void removeUnusedBlock(IRFunction function) {
+		HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>();
+		Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
+		IRBasicBlock entranceBlock = function.getEntranceBlock();
+		visitedSet.add(entranceBlock);
+		queue.add(entranceBlock);
+		while(!queue.isEmpty()) {
+			IRBasicBlock block = queue.poll();
+			ArrayList<IRBasicBlock> successors = block.getSuccessors();
+			/*
+			if (successors.size() == 1 && successors.get(0).getPredecessors().size() == 1) {
+				System.err.println("union " + block + " " + successors.get(0));
+				IRBasicBlock successor = successors.get(0);
+				visitedSet.add(successor);
+				block.union(successor);
+				continue;
+			}
+			queue.poll();*/
+			for (IRBasicBlock successor : successors) {
+				if (!visitedSet.contains(successor)){
+					visitedSet.add(successor);
+					queue.offer(successor);
+				}
+			}
+		}
+		
+		ArrayList<IRBasicBlock> blockList = function.getBlockList();
+		for (IRBasicBlock block : blockList) {
+			if (!visitedSet.contains(block)) {
+				block.removeItself();
+				block.removeAllInst();
+			}
+		}
+	}
+	
+	private void print() throws FileNotFoundException {
+		PrintWriter printer = new PrintWriter(new FileOutputStream("test/CFG.txt"));
+    	Collection<IRFunction> functions = module.getFunctList().values();
+    	for (IRFunction function : functions) {
+    		 printer.println(function.getName());
+        	 ArrayList<IRBasicBlock> blockList = function.getBlockList();
+        	 for (IRBasicBlock block : blockList) {
+        		 ArrayList<IRBasicBlock> successors = block.getSuccessors();
+        		 printer.print(block.toString() + "  -->  ");
+        		 for (IRBasicBlock successor : successors) {
+        			 printer.print(successor.toString() + "  ");
+        		 }
+        		 printer.println("");
+        		 
+        		 ArrayList<IRBasicBlock> predecessors = block.getPredecessors();
+        		 for (IRBasicBlock predecessor : predecessors) {
+        			 printer.print(predecessor.toString() + "  ");
+        		 }
+        		 printer.println("-->  " + block.toString());
+        	 }
+        	 printer.println("");
+		}
+    	printer.close();
+    }
 	
 }

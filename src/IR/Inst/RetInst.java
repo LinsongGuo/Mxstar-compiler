@@ -14,7 +14,7 @@ public class RetInst extends IRInst {
 	public RetInst(IRSymbol value) {
 		super();
 		this.value = value;
-		value.addDef(this);
+		value.addUse(this);
 	}
 	
 	@Override
@@ -34,7 +34,27 @@ public class RetInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (value == old)
+		if (value == old) {
 			value = nw;
+	//		old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+
+	@Override
+	public IRSymbol getRes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeAllUse() {
+		if (value != null) value.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
+		// TODO Auto-generated method stub
+		
 	}
 }

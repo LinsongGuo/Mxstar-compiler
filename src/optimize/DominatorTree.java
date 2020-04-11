@@ -1,5 +1,8 @@
 package optimize;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,13 +18,16 @@ public class DominatorTree extends PASS {
 	//Union Find Set
 	private HashMap<IRBasicBlock, Pair<IRBasicBlock, IRBasicBlock>> unionFindSet;
 	 
-	public DominatorTree(IRModule module) {
+	public DominatorTree(IRModule module) throws FileNotFoundException {
 		super(module);
+		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			LengauerTarjan(function);
 			CalcDF(function);
 		}
+		
+		print();
 	}
 	
 	private Pair<IRBasicBlock, IRBasicBlock> find(IRBasicBlock block) {
@@ -72,18 +78,20 @@ public class DominatorTree extends PASS {
 				else {
 					bucket.setIdom(father);
 				}
-				fatherBucket.remove(bucket);
 			}
+			fatherBucket.clear();
 		}
 		
-		//IRBasicBlock root = dfsSeq.get(0); 
-		//root.setIdom(root);
 		for (int i = 1; i < dfsSeq.size(); ++i) {
 			IRBasicBlock block = dfsSeq.get(i);
-			if (block.getIdom() != block.getSdom()) {
-				IRBasicBlock idom = block.getIdom().getIdom();
-				block.setIdom(idom);
-				idom.addDominace(block);
+			IRBasicBlock idom = block.getIdom();
+			if (idom != block.getSdom()) {
+				idom = block.getIdom().getIdom();
+				block.setIdom(idom);	
+			}
+			idom.addDominace(block);
+			for (; idom != null; idom = idom.getIdom()) {
+				block.addStrictDominator(idom);
 			}
 		}
 	}
@@ -96,11 +104,30 @@ public class DominatorTree extends PASS {
         	ArrayList<IRBasicBlock> predecessors = block.getPredecessors();
         	for (IRBasicBlock predecessor : predecessors) {
                 IRBasicBlock upBlock = predecessor;
-                while (!strictDominators.contains(upBlock)) {
+                while (upBlock != null && !strictDominators.contains(upBlock)) {
                     upBlock.addDF(block);
                     upBlock = upBlock.getIdom();
                 }
             }
         }	
+    }
+    
+    private void print() throws FileNotFoundException {
+    	PrintWriter printer = new PrintWriter(new FileOutputStream("test/dominates.txt"));
+    	Collection<IRFunction> functions = module.getFunctList().values();
+    	for (IRFunction function : functions) {
+    		 printer.println(function.getName());
+        	 ArrayList<IRBasicBlock> blockList = function.getBlockList();
+        	 for (IRBasicBlock block : blockList) {
+        		 ArrayList<IRBasicBlock> dominaces = block.getDominaces();
+        		 printer.print(block.toString() + " --> ");
+        		 for (IRBasicBlock dominace : dominaces) {
+        			 printer.print(dominace.toString() + "  ");
+        		 }
+        		 printer.println("");
+        	 }
+        	 printer.println("");
+		}
+    	printer.close();
     }
 }

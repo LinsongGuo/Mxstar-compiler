@@ -21,6 +21,7 @@ public class IRBasicBlock {
 	private ArrayList<IRBasicBlock> dominaces;
 	private int dfn;
 	private ArrayList<Pair<IRRegister, PhiInst>> phiMap;
+	private HashSet<PhiInst> phiUse;
 	
 	public IRBasicBlock(String name) {
 		this.name = name;
@@ -35,6 +36,7 @@ public class IRBasicBlock {
 		DF = new HashSet<IRBasicBlock>();
 		phiMap = new ArrayList<Pair<IRRegister, PhiInst>>();
 		dominaces = new ArrayList<IRBasicBlock>();
+		phiUse = new HashSet<PhiInst>(); 
 	}
 	
 	public void setCurrentFunction(IRFunction function) {
@@ -57,6 +59,14 @@ public class IRBasicBlock {
 	}
 	
 	public void addInst(IRInst inst) {
+		if ((tail != null) && (tail instanceof BrInst)) {
+			//System.err.println("can't add " + inst);
+			inst.removeAllUse();
+			inst.removeAllDef();
+			if (inst instanceof PhiInst) ((PhiInst) inst).removeAllPhiUse();
+			//inst.removeIfself();
+			return;
+		}
 		inst.setCurrentBlock(this);
 		if (head == null) {
 			head = tail = inst;
@@ -100,8 +110,16 @@ public class IRBasicBlock {
 		predecessors.add(block);
 	}
 	
+	public void removePredecessor(IRBasicBlock block) {
+		predecessors.remove(block);
+	}
+	
 	public void addSuccessor(IRBasicBlock block) {
 		successors.add(block);
+	}
+	
+	public void removeSuccessor(IRBasicBlock block) {
+		successors.remove(block);
 	}
 
 	public ArrayList<IRBasicBlock> getPredecessors() {
@@ -164,15 +182,6 @@ public class IRBasicBlock {
 		}
 	}
 	
-	public void dfs(HashSet<IRBasicBlock> visitedSet) {
-		visitedSet.add(this);
-		for (IRBasicBlock successor : successors) {
-			if (!visitedSet.contains(successor)) {
-				successor.dfs(visitedSet);
-			}
-		}
-	}
-	
 	public void addSdom(IRBasicBlock block) {
 		bucket.add(block);
 	}
@@ -215,29 +224,60 @@ public class IRBasicBlock {
 		return res;
 	} 
 
+	public void removeAllInst() {
+		ArrayList<IRInst> instList = getInstList();
+		for (IRInst inst : instList) {
+			inst.removeIfself();
+		}
+	}
+	
 	public void removeItself() {
 		if (prev != null) 
 			prev.setNext(next);
 		if (next != null) 
 			next.setPrev(prev);
-		else
+		else {
 			currentFunction.setLastBlock(prev);
+		}
+		
+		for (IRBasicBlock successor : successors) {
+			successor.removePredecessor(this);
+		}
+	}
+	
+	public void addPhiUse(PhiInst inst) {
+		phiUse.add(inst);
+	}
+	
+	public void removePhiUse(PhiInst inst) {
+		phiUse.remove(inst);
+	}
+	
+	public void replacePhiUse(IRBasicBlock other) {
+		for (PhiInst inst : phiUse) {
+			inst.replacePhiUse(this, other);
+		}
+		phiUse.clear();
 	}
 	
 	public void union(IRBasicBlock other) {
+	//	System.err.println("union " + this + " " + other);
 		assert tail instanceof BrInst;
 		
 		tail.removeIfself();
+		
 		ArrayList<IRInst> instList = other.getInstList();
 		for (IRInst inst : instList) {
 			addInst(inst);
+			inst.setCurrentBlock(this);
 		}
+		other.replacePhiUse(this);
 		
 		other.removeItself();
-		successors.remove(other);
-		ArrayList<IRBasicBlock> otherSuccessors = other.getSuccessors();
-		for (IRBasicBlock otherSuccessor : otherSuccessors) {
-			successors.add(otherSuccessor);
+		
+		successors = other.getSuccessors();
+		for (IRBasicBlock successor : successors) {
+			successor.addPredecessor(this);
 		}
 	}
 	
@@ -249,5 +289,22 @@ public class IRBasicBlock {
 		return phiMap;
 	}
 	
-	
-}
+	public void mergePhiMap() {
+		for (int i = phiMap.size() - 1; i >= 0; --i) {
+			PhiInst phi = phiMap.get(i).second;
+		//	System.err.println(phi + "  " + phi.getRes() + "  " + phi.getRes().isUsed());
+			if (phi.getRes().isUsed()) {
+				if (head == null) {
+					assert tail == null;
+					head = tail = phi;
+				}
+				else {
+					head.setPrev(phi);
+					phi.setNext(head);
+					head = phi;		
+				}	
+			}
+		}
+	}
+
+}	

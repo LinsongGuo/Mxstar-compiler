@@ -11,6 +11,7 @@ public class BitcastToInst extends IRInst {
 		super();
 		this.src = src;
 		this.dest = dest;
+		src.addUse(this);
 	}
 	
 	@Override
@@ -25,6 +26,26 @@ public class BitcastToInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		if (src == old) {
+			src = nw;
+			//old.removeUse(this);
+			nw.addUse(this);
+		}
+	}
+
+	@Override
+	public IRSymbol getRes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void removeAllUse() {
+		src.removeUse(this);
+	}
+
+	@Override
+	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
 	}

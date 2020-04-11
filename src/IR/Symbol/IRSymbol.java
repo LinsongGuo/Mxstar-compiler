@@ -29,8 +29,16 @@ abstract public class IRSymbol {
 		useList.add(inst);
 	}
 	
+	public void removeUse(IRInst inst) {
+		useList.remove(inst);
+	}
+	
 	public void addDef(IRInst inst) {
 		defList.add(inst);
+	}
+	
+	public void removeDef(IRInst inst) {
+		defList.remove(inst);
 	}
 	
 	public HashSet<IRInst> getUseList() {
@@ -41,9 +49,19 @@ abstract public class IRSymbol {
 		return defList;
 	}
 	
+	public boolean isUsed() {
+		return !useList.isEmpty();
+	}
+	
+	public boolean isDefed() {
+		return !defList.isEmpty();
+	}
+	
 	public void replaceUse(IRSymbol other) {
+		if (this == other) return;
 		for (IRInst inst : useList) {
 			inst.replaceUse(this, other);
 		}
+		useList.clear();
 	}
 }

@@ -48,7 +48,7 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-		System.out.println(count + " error(s) in total.");
+		//System.out.println(count + " error(s) in total.");
 		if (count > 0) {
 			System.exit(count);
 		}
@@ -61,7 +61,7 @@ public class Main {
 		
 		IRModule module = ir.getModule(); 
 		
-		System.err.println("optimizing------------------");
+		//System.err.println("optimizing------------------");
 		new CFGSimplifier(module); 
 		new DominatorTree(module);
 		new SSAConstructor(module);
