@@ -3,7 +3,7 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRInt32Type;
 
-public class IRConstInt extends IRSymbol {
+public class IRConstInt extends IRConst {
 	private long value;
 	
 	public IRConstInt(long value) {
@@ -25,4 +25,8 @@ public class IRConstInt extends IRSymbol {
 		visitor.visit(this);
 	}
 
+	@Override
+	boolean equals(IRConst other) {
+		return (other instanceof IRConstInt) && value == ((IRConstInt) other).getValue();
+	}
 }

@@ -46,4 +46,10 @@ public class AllocaInst extends IRInst {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void InitDefUse() {
+		// TODO Auto-generated method stub
+		
+	}
 }

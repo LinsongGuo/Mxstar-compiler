@@ -3,7 +3,7 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRInt1Type;
 
-public class IRConstBool extends IRSymbol {
+public class IRConstBool extends IRConst {
 	private boolean value;
 	
 	public IRConstBool(boolean value) {
@@ -23,5 +23,10 @@ public class IRConstBool extends IRSymbol {
 	
 	public boolean getValue() {
 		return value;
+	}
+
+	@Override
+	boolean equals(IRConst other) {
+		return (other instanceof IRConstBool) && value == ((IRConstBool) other).getValue();
 	}
 }

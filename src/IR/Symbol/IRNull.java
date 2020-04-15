@@ -4,7 +4,7 @@ import IR.IRVisitor;
 import IR.Type.IRVoidType;
 import IR.Type.IRPtrType;
 
-public class IRNull extends IRSymbol {
+public class IRNull extends IRConst {
 
 	public IRNull() {
 		super(new IRPtrType(new IRVoidType()));
@@ -18,6 +18,11 @@ public class IRNull extends IRSymbol {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	boolean equals(IRConst other) {
+		return (other instanceof IRNull);
 	}
 
 }

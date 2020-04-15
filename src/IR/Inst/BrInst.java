@@ -2,7 +2,10 @@ package IR.Inst;
 
 import IR.IRBasicBlock;
 import IR.IRVisitor;
+import IR.Symbol.IRConstBool;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
+import IR.Type.IRInt1Type;
 
 public class BrInst extends IRInst {
 	private IRSymbol cond;
@@ -68,11 +71,21 @@ public class BrInst extends IRInst {
 			cond = nw;
 			old.removeUse(this);
 			nw.addUse(this);
+			if (nw instanceof IRConstBool) {
+				cond = null;
+				if (((IRConstBool) nw).getValue()) {
+					ifFalse = null;
+				}
+				else {
+					ifTrue = ifFalse;
+					ifFalse = null;
+				}
+			}
 		}
 	}
 
 	@Override
-	public IRSymbol getRes() {
+	public IRRegister getRes() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -86,5 +99,35 @@ public class BrInst extends IRInst {
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void InitDefUse() {
+		if (cond != null) cond.addUse(this);
+	}
+	
+	public IRBasicBlock getTrue() {
+		return ifTrue;
+	}
+	
+	public IRBasicBlock getFalse() {
+		return ifFalse;
+	}
+	
+	public void removeBlock(IRBasicBlock block) {
+		if (ifTrue == block) {
+			if (cond != null) {
+				cond.removeUse(this);
+				cond = null;
+			}
+			ifTrue = ifFalse;
+		}
+		else {
+			if (cond != null) {
+				cond.removeUse(this);
+				cond = null;
+			}
+			ifFalse = null;
+		}
 	}
 }

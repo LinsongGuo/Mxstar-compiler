@@ -63,11 +63,10 @@ public class CFGSimplifier extends PASS {
 			if (successors.size() == 1 && successors.get(0).getPredecessors().size() == 1) {
 				System.err.println("union " + block + " " + successors.get(0));
 				IRBasicBlock successor = successors.get(0);
-				visitedSet.add(successor);
 				block.union(successor);
+				queue.offer(block);
 				continue;
-			}
-			queue.poll();*/
+			}*/
 			for (IRBasicBlock successor : successors) {
 				if (!visitedSet.contains(successor)){
 					visitedSet.add(successor);
@@ -81,6 +80,7 @@ public class CFGSimplifier extends PASS {
 			if (!visitedSet.contains(block)) {
 				block.removeItself();
 				block.removeAllInst();
+				block.removeAllPhiUse();
 			}
 		}
 	}

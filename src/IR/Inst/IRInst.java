@@ -2,6 +2,7 @@ package IR.Inst;
 
 import IR.IRBasicBlock;
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 
 abstract public class IRInst {
@@ -43,11 +44,12 @@ abstract public class IRInst {
 		return currentBlock;
 	}
 	
-	public void removeIfself() {
+	public void removeItself() {
 		removeAllUse();
 		removeAllDef();
 		if (prev != null) prev.setNext(next);
 		else {
+			//System.err.println("current " + currentBlock);
 			currentBlock.setHead(next);
 		}
 		if (next != null) next.setPrev(prev);
@@ -56,11 +58,13 @@ abstract public class IRInst {
 		}
 	} 
 	
+	abstract public void InitDefUse();
+	
 	abstract public void replaceUse(IRSymbol old, IRSymbol nw);
 	
 	abstract public void removeAllUse();
 	
 	abstract public void removeAllDef();
 	
-	abstract public IRSymbol getRes();
+	abstract public IRRegister getRes();
 }

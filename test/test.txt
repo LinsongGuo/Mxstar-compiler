@@ -1,104 +1,83 @@
 /*
 Test Package: Codegen
-Author: Yunwei Ren
+Author: 15' Bowen Tan
+Time: 2020-02-03
 Input:
 === input ===
+989898987
 === end ===
 Output:
 === output ===
-Passed tests.
+3
+989898983 2 2
 
 === end ===
 ExitCode: 0
 InstLimit: -1
+Origin Package: Codegen Pretest-871
 */
+int n;
 
-class Queue_int {
-  Queue_int() {
-    beg = 0;
-    end = 0;
-    storage = new int[16];
-  }
+void init() {
+    n = getInt();
+}
 
-  void push(int v) {
-    if (size() == storage.size() - 1) {
-      doubleStorage();
+bool is_prime(int x) {
+    if (x == 1) {
+        return false;
     }
-    storage[end] = v;
-    end = (end + 1) % storage.size();
-  }
-
-  int top() {
-    return storage[beg];
-  }
-
-  int pop() {
-    if (size() == 0) {
-      println("Warning: Queue_int::pop: empty queue");
+    int i;
+    for (i = 2; i * i <= x; i ++) {
+        if (x % i == 0) {
+            return false;
+        }
     }
-    int res = top();
-    beg = (beg + 1) % storage.size();
-    return res;
-  }
+    return true;
+}
 
-  int size() {
-    return (end + storage.size() - beg) % storage.size();
-  }
-
-  void doubleStorage() {
-    int[] copy = storage;
-    int begCopy = beg;
-    int endCopy = end;
-
-    storage = new int[copy.size() * 2];
-    beg = 0;
-    end = 0;
-
-    int i = begCopy;
-    while (i != endCopy) {
-      storage[end] = copy[i];
-      end++;
-      i = (i + 1) % copy.size();
+void find(int x, int pre) {
+    if (is_prime(x)) {
+        if (pre > 0) {
+            //printf("2\n");
+            println("2");
+            //printf("%d %d\n", pre, x);
+            println(toString(pre) + " " + toString(x));
+        } else {
+            //printf("1\n%d\n", x);
+            println("1");
+            println(toString(x));
+        }
+        return ;
     }
-  }
+    int i = 5;
+    if (pre == -1) {
+        int i = 6;
+        for (i = x - 2; ; i --) {
+            if (is_prime(i)) {
+                find(x - i, i);
+                return ;
+            }
+        }
+    } else {
+        for (i = x - 1; ; i --) {
+            if (is_prime(i) && is_prime(x - i)) {
+                //printf("3\n%d %d %d\n", pre, i, x - i);
+                println("3");
+                println(toString(pre) + " " + toString(i) + " " + toString(x - i));
+                return ;
+            }
+        }
+    }
+}
 
-
-  int[] storage;
-  int beg;
-  int end;
-};
+void work() {
+    find(n, -1);
+}
 
 int main() {
-  Queue_int q = new Queue_int();
 
-  int i;
-  int N = 100;
-  for (i = 0; i < N; ++i)
-    q.push(i);
-  if (q.size() != N) {
-    println("q.size() != N after pushes");
-    return 1;
-  }
-
-  for (i = 0; i < N; ++i) {
-    int head = q.top();
-    if (head != i) {
-      println("Head != i");
-      return 1;
-    }
-
-    if (q.pop() != i) {
-      println("Failed: q.pop() != i");
-      return 1;
-    }
-    if (q.size() != N - i - 1) {
-      println("q.size() != N - i - 1");
-      return 1;
-    }
-  }
-
-  // TODO: stronger tests
-
-  println("Passed tests.");
-  return 0;
+    init();
+    work();
+    
+    return 0;
 }

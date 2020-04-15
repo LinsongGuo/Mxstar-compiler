@@ -1,17 +1,18 @@
 package IR.Inst;
 
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 
 public class BitcastToInst extends IRInst {
 
-	private IRSymbol src, dest;
+	private IRSymbol src;
+	private IRRegister dest;
 	
-	public BitcastToInst(IRSymbol src, IRSymbol dest) {
+	public BitcastToInst(IRSymbol src, IRRegister dest) {
 		super();
 		this.src = src;
 		this.dest = dest;
-		src.addUse(this);
 	}
 	
 	@Override
@@ -28,15 +29,13 @@ public class BitcastToInst extends IRInst {
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
 		if (src == old) {
 			src = nw;
-			//old.removeUse(this);
 			nw.addUse(this);
 		}
 	}
 
 	@Override
-	public IRSymbol getRes() {
-		// TODO Auto-generated method stub
-		return null;
+	public IRRegister getRes() {
+		return dest;
 	}
 
 	@Override
@@ -48,6 +47,11 @@ public class BitcastToInst extends IRInst {
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void InitDefUse() {
+		src.addUse(this);
 	}
 	
 }

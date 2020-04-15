@@ -4,7 +4,7 @@ import IR.IRVisitor;
 import IR.Type.IRInt8Type;
 import IR.Type.IRPtrType;
 
-public class IRConstString extends IRSymbol {
+public class IRConstString extends IRConst {
 	private String value;
 	
 	public IRConstString(String value) {
@@ -26,5 +26,14 @@ public class IRConstString extends IRSymbol {
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);	
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	@Override
+	boolean equals(IRConst other) {
+		return (other instanceof IRConstString) && value.equals(((IRConstString) other).getValue());
 	}
 }

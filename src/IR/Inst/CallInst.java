@@ -4,12 +4,13 @@ import java.util.ArrayList;
 
 import IR.IRFunction;
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 
 public class CallInst extends IRInst {
 	private IRFunction function;
 	private ArrayList<IRSymbol> parameters;
-	private IRSymbol result;
+	private IRRegister result;
 	
 	public CallInst(IRFunction function, IRSymbol parameter) {
 		super();
@@ -17,40 +18,28 @@ public class CallInst extends IRInst {
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
 		this.result = null;
-		for (IRSymbol para : parameters) {
-			para.addUse(this);
-		}		
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters) {
 		super();
 		this.function = function;
 		this.parameters = parameters;
-		this.result = null;
-		for (IRSymbol para : parameters) {
-			para.addUse(this);
-		}		
+		this.result = null;	
 	}
 	
-	public CallInst(IRFunction function, IRSymbol parameter, IRSymbol result) {
+	public CallInst(IRFunction function, IRSymbol parameter, IRRegister result) {
 		super();
 		this.function = function;
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
-		this.result = result;
-		for (IRSymbol para : parameters) {
-			para.addUse(this);
-		}		
+		this.result = result;	
 	}
 	
-	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRSymbol result) {
+	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRRegister result) {
 		super();
 		this.function = function;
 		this.parameters = parameters;
 		this.result = result;
-		for (IRSymbol para : parameters) {
-			para.addUse(this);
-		}		
 	}
 	
 	@Override
@@ -66,6 +55,7 @@ public class CallInst extends IRInst {
 		builder.append(")");
 		return builder.toString();
 	}
+	
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
@@ -86,20 +76,27 @@ public class CallInst extends IRInst {
 		}
 	}
 	
-	public IRSymbol getRes() {
+	public IRRegister getRes() {
 		return result;
 	}
 
 	@Override
 	public void removeAllUse() {
-		for (int i = 0; i < parameters.size(); ++i) {
-			parameters.get(i).removeUse(this);
-		}
+		for (IRSymbol para : parameters) {
+			para.removeUse(this);
+		}		
 	}
 
 	@Override
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void InitDefUse() {
+		for (IRSymbol para : parameters) {
+			para.addUse(this);
+		}		
 	}
 }

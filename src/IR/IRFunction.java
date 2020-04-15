@@ -62,6 +62,10 @@ public class IRFunction {
 		return builder.toString();
 	}
 	
+	public ArrayList<IRRegister> getParameters() {
+		return parameters;
+	}
+	
 	public void addParameter(IRRegister reg) {
 		parameters.add(reg);
 	}

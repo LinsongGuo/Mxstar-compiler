@@ -1,6 +1,7 @@
 package IR.Inst;
 
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 
 public class BitwiseBinOpInst extends IRInst {
@@ -24,17 +25,16 @@ public class BitwiseBinOpInst extends IRInst {
         }
     }
 	
-	private BitwiseBinOpType op;
-	private IRSymbol result, left, right;
+	public BitwiseBinOpType op;
+	private IRSymbol left, right;
+	private IRRegister result;
 	
-	public BitwiseBinOpInst(BitwiseBinOpType op, IRSymbol result, IRSymbol left, IRSymbol right) {
+	public BitwiseBinOpInst(BitwiseBinOpType op, IRRegister result, IRSymbol left, IRSymbol right) {
 		super();
 		this.op = op;
 		this.result = result;
 		this.left = left;
 		this.right = right;
-		left.addUse(this);
-		right.addUse(this);
 	}
 	
 	@Override
@@ -61,13 +61,14 @@ public class BitwiseBinOpInst extends IRInst {
 		if (flag) nw.addUse(this);
 	}
 	
-	public IRSymbol getRes() {
+	public IRRegister getRes() {
 		return result;
 	}
 
 	@Override
 	public void removeAllUse() {
-		
+		left.removeUse(this);
+		right.removeUse(this);
 	}
 
 	@Override
@@ -76,4 +77,17 @@ public class BitwiseBinOpInst extends IRInst {
 		
 	}
 
+	@Override
+	public void InitDefUse() {
+		left.addUse(this);
+		right.addUse(this);
+	}
+
+	public IRSymbol getLeft() {
+		return left;
+	}
+	
+	public IRSymbol getRight() {
+		return right;
+	}
 }

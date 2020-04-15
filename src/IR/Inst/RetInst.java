@@ -1,6 +1,7 @@
 package IR.Inst;
 
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 
 public class RetInst extends IRInst {
@@ -14,7 +15,6 @@ public class RetInst extends IRInst {
 	public RetInst(IRSymbol value) {
 		super();
 		this.value = value;
-		value.addUse(this);
 	}
 	
 	@Override
@@ -42,7 +42,7 @@ public class RetInst extends IRInst {
 	}
 
 	@Override
-	public IRSymbol getRes() {
+	public IRRegister getRes() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -56,5 +56,10 @@ public class RetInst extends IRInst {
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void InitDefUse() {
+		if (value != null) value.addUse(this);
 	}
 }

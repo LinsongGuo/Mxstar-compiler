@@ -3,48 +3,38 @@ package IR.Inst;
 import java.util.ArrayList;
 
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 import IR.Type.IRPtrType;
 import IR.Type.IRType;
 
 public class GetElementPtrInst extends IRInst {
-	private IRSymbol ptr, result;
+	private IRSymbol ptr;
+	private IRRegister result;
 	private ArrayList<IRSymbol> index;
 	
-	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, ArrayList<IRSymbol> index) {
+	public GetElementPtrInst(IRRegister result, IRSymbol ptr, ArrayList<IRSymbol> index) {
 		super();
 		this.result = result;
 		this.ptr = ptr;
 		this.index = index;
-		ptr.addUse(this);
-		for (IRSymbol s : index) {
-			s.addUse(this);
-		}	
 	}
 	
-	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx) {
+	public GetElementPtrInst(IRRegister result, IRSymbol ptr, IRSymbol idx) {
 		super();
 		this.result = result;
 		this.ptr = ptr;
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
-		ptr.addUse(this);
-		for (IRSymbol s : index) {
-			s.addUse(this);
-		}	
 	}
 	
-	public GetElementPtrInst(IRSymbol result, IRSymbol ptr, IRSymbol idx, IRSymbol idx2) {
+	public GetElementPtrInst(IRRegister result, IRSymbol ptr, IRSymbol idx, IRSymbol idx2) {
 		super();
 		this.result = result;
 		this.ptr = ptr;
 		index = new ArrayList<IRSymbol>();
 		index.add(idx);
 		index.add(idx2);
-		ptr.addUse(this);
-		for (IRSymbol s : index) {
-			s.addUse(this);
-		}	
 	}
 	
 	@Override
@@ -90,21 +80,29 @@ public class GetElementPtrInst extends IRInst {
 		}
 	}
 	
-	public IRSymbol getRes() {
+	public IRRegister getRes() {
 		return result;
 	}
 
 	@Override
 	public void removeAllUse() {
 		ptr.removeUse(this);
-		for (int i = 0; i < index.size(); ++i) {
-			index.get(i).removeUse(this);
-		}	
+		for (IRSymbol s : index) {
+			s.removeUse(this);
+		}		
 	}
 
 	@Override
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void InitDefUse() {
+		ptr.addUse(this);
+		for (IRSymbol s : index) {
+			s.addUse(this);
+		}	
 	}
 }

@@ -59,7 +59,7 @@ public class SSAConstructor extends PASS {
 			for (IRInst inst : instList) {
 				if (inst instanceof AllocaInst) {
 					if (!inst.getRes().isDefed()) {
-						inst.removeIfself();
+						inst.removeItself();
 					}
 				}/*
 				else if (inst instanceof StoreInst) {
@@ -81,7 +81,7 @@ public class SSAConstructor extends PASS {
 					inst instanceof PhiInst            ) 
 				{
 					if (!inst.getRes().isUsed()) {
-						inst.removeIfself();
+						inst.removeItself();
 					}
 				}
 			}
@@ -98,7 +98,7 @@ public class SSAConstructor extends PASS {
 					IRType type = ((IRPtrType) address.getType()).getType();
 					String name = address.getName().split("\\$")[0];
 				
-					//System.err.println("name : " + name);
+				//	System.err.println("name : " + name);
 					
 					HashSet<IRInst> defList = address.getDefList();
 					Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
@@ -139,7 +139,8 @@ public class SSAConstructor extends PASS {
 					else {
 						push(address, new IRNull());
 					}
-					inst.removeIfself();
+					inst.removeItself();
+					//System.err.println(top(address));
 				}
 			}
 		}
@@ -154,6 +155,7 @@ public class SSAConstructor extends PASS {
 		return stack.get(address).empty();
 	}
 	private void push(IRSymbol address, IRSymbol result) {
+		//System.err.println("push " + address + " " + result);
 		assert stack.containsKey(address);
 		stack.get(address).push(result);
 	}
@@ -166,6 +168,7 @@ public class SSAConstructor extends PASS {
 	}
 	
 	private void pop(IRSymbol address) {
+	//	System.err.println("pop  " + address);
 		assert stack.containsKey(address);
 		stack.get(address).pop();
 	}
@@ -184,17 +187,18 @@ public class SSAConstructor extends PASS {
 		for (IRInst inst : instList) {
 			if (inst instanceof StoreInst) {
 				IRSymbol address = ((StoreInst) inst).getPtr();
-				IRSymbol res = ((StoreInst) inst).getRes();
-				if (contains(address)) push(address, res);
+				IRSymbol value = ((StoreInst) inst).getValue();
+				if (contains(address)) push(address, value);
 				//System.err.println("push " + address +  " " + res);
 			}
 			else if (inst instanceof LoadInst) {
 				IRSymbol address = ((LoadInst) inst).getPtr();
-				IRSymbol res = ((LoadInst) inst).getRes();
+				IRRegister res = ((LoadInst) inst).getRes();
+				
 				if (contains(address)) {
 					res.replaceUse(top(address));
+					//System.err.println("replace " + res +  " with " + top(address) + " " + top(address).getUseList());
 				}
-				//System.err.println("replace " + res +  " with " + top(address));
 			}
 		}
 		
@@ -219,12 +223,12 @@ public class SSAConstructor extends PASS {
 				IRSymbol address = ((StoreInst) inst).getPtr();
 				if (contains(address)) {
 					pop(address);		
-					inst.removeIfself();		
+					inst.removeItself();		
 				}
 			}
 			else if (inst instanceof LoadInst) {
 				IRSymbol address = ((LoadInst) inst).getPtr();
-				if (contains(address)) inst.removeIfself();
+				if (contains(address)) inst.removeItself();
 			}
 		}
 		for (Pair<IRRegister, PhiInst> pair : phiMap) {

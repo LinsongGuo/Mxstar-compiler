@@ -11,14 +11,15 @@ import utility.*;
 import SemanticChecker.*;
 import optimize.CFGSimplifier;
 import optimize.DominatorTree;
+import optimize.SCCP;
 import optimize.SSAConstructor;
 import IR.*;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		//InputStream IS = System.in;
-		InputStream IS = new FileInputStream("test/test.txt");
+		InputStream IS = System.in;
+		//InputStream IS = new FileInputStream("test/test.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		//System.err.println("lexer------------------");
@@ -65,6 +66,7 @@ public class Main {
 		new CFGSimplifier(module); 
 		new DominatorTree(module);
 		new SSAConstructor(module);
+		new SCCP(module);
 		
 		//System.err.println("Printing IR--------------");
 		IRPrinter printer = new IRPrinter();

@@ -1,24 +1,23 @@
 package IR.Inst;
 
 import IR.IRVisitor;
+import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
 import IR.Type.IRPtrType;
 
 public class StoreInst extends IRInst {
-	private IRSymbol res, ptr;
+	private IRSymbol value, ptr;
 	
-	public StoreInst(IRSymbol res, IRSymbol ptr) {
+	public StoreInst(IRSymbol value, IRSymbol ptr) {
 		super();
-		this.res = res;
+		this.value = value;
 		this.ptr = ptr;
-		ptr.addDef(this);
-		res.addUse(this);
 	}
 	
 	@Override
 	public String toString() {
 		return "store " + ((IRPtrType) ptr.getType()).getType().toString() + " " + 
-				res.toString() + ", " + 
+				value.toString() + ", " + 
 				ptr.getType().toString() + " " + 
 				ptr.toString();
 	}
@@ -30,15 +29,20 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
-		if (res == old) {
-			res = nw;
+		if (value == old) {
+			value = nw;
 		//	old.removeUse(this);
 			nw.addUse(this);		
 		}
 	}
 	
-	public IRSymbol getRes() {
-		return res;
+	@Override
+	public IRRegister getRes() {
+		return null;
+	}
+	
+	public IRSymbol getValue() {
+		return value;
 	}
 	
 	public IRSymbol getPtr() {
@@ -47,11 +51,17 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void removeAllUse() {
-		res.removeUse(this);
+		value.removeUse(this);
 	}
 
 	@Override
 	public void removeAllDef() {
 		ptr.removeDef(this);
+	}
+
+	@Override
+	public void InitDefUse() {
+		ptr.addDef(this);
+		value.addUse(this);
 	}
 }

@@ -16,24 +16,13 @@ public class PhiInst extends IRInst {
 		this.res = res;
 		this.symbols = new ArrayList<IRSymbol>();
 		this.bbs = new ArrayList<IRBasicBlock>();
-		for (IRSymbol s : symbols) {
-			s.addUse(this);
-		}
-		for (IRBasicBlock block : bbs) {
-			block.addPhiUse(this);
-		}
+		
 	}
 
 	public PhiInst(IRRegister res, ArrayList<IRSymbol> symbols, ArrayList<IRBasicBlock> bbs) {
 		this.res = res;
 		this.symbols = symbols;
 		this.bbs = bbs;
-		for (IRSymbol s : symbols) {
-			s.addUse(this);
-		}
-		for (IRBasicBlock block : bbs) {
-			block.addPhiUse(this);
-		}
 	}
 	
 	public void addBranch(IRSymbol symbol, IRBasicBlock bb) {
@@ -45,6 +34,14 @@ public class PhiInst extends IRInst {
 	
 	public IRRegister getRes() {
 		return res;
+	}
+	
+	public ArrayList<IRSymbol> getSymbols() {
+		return symbols;
+	}
+	
+	public ArrayList<IRBasicBlock> getBBs() {
+		return bbs;
 	}
 	
 	@Override
@@ -103,14 +100,25 @@ public class PhiInst extends IRInst {
 			}
 		}
 		if (flag) {
-		//	old.removePhiUse(this);
 			nw.addPhiUse(this);
 		}
 	}
 	
-	public void removeAllPhiUse() {
+	public void removePhiUse(IRBasicBlock bb) {
+		int index = bbs.indexOf(bb);
+		if (index != -1) {
+			bbs.remove(index);
+			symbols.remove(index);
+		}
+	}
+
+	@Override
+	public void InitDefUse() {
+		for (IRSymbol s : symbols) {
+			s.addUse(this);
+		}
 		for (IRBasicBlock block : bbs) {
-			block.removePhiUse(this);
+			block.addPhiUse(this);
 		}
 	}
 }
