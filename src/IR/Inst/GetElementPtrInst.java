@@ -100,9 +100,22 @@ public class GetElementPtrInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+		result.addDef(this);
 		ptr.addUse(this);
 		for (IRSymbol s : index) {
 			s.addUse(this);
 		}	
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (ptr instanceof IRRegister)
+			res.add((IRRegister) ptr);
+		for (IRSymbol symbol : index) {
+			if (symbol instanceof IRRegister)
+				res.add((IRRegister) symbol);
+		}
+		return res;
 	}
 }

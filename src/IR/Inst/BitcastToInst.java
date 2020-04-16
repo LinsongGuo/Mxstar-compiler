@@ -1,5 +1,7 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
@@ -52,6 +54,15 @@ public class BitcastToInst extends IRInst {
 	@Override
 	public void InitDefUse() {
 		src.addUse(this);
+		dest.addDef(this);
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (src instanceof IRRegister)
+			res.add((IRRegister) src);
+		return res;
 	}
 	
 }

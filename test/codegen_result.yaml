@@ -43,9 +43,16 @@
   stage: codegen
   verdict: Accepted
 - Case: ./t35.mx
-  Compiler-ExitCode: 20
+  Compiler-ExitCode: 70
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "fatal error: error in backend: visitCatchSwitch not yet implemented!\n\
+    \ clang-9: error: clang frontend command failed with exit code 70 (use -v to see\
+    \ invocation)\n clang version 9.0.0 (tags/RELEASE_900/final)\n Target: x86_64-unknown-linux-gnu\n\
+    \ Thread model: posix\n InstalledDir: /usr/local/llvm-9.0.0/bin\n clang-9: note:\
+    \ diagnostic msg: PLEASE submit a bug report to https://bugs.llvm.org/ and include\
+    \ the crash backtrace, preprocessed source, and associated run script.\n clang-9:\
+    \ note: diagnostic msg: Error generating preprocessed source(s) - no preprocessable\
+    \ inputs.\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t64.mx
@@ -3382,11 +3389,18 @@
   stage: codegen
   verdict: Accepted
 - Case: ./t54.mx
-  Compiler-ExitCode: 30
-  Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-ExitCode: 70
+  Compiler-Output: '67'
+  Compiler-Stderr: "fatal error: error in backend: visitCatchSwitch not yet implemented!\n\
+    \ clang-9: error: clang frontend command failed with exit code 70 (use -v to see\
+    \ invocation)\n clang version 9.0.0 (tags/RELEASE_900/final)\n Target: x86_64-unknown-linux-gnu\n\
+    \ Thread model: posix\n InstalledDir: /usr/local/llvm-9.0.0/bin\n clang-9: note:\
+    \ diagnostic msg: PLEASE submit a bug report to https://bugs.llvm.org/ and include\
+    \ the crash backtrace, preprocessed source, and associated run script.\n clang-9:\
+    \ note: diagnostic msg: Error generating preprocessed source(s) - no preprocessable\
+    \ inputs.\n"
   stage: codegen
-  verdict: Accepted
+  verdict: 'Failed: Compiled Output Mismatch'
 - Case: ./t44.mx
   Compiler-ExitCode: 13
   Compiler-Output: ''
@@ -7922,11 +7936,19 @@
   stage: codegen
   verdict: Accepted
 - Case: ./t47.mx
-  Compiler-ExitCode: 30
-  Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-ExitCode: 1
+  Compiler-Output: '7053
+
+    1035
+
+    7035
+
+    '
+  Compiler-Stderr: "Exception in thread \"main\" java.lang.NullPointerException\n\
+    \ \tat IR.IRBasicBlock.union(IRBasicBlock.java:369)\n \tat optimize.CFGSimplifier.removeUnusedBlock(CFGSimplifier.java:65)\n\
+    \ \tat optimize.CFGSimplifier.<init>(CFGSimplifier.java:28)\n \tat Main.main(Main.java:72)\n"
   stage: codegen
-  verdict: Accepted
+  verdict: 'Failed: Compiled Output Mismatch'
 - Case: ./t22.mx
   Compiler-ExitCode: 0
   Compiler-Output: '888

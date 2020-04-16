@@ -190,6 +190,7 @@ public class IRBuilder implements ASTVisitor {
 		if(!(currentBlock.getTail() instanceof BrInst))
 			currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 		currentFunction.addBasicBlock(returnBlock);
+		currentFunction.setExitBlock(returnBlock);
 		currentBlock = returnBlock;
 		currentBlock.addInst(new RetInst());
 		
@@ -285,6 +286,7 @@ public class IRBuilder implements ASTVisitor {
 				currentBlock.addInst(new BrInst(currentBlock, returnBlock));
 			}
 			currentFunction.addBasicBlock(returnBlock);
+			currentFunction.setExitBlock(returnBlock);
 			currentBlock = returnBlock;
 			if (returnType instanceof IRVoidType) {
 				currentBlock.addInst(new RetInst());
@@ -366,6 +368,7 @@ public class IRBuilder implements ASTVisitor {
 				currentBlock.addInst(new BrInst(currentBlock, returnBlock)); 
 			}
 			currentFunction.addBasicBlock(returnBlock);
+			currentFunction.setExitBlock(returnBlock);
 			currentBlock = returnBlock;
 			if (returnType instanceof IRVoidType) {
 				currentBlock.addInst(new RetInst());

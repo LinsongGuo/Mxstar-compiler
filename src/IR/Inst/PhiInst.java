@@ -70,7 +70,6 @@ public class PhiInst extends IRInst {
 			}
 		}
 		if (flag) {
-		//	old.removeUse(this);
 			nw.addUse(this);
 		}
 	}
@@ -88,7 +87,6 @@ public class PhiInst extends IRInst {
 	@Override
 	public void removeAllDef() {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	public void replacePhiUse(IRBasicBlock old, IRBasicBlock nw) {
@@ -114,11 +112,24 @@ public class PhiInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+		res.addDef(this);
+		//System.err.println("------------phi " + res);
 		for (IRSymbol s : symbols) {
 			s.addUse(this);
 		}
 		for (IRBasicBlock block : bbs) {
 			block.addPhiUse(this);
 		}
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		for (IRSymbol s : symbols) {
+			if (s instanceof IRRegister) {
+				res.add((IRRegister) s);
+			}
+		}
+		return res;
 	}
 }

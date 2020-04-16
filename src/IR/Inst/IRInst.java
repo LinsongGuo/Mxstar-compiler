@@ -1,5 +1,7 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRBasicBlock;
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
@@ -67,4 +69,6 @@ abstract public class IRInst {
 	abstract public void removeAllDef();
 	
 	abstract public IRRegister getRes();
+	
+	abstract public ArrayList<IRRegister> getUsedRegister();
 }

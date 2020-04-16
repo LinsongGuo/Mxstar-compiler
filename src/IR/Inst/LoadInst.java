@@ -1,5 +1,7 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
@@ -54,7 +56,16 @@ public class LoadInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+		res.addDef(this);
 		ptr.addUse(this);
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (ptr instanceof IRRegister)
+			res.add((IRRegister) ptr);
+		return res;
 	}
 	
 }

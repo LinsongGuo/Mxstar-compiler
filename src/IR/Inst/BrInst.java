@@ -1,11 +1,12 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRBasicBlock;
 import IR.IRVisitor;
 import IR.Symbol.IRConstBool;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
-import IR.Type.IRInt1Type;
 
 public class BrInst extends IRInst {
 	private IRSymbol cond;
@@ -13,8 +14,6 @@ public class BrInst extends IRInst {
 	
 	public BrInst(IRBasicBlock currentBlock, IRBasicBlock ifTrue) {
 		this.ifTrue = ifTrue;
-		currentBlock.addSuccessor(ifTrue);
-		ifTrue.addPredecessor(currentBlock);
 	}
 	
 	public BrInst(IRBasicBlock currentBlock, IRSymbol cond, IRBasicBlock ifTrue, IRBasicBlock ifFalse) {
@@ -22,11 +21,6 @@ public class BrInst extends IRInst {
 		this.cond = cond;
 		this.ifTrue = ifTrue;
 		this.ifFalse = ifFalse;
-		currentBlock.addSuccessor(ifTrue);
-		ifTrue.addPredecessor(currentBlock);
-		currentBlock.addSuccessor(ifFalse);
-		ifFalse.addPredecessor(currentBlock);
-		cond.addUse(this);
 	}
 	
 	@Override
@@ -39,6 +33,29 @@ public class BrInst extends IRInst {
 		}
 	}
 
+	private void removeCond() {
+		if (cond != null) {
+			cond.removeUse(this);
+			cond = null;
+		}
+	}
+	
+	private void removeTrue() {
+		if (ifTrue != null) {
+			currentBlock.removeSuccessor(ifTrue);
+			ifTrue.removePredecessor(currentBlock);
+			ifTrue = null;
+		}
+	}
+	
+	private void removeFalse() {
+		if (ifFalse != null) {
+			currentBlock.removeSuccessor(ifFalse);
+			ifFalse.removePredecessor(currentBlock);
+			ifFalse = null;
+		}
+	}
+	
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
@@ -48,19 +65,23 @@ public class BrInst extends IRInst {
 		return cond;
 	}
 	
+	public void change(IRBasicBlock block) {
+		removeCond();
+		removeTrue();
+		removeFalse();
+		ifTrue = block;
+		currentBlock.addSuccessor(block);
+		block.addPredecessor(currentBlock);
+	}
+	
 	public void changeTrue() {
-		cond.removeUse(this);
-		cond = null;
-		currentBlock.removeSuccessor(ifFalse);
-		ifFalse.removePredecessor(currentBlock);
-		ifFalse = null;
+		removeCond();
+		removeFalse();
 	}
 	
 	public void changeFalse() {
-		cond.removeUse(this);
-		cond = null;
-		currentBlock.removeSuccessor(ifTrue);
-		ifTrue.removePredecessor(currentBlock);
+		removeCond();
+		removeTrue();
 		ifTrue = ifFalse;
 		ifFalse = null;
 	}
@@ -74,9 +95,10 @@ public class BrInst extends IRInst {
 			if (nw instanceof IRConstBool) {
 				cond = null;
 				if (((IRConstBool) nw).getValue()) {
-					ifFalse = null;
+					removeFalse();
 				}
 				else {
+					removeTrue();
 					ifTrue = ifFalse;
 					ifFalse = null;
 				}
@@ -104,6 +126,16 @@ public class BrInst extends IRInst {
 	@Override
 	public void InitDefUse() {
 		if (cond != null) cond.addUse(this);
+		if (ifTrue != null) {
+			currentBlock.addSuccessor(ifTrue);
+			ifTrue.addPredecessor(currentBlock);
+		//	System.err.println("edge : " + currentBlock + " --> " + ifTrue);
+		}
+		if (ifFalse != null) {
+			currentBlock.addSuccessor(ifFalse);
+			ifFalse.addPredecessor(currentBlock);	
+		//	System.err.println("edge : " + currentBlock + " --> " + ifFalse);
+		}
 	}
 	
 	public IRBasicBlock getTrue() {
@@ -116,18 +148,22 @@ public class BrInst extends IRInst {
 	
 	public void removeBlock(IRBasicBlock block) {
 		if (ifTrue == block) {
-			if (cond != null) {
-				cond.removeUse(this);
-				cond = null;
-			}
+			removeCond();
+		//	removeTrue();
 			ifTrue = ifFalse;
-		}
-		else {
-			if (cond != null) {
-				cond.removeUse(this);
-				cond = null;
-			}
 			ifFalse = null;
 		}
+		if (ifFalse == block) {
+			removeCond();
+		//	removeFalse();
+		}
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (cond != null && (cond instanceof IRRegister)) 
+			res.add((IRRegister) cond);
+		return res;
 	}
 }

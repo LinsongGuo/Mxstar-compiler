@@ -321,7 +321,7 @@ public class SCCP extends PASS implements IRVisitor {
 
 	@Override
 	public void visit(PhiInst node) {
-	//	System.err.println("visit " + node);
+		//System.err.println("visit " + node);
 		IRConst constant = null;
 		IRRegister res = node.getRes();
 		ArrayList<IRSymbol> symbols = node.getSymbols();

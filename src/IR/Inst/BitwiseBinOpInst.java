@@ -1,5 +1,7 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
@@ -81,6 +83,7 @@ public class BitwiseBinOpInst extends IRInst {
 	public void InitDefUse() {
 		left.addUse(this);
 		right.addUse(this);
+		result.addDef(this);
 	}
 
 	public IRSymbol getLeft() {
@@ -89,5 +92,15 @@ public class BitwiseBinOpInst extends IRInst {
 	
 	public IRSymbol getRight() {
 		return right;
+	}
+	
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (left instanceof IRRegister) 
+			res.add((IRRegister) left);
+		if (right instanceof IRRegister)
+			res.add((IRRegister) right);
+		return res;
 	}
 }

@@ -51,6 +51,13 @@ public class CFGSimplifier extends PASS {
 	
 	//remove unreachable block and union connected blocks
 	public void removeUnusedBlock(IRFunction function) {
+		for (IRBasicBlock block : function.getBlockList()) {
+		//	System.err.println(block + " " + block.getSuccessors());		
+		//	System.err.println(block.getInstList());
+		}
+		
+		System.err.println("-------------------------------");
+		
 		HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>();
 		Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
 		IRBasicBlock entranceBlock = function.getEntranceBlock();
@@ -59,14 +66,15 @@ public class CFGSimplifier extends PASS {
 		while(!queue.isEmpty()) {
 			IRBasicBlock block = queue.poll();
 			ArrayList<IRBasicBlock> successors = block.getSuccessors();
-			/*
+			System.err.println("queue " + block);
 			if (successors.size() == 1 && successors.get(0).getPredecessors().size() == 1) {
-				System.err.println("union " + block + " " + successors.get(0));
 				IRBasicBlock successor = successors.get(0);
+				System.err.println("union " + block + " " + successor);
 				block.union(successor);
+				System.err.println(block.getSuccessors());
 				queue.offer(block);
 				continue;
-			}*/
+			}
 			for (IRBasicBlock successor : successors) {
 				if (!visitedSet.contains(successor)){
 					visitedSet.add(successor);

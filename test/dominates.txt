@@ -1,16 +1,17 @@
-@work
-%entranceBlock.0 --> %ifCondBlock.0  
-%ifCondBlock.0 --> %thenBodyBlock.0  %afterIfBlock.0  %elseBodyBlock.0  
+@main
+%entranceBlock.0 --> %logicalAnd.0  %afterLogicalAnd.0  
 %thenBodyBlock.0 --> 
 %elseBodyBlock.0 --> 
-%afterIfBlock.0 --> %returnBlock.0  
-%returnBlock.0 --> 
-
-@main
-%entranceBlock.0 --> %returnBlock.0  
-%returnBlock.0 --> 
+%afterIfBlock.0 --> %logicalAnd.1  %afterLogicalAnd.1  
+%logicalAnd.0 --> 
+%afterLogicalAnd.0 --> %thenBodyBlock.0  %afterIfBlock.0  %elseBodyBlock.0  
+%thenBodyBlock.1 --> 
+%afterIfBlock.1 --> 
+%logicalAnd.1 --> 
+%afterLogicalAnd.1 --> %logicalAnd.2  %afterLogicalAnd.2  
+%logicalAnd.2 --> 
+%afterLogicalAnd.2 --> %thenBodyBlock.1  %afterIfBlock.1  
 
 @__init__
-%entranceBlock.0 --> %returnBlock.0  
-%returnBlock.0 --> 
+%entranceBlock.0 --> 
 

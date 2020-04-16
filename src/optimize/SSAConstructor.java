@@ -45,7 +45,7 @@ public class SSAConstructor extends PASS {
 	private void construct(IRFunction function) {
 		ArrayList<IRBasicBlock> blockList = function.getBlockList();
 		stack = new HashMap<IRSymbol, Stack<IRSymbol>>();
-		removeUnusedInst(function, blockList);
+		//removeUnusedInst(function, blockList);
 		insertPhiInst(function, blockList);
 		rename(function.getEntranceBlock());
 		for (IRBasicBlock block : blockList) {
@@ -92,22 +92,33 @@ public class SSAConstructor extends PASS {
 		for (IRBasicBlock block : blockList) {
 			ArrayList<IRInst> instList = block.getInstList();
 			for (IRInst inst : instList) {
-				if (inst instanceof AllocaInst) {
-					
+				if (inst instanceof LoadInst) {
+					if (!inst.getRes().isUsed()) {
+						inst.removeItself();
+					}
+				}
+				else if (inst instanceof AllocaInst) {
 					IRRegister address = ((AllocaInst) inst).getRes();
 					IRType type = ((IRPtrType) address.getType()).getType();
 					String name = address.getName().split("\\$")[0];
 				
-				//	System.err.println("name : " + name);
+					//System.err.println("name : " + address.getName());
+					if (!address.isDefed()) {
+						inst.removeItself();
+					}
 					
 					HashSet<IRInst> defList = address.getDefList();
 					Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
 					HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>(); 
+					HashSet<IRBasicBlock> phiSet = new HashSet<IRBasicBlock>(); 
 					for (IRInst def : defList) {
-						IRBasicBlock defBlock = def.getCurrentBlock();
-						if (!visitedSet.contains(defBlock)) {
-							queue.add(defBlock);
-							visitedSet.add(defBlock);
+						if (def instanceof StoreInst) {
+							IRBasicBlock defBlock = def.getCurrentBlock();
+							if (!visitedSet.contains(defBlock)) {
+								//System.err.println("def " + defBlock + " " + def);
+								queue.add(defBlock);
+								visitedSet.add(defBlock);
+							}	
 						}
 					}
 					
@@ -115,7 +126,7 @@ public class SSAConstructor extends PASS {
 						IRBasicBlock front = queue.poll();
 						HashSet<IRBasicBlock> DF = front.getDF();
 						for (IRBasicBlock df : DF) {
-							if (!visitedSet.contains(df)) {
+							if (!phiSet.contains(df)) {
 								//insert phi instruction
 								IRRegister res = new IRRegister(type, name);
 								function.addRegister(res);
@@ -123,7 +134,7 @@ public class SSAConstructor extends PASS {
 								df.addPhi(address, phi);
 								//add dominance frontier
 								queue.add(df);
-								visitedSet.add(df);
+								phiSet.add(df);
 								//System.err.println("insert " + df + " " + res);
 							}
 						}

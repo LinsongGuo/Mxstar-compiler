@@ -95,8 +95,19 @@ public class CallInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+		if (result != null) result.addDef(this);
 		for (IRSymbol para : parameters) {
 			para.addUse(this);
 		}		
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res =	new ArrayList<IRRegister>();
+		for (IRSymbol parameter : parameters) {
+			if (parameter instanceof IRRegister)
+				res.add((IRRegister) parameter);
+		}
+		return res;
 	}
 }

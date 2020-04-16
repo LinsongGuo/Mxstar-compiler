@@ -23,15 +23,22 @@ public class DominatorTree extends PASS {
 		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
+			//System.err.println("function " + function.getName());
 			LengauerTarjan(function);
 			CalcDF(function);
 		}
 		
 		print();
+		
+		for (IRFunction function : functions) {
+			RLengauerTarjan(function);
+			CalcRDF(function);
+		}
 	}
 	
 	private Pair<IRBasicBlock, IRBasicBlock> find(IRBasicBlock block) {
 		Pair<IRBasicBlock, IRBasicBlock> father = unionFindSet.get(block);
+		//System.err.println("find " + block + " " + father);
 		if (block == father.first)
 			return father;
 		Pair<IRBasicBlock, IRBasicBlock> grandfather = find(father.first);
@@ -107,6 +114,72 @@ public class DominatorTree extends PASS {
                 while (upBlock != null && !strictDominators.contains(upBlock)) {
                     upBlock.addDF(block);
                     upBlock = upBlock.getIdom();
+                }
+            }
+        }	
+    }
+    
+  	private void RLengauerTarjan (IRFunction function) {
+  		unionFindSet = new HashMap<IRBasicBlock, Pair<IRBasicBlock, IRBasicBlock>>();
+  		ArrayList<IRBasicBlock> RdfsSeq = function.RdfsBasicBlock();
+  		for (IRBasicBlock block : RdfsSeq) {
+  			unionFindSet.put(block, new Pair<IRBasicBlock, IRBasicBlock>(block, block));
+  			block.setRSdom(block);
+  		}
+  		
+  		for (int i = RdfsSeq.size() - 1; i > 0; --i) {
+  			IRBasicBlock block = RdfsSeq.get(i);
+  			ArrayList<IRBasicBlock> successors = block.getSuccessors();
+  			for (IRBasicBlock successor : successors) {
+  				Pair<IRBasicBlock, IRBasicBlock> ancestor = find(successor);
+  				if (ancestor.second.getRSdom().getRDfn() < block.getRSdom().getRDfn()) {
+  					block.setRSdom(ancestor.second.getRSdom());
+  				}
+  			}
+  			block.getRSdom().addRSdom(block);
+  			
+  			IRBasicBlock father = block.getRFather();
+  			link(block, father);
+  		
+  			HashSet<IRBasicBlock> fatherRBucket = father.getRBucket();
+  			for (IRBasicBlock bucket : fatherRBucket) {
+  				Pair<IRBasicBlock, IRBasicBlock> ancestor = find(bucket);
+  				if (ancestor.second.getRSdom().getRDfn() < bucket.getRSdom().getRDfn()) {
+  					bucket.setRIdom(ancestor.second);
+  				}
+  				else {
+  					bucket.setRIdom(father);
+  				}
+  			}
+  			fatherRBucket.clear();
+  		}
+  		
+  		for (int i = 1; i < RdfsSeq.size(); ++i) {
+  			IRBasicBlock block = RdfsSeq.get(i);
+  			IRBasicBlock Ridom = block.getRIdom();
+  			if (Ridom != block.getRSdom()) {
+  				Ridom = block.getRIdom().getRIdom();
+  				block.setRIdom(Ridom);	
+  			}
+  			//System.err.println("RIDOM " + block + " " + Ridom);
+  			Ridom.addRDominace(block);
+  			for (; Ridom != null; Ridom = Ridom.getRIdom()) {
+  				block.addRStrictDominator(Ridom);
+  			}
+  		}
+  	}
+	
+	//Calculate Dominance Frontier
+    private void CalcRDF(IRFunction function) {
+        ArrayList<IRBasicBlock> blockList = function.getBlockList();
+        for (IRBasicBlock block : blockList) {
+        	HashSet<IRBasicBlock> RstrictDominators = block.getRStrictDominators();
+        	ArrayList<IRBasicBlock> successors = block.getSuccessors();
+        	for (IRBasicBlock successor : successors) {
+                IRBasicBlock upBlock = successor;
+                while (upBlock != null && !RstrictDominators.contains(upBlock)) {
+                    upBlock.addRDF(block);
+                    upBlock = upBlock.getRIdom();
                 }
             }
         }	

@@ -1,5 +1,7 @@
 package IR.Inst;
 
+import java.util.ArrayList;
+
 import IR.IRVisitor;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
@@ -63,5 +65,15 @@ public class StoreInst extends IRInst {
 	public void InitDefUse() {
 		ptr.addDef(this);
 		value.addUse(this);
+	}
+
+	@Override
+	public ArrayList<IRRegister> getUsedRegister() {
+		ArrayList<IRRegister> res = new ArrayList<IRRegister>();
+		if (value instanceof IRRegister)
+			res.add((IRRegister) value);
+		if (ptr instanceof IRRegister) 
+			res.add((IRRegister) ptr);
+		return res;
 	}
 }
