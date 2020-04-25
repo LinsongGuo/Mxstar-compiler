@@ -14,6 +14,7 @@ import IR.IRFunction;
 import IR.IRModule;
 import IR.Inst.BrInst;
 import IR.Inst.IRInst;
+import IR.Inst.PhiInst;
 import IR.Symbol.IRConstBool;
 import IR.Symbol.IRSymbol;
 
@@ -24,6 +25,7 @@ public class CFGSimplifier extends PASS {
 		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
+			removeSingleBlockInPhi(function);
 			removeConstantBranch(function);
 			removeUnusedBlock(function);
 		}
@@ -31,6 +33,15 @@ public class CFGSimplifier extends PASS {
 		print();
 	}
 
+	public void removeSingleBlockInPhi(IRFunction function) {
+		ArrayList<IRBasicBlock> blockList = function.getBlockList();
+		for (IRBasicBlock block : blockList) {
+			for (IRInst inst = block.getHead(); inst instanceof PhiInst; inst = inst.getNext()) {
+				((PhiInst)inst).simplify();
+			}
+		}
+	}
+	
 	public void removeConstantBranch(IRFunction function) {
 		ArrayList<IRBasicBlock> blockList = function.getBlockList();
 		for (IRBasicBlock block : blockList) {
@@ -56,7 +67,7 @@ public class CFGSimplifier extends PASS {
 		//	System.err.println(block.getInstList());
 		}
 		
-		System.err.println("-------------------------------");
+		//System.err.println("-------------------------------");
 		
 		HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>();
 		Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
@@ -66,12 +77,12 @@ public class CFGSimplifier extends PASS {
 		while(!queue.isEmpty()) {
 			IRBasicBlock block = queue.poll();
 			ArrayList<IRBasicBlock> successors = block.getSuccessors();
-			System.err.println("queue " + block);
+			//System.err.println("queue " + block);
 			if (successors.size() == 1 && successors.get(0).getPredecessors().size() == 1) {
 				IRBasicBlock successor = successors.get(0);
-				System.err.println("union " + block + " " + successor);
+				//System.err.println("union " + block + " " + successor);
 				block.union(successor);
-				System.err.println(block.getSuccessors());
+				//System.err.println(block.getSuccessors());
 				queue.offer(block);
 				continue;
 			}

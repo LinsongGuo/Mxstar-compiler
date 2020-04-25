@@ -303,6 +303,9 @@ public class IRBasicBlock {
 
 	public ArrayList<IRInst> getInstList() {
 		ArrayList<IRInst> res = new ArrayList<IRInst>();
+		for (Pair<IRRegister, PhiInst> pair : phiMap) {
+			res.add(pair.second);
+		}
 		IRInst inst = head;
 		while (inst != null) {
 			res.add(inst);
@@ -342,6 +345,10 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public boolean hasPhiUse(PhiInst inst) {
+		return phiUse.contains(inst);
+	}
+	
 	public void addPhiUse(PhiInst inst) {
 		phiUse.add(inst);
 	}
@@ -364,10 +371,8 @@ public class IRBasicBlock {
 	}
 	
 	public void union(IRBasicBlock other) {
-	//	System.err.println("union " + this + " " + other);
+		//System.err.println("union " + this + " " + other);
 		assert tail instanceof BrInst;
-	
-	//	System.err.println(head);
 	
 		tail.removeItself();
 		
@@ -417,8 +422,26 @@ public class IRBasicBlock {
 				head = phi;						
 			}	
 		}
+		phiMap.clear();
 	}
-
+	
+	public void removeIncomingBlockInPhi(IRBasicBlock block) {
+		ArrayList<IRInst> res = new ArrayList<IRInst>();
+		for (Pair<IRRegister, PhiInst> pair : phiMap) {
+			PhiInst inst = pair.second;
+			if (block.hasPhiUse(inst)) {
+				inst.removePhiUse(block);
+				block.removePhiUse(inst);			
+			}
+		}
+		for (IRInst inst = head; inst instanceof PhiInst; inst = inst.getNext()) {
+			if (block.hasPhiUse((PhiInst) inst)) {
+				((PhiInst) inst).removePhiUse(block);
+				block.removePhiUse((PhiInst) inst);			
+			}
+		}
+	}
+	
 	//for SCCP
 	private boolean executable;
 	

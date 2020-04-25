@@ -61,7 +61,6 @@ public class SCCP extends PASS implements IRVisitor {
 	
 	private void markMultiDefined(IRRegister reg) {
 		if (reg.status != IRRegister.Status.multiDefined) {
-			//System.err.println("mult " + reg);
 			reg.setConstant(null);
 			reg.status = IRRegister.Status.multiDefined;
 			queueREG.offer(reg);		

@@ -1,7 +1,12 @@
 - Case: ./e8.mx
   Compiler-ExitCode: 0
   Compiler-Output: '1'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.1 %ifCondBlock.0\n union %afterForBlock.1\
+    \ %forStepBlock.0\n union %afterIfBlock.0 %forStepBlock.1\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %afterIfBlock.0\
+    \ %forCondBlock.1\n idom %thenBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t9.mx
@@ -9,7 +14,9 @@
   Compiler-Output: '1024
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %whileBodyBlock.0 %ifCondBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t8.mx
@@ -19,13 +26,20 @@
     1234
 
     0000'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.2 %forStepBlock.2\n union %forBodyBlock.3\
+    \ %forStepBlock.3\n union %afterForBlock.3 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e9.mx
   Compiler-ExitCode: 0
   Compiler-Output: 'NO'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.0\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t7.mx
@@ -33,26 +47,25 @@
   Compiler-Output: '0000
 
     1234'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.2 %forStepBlock.2\n union %afterForBlock.2\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t50.mx
   Compiler-ExitCode: 210
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t35.mx
-  Compiler-ExitCode: 70
+  Compiler-ExitCode: 20
   Compiler-Output: ''
-  Compiler-Stderr: "fatal error: error in backend: visitCatchSwitch not yet implemented!\n\
-    \ clang-9: error: clang frontend command failed with exit code 70 (use -v to see\
-    \ invocation)\n clang version 9.0.0 (tags/RELEASE_900/final)\n Target: x86_64-unknown-linux-gnu\n\
-    \ Thread model: posix\n InstalledDir: /usr/local/llvm-9.0.0/bin\n clang-9: note:\
-    \ diagnostic msg: PLEASE submit a bug report to https://bugs.llvm.org/ and include\
-    \ the crash backtrace, preprocessed source, and associated run script.\n clang-9:\
-    \ note: diagnostic msg: Error generating preprocessed source(s) - no preprocessable\
-    \ inputs.\n"
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n\
+    \ union %entranceBlock.0 %thenBodyBlock.0\n union %entranceBlock.0 %afterIfBlock.0\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t64.mx
@@ -423,13 +436,27 @@
     }
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %ifCondBlock.2\n union %afterIfBlock.2\
+    \ %ifCondBlock.3\n union %afterIfBlock.3 %ifCondBlock.4\n union %afterIfBlock.4\
+    \ %ifCondBlock.5\n union %afterIfBlock.5 %ifCondBlock.6\n union %afterIfBlock.6\
+    \ %ifCondBlock.7\n union %afterIfBlock.7 %ifCondBlock.8\n union %afterIfBlock.8\
+    \ %ifCondBlock.9\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.2 %forStepBlock.2\n union %afterForBlock.2\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e2.mx
   Compiler-ExitCode: 0
   Compiler-Output: '2'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.1 %ifCondBlock.0\n union %afterForBlock.1\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %forStepBlock.1\n union %afterIfBlock.1\
+    \ %forStepBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %forStepBlock.1\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %afterForBlock.0 %forCondBlock.1\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.0\n idom %afterIfBlock.0\
+    \ %forCondBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t25.mx
@@ -981,19 +1008,25 @@
     Total: 272
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %returnBlock.0\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %forStepBlock.1\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %afterWhileBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t11.mx
   Compiler-ExitCode: 55
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t40.mx
   Compiler-ExitCode: 20
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t60.mx
@@ -1001,13 +1034,22 @@
   Compiler-Output: 'eternal!
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %afterForBlock.1\
+    \ %forStepBlock.0\n union %forBodyBlock.2 %ifCondBlock.0\n union %afterForBlock.2\
+    \ %forStepBlock.1\n union %afterIfBlock.0 %forStepBlock.2\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e6.mx
   Compiler-ExitCode: 0
   Compiler-Output: '1'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %afterForBlock.0 %forCondBlock.1\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.0\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t31.mx
@@ -3379,32 +3421,69 @@
     Total: 1182
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %forBodyBlock.0\
+    \ %ifCondBlock.0\n union %afterForBlock.0 %returnBlock.0\n union %afterWhileBlock.0\
+    \ %forStepBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %ifCondBlock.3\n union %thenBodyBlock.1\
+    \ %ifCondBlock.2\n union %afterIfBlock.3 %returnBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.3 %forStepBlock.3\n union %afterForBlock.3\
+    \ %forStepBlock.2\n union %afterForBlock.4 %returnBlock.0\n union %forBodyBlock.5\
+    \ %ifCondBlock.0\n union %afterForBlock.5 %forStepBlock.4\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %forStepBlock.5\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.3\
+    \ %afterIfBlock.3\n idom %afterIfBlock.1 %afterIfBlock.0\n idom %afterIfBlock.2\
+    \ %afterIfBlock.1\n idom %thenBodyBlock.2 %afterIfBlock.2\n idom %afterForBlock.2\
+    \ %forCondBlock.4\n idom %afterForBlock.1 %forCondBlock.2\n idom %afterForBlock.0\
+    \ %forCondBlock.1\n idom %entranceBlock.0 %forCondBlock.0\n idom %forBodyBlock.0\
+    \ %forCondBlock.0\n idom %forBodyBlock.1 %forCondBlock.1\n idom %afterForBlock.3\
+    \ %forCondBlock.2\n idom %forBodyBlock.2 %forCondBlock.3\n idom %forBodyBlock.3\
+    \ %forCondBlock.3\n idom %afterForBlock.5 %forCondBlock.4\n idom %forBodyBlock.4\
+    \ %forCondBlock.5\n idom %afterIfBlock.0 %forCondBlock.5\n idom %afterIfBlock.1\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.1 %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t3.mx
   Compiler-ExitCode: 0
   Compiler-Output: '67'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %afterLogicalAnd.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %afterWhileBlock.0\
+    \ %ifCondBlock.1\n union %forBodyBlock.2 %forStepBlock.2\n union %afterForBlock.2\
+    \ %ifCondBlock.0\n union %afterIfBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n idom %afterIfBlock.1 %afterIfBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n idom %thenBodyBlock.1 %afterIfBlock.1\n idom %afterForBlock.0\
+    \ %whileCondBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n idom %afterIfBlock.0 %whileCondBlock.0\n idom %whileBodyBlock.0\
+    \ %forCondBlock.2\n idom %forBodyBlock.2 %forCondBlock.2\n idom %thenBodyBlock.0\
+    \ %afterWhileBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t54.mx
-  Compiler-ExitCode: 70
-  Compiler-Output: '67'
-  Compiler-Stderr: "fatal error: error in backend: visitCatchSwitch not yet implemented!\n\
-    \ clang-9: error: clang frontend command failed with exit code 70 (use -v to see\
-    \ invocation)\n clang version 9.0.0 (tags/RELEASE_900/final)\n Target: x86_64-unknown-linux-gnu\n\
-    \ Thread model: posix\n InstalledDir: /usr/local/llvm-9.0.0/bin\n clang-9: note:\
-    \ diagnostic msg: PLEASE submit a bug report to https://bugs.llvm.org/ and include\
-    \ the crash backtrace, preprocessed source, and associated run script.\n clang-9:\
-    \ note: diagnostic msg: Error generating preprocessed source(s) - no preprocessable\
-    \ inputs.\n"
+  Compiler-ExitCode: 30
+  Compiler-Output: ''
+  Compiler-Stderr: "union %afterLogicalAnd.0 %ifCondBlock.0\n union %afterLogicalAnd.2\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n union %entranceBlock.0\
+    \ %afterLogicalAnd.0\n union %entranceBlock.0 %elseBodyBlock.0\n union %entranceBlock.0\
+    \ %afterIfBlock.0\n union %entranceBlock.0 %afterLogicalAnd.1\n union %entranceBlock.0\
+    \ %afterLogicalAnd.2\n union %entranceBlock.0 %thenBodyBlock.1\n union %entranceBlock.0\
+    \ %afterIfBlock.1\n"
   stage: codegen
-  verdict: 'Failed: Compiled Output Mismatch'
+  verdict: Accepted
 - Case: ./t44.mx
   Compiler-ExitCode: 13
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t15.mx
@@ -3412,7 +3491,13 @@
   Compiler-Output: '99850
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.2\
+    \ %forStepBlock.2\n union %afterForBlock.2 %forStepBlock.1\n union %forBodyBlock.3\
+    \ %ifCondBlock.0\n union %afterForBlock.5 %returnBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.3\n union %forBodyBlock.6 %forStepBlock.6\n union %afterForBlock.6\
+    \ %forStepBlock.5\n union %forBodyBlock.4 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %forStepBlock.4\n union %entranceBlock.0 %returnBlock.0\n idom %afterForBlock.4\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.1 %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t21.mx
@@ -4031,7 +4116,12 @@
     \ 9956 9957 9958 9959 9960 9961 9962 9963 9964 9965 9966 9967 9968 9969 9970 9971\
     \ 9972 9973 9974 9975 9976 9977 9978 9979 9980 9981 9982 9983 9984 9985 9986 9987\
     \ 9988 9989 9990 9991 9992 9993 9994 9995 9996 9997 9998 9999 10000 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterWhileBlock.0 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %ifCondBlock.2\n union %afterWhileBlock.2 %ifCondBlock.0\n union %afterIfBlock.2\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.2 %afterIfBlock.2\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t61.mx
@@ -4049,7 +4139,19 @@
     (1 << 3) * y: ( 72, 64, 56, 6536, 40, 32, 24, 16, 8, 0 )
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %afterForBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %returnBlock.0\n idom %afterForBlock.0 %returnBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n idom %afterForBlock.0 %afterIfBlock.1\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e7.mx
@@ -4057,7 +4159,10 @@
   Compiler-Output: '1
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %ifCondBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %afterIfBlock.0 %forStepBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterIfBlock.0\
+    \ %forCondBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t30.mx
@@ -4065,7 +4170,8 @@
   Compiler-Output: '13
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t2.mx
@@ -4247,7 +4353,15 @@
     \ . .\n . . . . . . O .\n . . . O . . . .\n\n . . . . . . . O\n . . . O . . .\
     \ .\n O . . . . . . .\n . . O . . . . .\n . . . . . O . .\n . O . . . . . .\n\
     \ . . . . . . O .\n . . . . O . . .\n\n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %forStepBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %afterForBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t55.mx
@@ -4277,13 +4391,15 @@
     \ 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234\
     \ 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253\
     \ 254 255 256 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t45.mx
   Compiler-ExitCode: 30
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t14.mx
@@ -4295,7 +4411,10 @@
     Mars, the striking TA wants to give up!!!!!
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t20.mx
@@ -4303,31 +4422,42 @@
   Compiler-Output: '720
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %afterForBlock.1\
+    \ %forStepBlock.0\n union %afterForBlock.2 %forStepBlock.1\n union %afterForBlock.3\
+    \ %forStepBlock.2\n union %afterForBlock.4 %forStepBlock.3\n union %forBodyBlock.5\
+    \ %ifCondBlock.0\n union %afterForBlock.5 %forStepBlock.4\n union %afterIfBlock.0\
+    \ %forStepBlock.5\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t6.mx
   Compiler-ExitCode: 6
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t51.mx
   Compiler-ExitCode: 80
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t34.mx
   Compiler-ExitCode: 106
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e3.mx
   Compiler-ExitCode: 0
   Compiler-Output: 'NO'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t24.mx
@@ -4335,7 +4465,23 @@
   Compiler-Output: "2 7 6 \n9 5 1 \n4 3 8 \n\n2 9 4 \n7 5 3 \n6 1 8 \n\n4 3 8 \n9\
     \ 5 1 \n2 7 6 \n\n4 9 2 \n3 5 7 \n8 1 6 \n\n6 1 8 \n7 5 3 \n2 9 4 \n\n6 7 2 \n\
     1 5 9 \n8 3 4 \n\n8 1 6 \n3 5 7 \n4 9 2 \n\n8 3 4 \n1 5 9 \n6 7 2 \n\n8\n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %thenBodyBlock.0 %ifCondBlock.1\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %thenBodyBlock.1 %ifCondBlock.2\n union %elseBodyBlock.0\
+    \ %ifCondBlock.3\n union %thenBodyBlock.3 %ifCondBlock.4\n union %forBodyBlock.2\
+    \ %ifCondBlock.6\n union %thenBodyBlock.4 %ifCondBlock.5\n union %thenBodyBlock.6\
+    \ %ifCondBlock.7\n union %afterIfBlock.6 %forStepBlock.2\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %afterForBlock.1 %forCondBlock.0\n idom %forBodyBlock.0\
+    \ %forCondBlock.1\n idom %forBodyBlock.1 %forCondBlock.1\n idom %afterIfBlock.1\
+    \ %afterIfBlock.0\n idom %afterIfBlock.2 %afterIfBlock.1\n idom %afterForBlock.0\
+    \ %afterIfBlock.2\n idom %afterIfBlock.3 %afterIfBlock.1\n idom %afterIfBlock.4\
+    \ %afterIfBlock.3\n idom %afterIfBlock.5 %afterIfBlock.4\n idom %thenBodyBlock.5\
+    \ %afterIfBlock.5\n idom %elseBodyBlock.2 %afterIfBlock.5\n idom %afterForBlock.2\
+    \ %afterIfBlock.3\n idom %afterIfBlock.7 %afterIfBlock.6\n idom %thenBodyBlock.7\
+    \ %afterIfBlock.7\n idom %elseBodyBlock.3 %afterIfBlock.7\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t10.mx
@@ -4347,37 +4493,59 @@
     171
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t41.mx
   Compiler-ExitCode: 110
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t33.mx
   Compiler-ExitCode: 15
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t62.mx
   Compiler-ExitCode: 30
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e4.mx
   Compiler-ExitCode: 0
   Compiler-Output: '10100'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t1.mx
   Compiler-ExitCode: 0
   Compiler-Output: '68'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterLogicalAnd.0 %returnBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.1 %forStepBlock.1\n union %forBodyBlock.3\
+    \ %forStepBlock.3\n union %afterForBlock.3 %forStepBlock.2\n union %whileBodyBlock.0\
+    \ %ifCondBlock.0\n union %afterWhileBlock.0 %ifCondBlock.17\n union %afterIfBlock.17\
+    \ %returnBlock.0\n union %thenBodyBlock.0 %ifCondBlock.1\n union %afterIfBlock.0\
+    \ %ifCondBlock.2\n union %thenBodyBlock.2 %ifCondBlock.3\n union %afterIfBlock.2\
+    \ %ifCondBlock.4\n union %thenBodyBlock.4 %ifCondBlock.5\n union %afterIfBlock.4\
+    \ %ifCondBlock.6\n union %thenBodyBlock.6 %ifCondBlock.7\n union %afterIfBlock.6\
+    \ %ifCondBlock.8\n union %thenBodyBlock.8 %ifCondBlock.9\n union %afterIfBlock.8\
+    \ %ifCondBlock.10\n union %thenBodyBlock.10 %ifCondBlock.11\n union %afterIfBlock.10\
+    \ %ifCondBlock.12\n union %thenBodyBlock.12 %ifCondBlock.13\n union %afterIfBlock.12\
+    \ %ifCondBlock.14\n union %thenBodyBlock.14 %ifCondBlock.15\n union %afterIfBlock.14\
+    \ %ifCondBlock.16\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.17\
+    \ %afterIfBlock.17\n idom %elseBodyBlock.0 %afterIfBlock.17\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t56.mx
@@ -4385,7 +4553,10 @@
   Compiler-Output: '1025
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t17.mx
@@ -4393,13 +4564,20 @@
   Compiler-Output: '3141592653589793238462643383279528841971693993751058209749445923078164062862089986280348253421170679821480865132823664709384469555822317253594081284811174502841270193852115559644622948954930381964428810975665933446128475648233786783165271201991456485669234634861045432664821339360726024914127372458706606315588174881520920962829254917153643678925903611330530548820466521384146951941511609433057273657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566438602139494639522473719070217986943702770539217176293176752384674818467669451320005681271452635608277857713427577896091736371787214684409012249534301465495853710579227968925892354201995611212902196864344181598136297747713099605187072113499999983729780499510597317328160963185
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forCondBlock.1\
+    \ %forBodyBlock.1\n union %forCondBlock.1 %ifCondBlock.0\n union %thenBodyBlock.0\
+    \ %afterForBlock.1\n union %thenBodyBlock.0 %returnBlock.0\n union %forCondBlock.2\
+    \ %forBodyBlock.2\n union %forCondBlock.2 %ifCondBlock.1\n union %thenBodyBlock.1\
+    \ %afterForBlock.2\n union %afterIfBlock.1 %forStepBlock.2\n union %thenBodyBlock.1\
+    \ %forStepBlock.1\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t46.mx
   Compiler-ExitCode: 75
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t23.mx
@@ -6453,31 +6631,38 @@
     1023
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t5.mx
   Compiler-ExitCode: 16
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t52.mx
   Compiler-ExitCode: 15
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t66.mx
   Compiler-ExitCode: 124
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t37.mx
   Compiler-ExitCode: 0
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t27.mx
@@ -6658,13 +6843,32 @@
     \ 13 14 15 16 17 18 19 20 \nstep 256:\n2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17\
     \ 18 19 21 \nstep 257:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 20 19 \n\
     Total: 257 step(s)\n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.2 %ifCondBlock.1\n union %afterForBlock.2\
+    \ %forStepBlock.1\n union %forBodyBlock.3 %ifCondBlock.2\n union %afterIfBlock.1\
+    \ %forStepBlock.2\n union %afterIfBlock.2 %forStepBlock.3\n union %forBodyBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %forStepBlock.0\n union %forBodyBlock.2\
+    \ %ifCondBlock.2\n union %afterForBlock.2 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.1\n union %afterIfBlock.2 %forStepBlock.2\n union %afterIfBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterWhileBlock.0\
+    \ %forStepBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.0\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %afterIfBlock.0 %forCondBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n idom %afterForBlock.1 %afterIfBlock.0\n idom %thenBodyBlock.1\
+    \ %afterForBlock.1\n idom %thenBodyBlock.2 %afterForBlock.2\n idom %forBodyBlock.0\
+    \ %whileCondBlock.0\n idom %whileBodyBlock.0 %whileCondBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t42.mx
   Compiler-ExitCode: 20
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t13.mx
@@ -6672,7 +6876,8 @@
   Compiler-Output: '2
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t4.mx
@@ -7291,13 +7496,24 @@
     \ 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 30 29\
     \ 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0\
     \ \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %whileBodyBlock.0\
+    \ %ifCondBlock.0\n union %afterWhileBlock.0 %returnBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %whileBodyBlock.0 %ifCondBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %afterIfBlock.0 %ifCondBlock.1\n union %thenBodyBlock.1\
+    \ %afterIfBlock.1\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.1 %afterIfBlock.1\n idom %elseBodyBlock.0\
+    \ %afterWhileBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t53.mx
   Compiler-ExitCode: 120
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.1 %forStepBlock.1\n union %afterForBlock.1\
+    \ %forStepBlock.0\n union %forBodyBlock.2 %forStepBlock.2\n union %forBodyBlock.3\
+    \ %forStepBlock.3\n union %forBodyBlock.4 %forStepBlock.4\n union %afterForBlock.4\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t67.mx
@@ -7769,20 +7985,29 @@
     db"
 
     abbdbdd\\"d"c\adc"c'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e1.mx
   Compiler-ExitCode: 0
   Compiler-Output: '<< 23 24 25 26 27 28 29 30 31 32 33 34 (35) 36 37 38 39 40 41
     42 43 44 45 46 47 >> '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %forBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterForBlock.0 %ifCondBlock.3\n union %afterIfBlock.3\
+    \ %returnBlock.0\n union %thenBodyBlock.1 %ifCondBlock.2\n union %afterIfBlock.1\
+    \ %forStepBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.3\
+    \ %afterIfBlock.3\n idom %afterIfBlock.0 %forCondBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %afterIfBlock.1 %forCondBlock.0\n idom %afterIfBlock.2\
+    \ %afterIfBlock.1\n idom %thenBodyBlock.2 %afterIfBlock.2\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.2\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t36.mx
   Compiler-ExitCode: 70
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t26.mx
@@ -7790,13 +8015,32 @@
   Compiler-Output: '49
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %forBodyBlock.2\
+    \ %forStepBlock.2\n union %forBodyBlock.3 %forStepBlock.3\n union %afterForBlock.3\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.1 %ifCondBlock.0\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %forStepBlock.1\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %afterWhileBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n idom %afterForBlock.2 %forCondBlock.3\n idom %afterForBlock.0\
+    \ %forCondBlock.2\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterForBlock.1\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.1\n idom %forBodyBlock.1\
+    \ %forCondBlock.1\n idom %forBodyBlock.2 %forCondBlock.2\n idom %forBodyBlock.3\
+    \ %forCondBlock.3\n idom %entranceBlock.0 %forCondBlock.0\n idom %forBodyBlock.0\
+    \ %forCondBlock.0\n idom %entranceBlock.0 %whileCondBlock.0\n idom %whileBodyBlock.0\
+    \ %whileCondBlock.0\n idom %entranceBlock.0 %whileCondBlock.0\n idom %whileBodyBlock.0\
+    \ %whileCondBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t43.mx
   Compiler-ExitCode: 20
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n\
+    \ union %entranceBlock.0 %thenBodyBlock.0\n union %entranceBlock.0 %afterIfBlock.0\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t12.mx
@@ -7862,7 +8106,11 @@
     str1str2str3str4str5str6str7str8str9str10
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %forStepBlock.1\n union %creatorBodyBlock.0\
+    \ %creatorStepBlock.0\n union %afterCreatorBlock.0 %returnBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n idom %thenBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t32.mx
@@ -7870,7 +8118,9 @@
   Compiler-Output: '-66060719 -323398799 -743275679
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterWhileBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %whileCondBlock.0\n idom %whileBodyBlock.0\
+    \ %whileCondBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t63.mx
@@ -7898,7 +8148,12 @@
     (612, -469, -630)
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e5.mx
@@ -7910,7 +8165,11 @@
     k15d
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %ifCondBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %afterIfBlock.0 %forStepBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %afterIfBlock.0\
+    \ %forCondBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t57.mx
@@ -7920,7 +8179,17 @@
     989898983 2 2
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %forBodyBlock.0 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %forStepBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %thenBodyBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.0 %ifCondBlock.2\n union %forCondBlock.0\
+    \ %forBodyBlock.0\n union %forCondBlock.1 %forBodyBlock.1\n union %forCondBlock.0\
+    \ %ifCondBlock.3\n union %forCondBlock.1 %ifCondBlock.4\n union %afterIfBlock.3\
+    \ %forStepBlock.0\n union %afterIfBlock.4 %forStepBlock.1\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %afterIfBlock.1 %returnBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n idom %elseBodyBlock.0 %afterIfBlock.1\n idom %thenBodyBlock.3\
+    \ %returnBlock.0\n idom %thenBodyBlock.4 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t16.mx
@@ -7932,23 +8201,23 @@
     7035
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %returnBlock.0\n idom %afterIfBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t47.mx
-  Compiler-ExitCode: 1
-  Compiler-Output: '7053
-
-    1035
-
-    7035
-
-    '
-  Compiler-Stderr: "Exception in thread \"main\" java.lang.NullPointerException\n\
-    \ \tat IR.IRBasicBlock.union(IRBasicBlock.java:369)\n \tat optimize.CFGSimplifier.removeUnusedBlock(CFGSimplifier.java:65)\n\
-    \ \tat optimize.CFGSimplifier.<init>(CFGSimplifier.java:28)\n \tat Main.main(Main.java:72)\n"
+  Compiler-ExitCode: 30
+  Compiler-Output: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n union %entranceBlock.0\
+    \ %afterLogicalAnd.0\n union %entranceBlock.0 %elseBodyBlock.0\n union %entranceBlock.0\
+    \ %afterIfBlock.0\n union %entranceBlock.0 %afterLogicalAnd.1\n union %entranceBlock.0\
+    \ %afterLogicalAnd.2\n union %entranceBlock.0 %thenBodyBlock.1\n union %entranceBlock.0\
+    \ %afterIfBlock.1\n"
   stage: codegen
-  verdict: 'Failed: Compiled Output Mismatch'
+  verdict: Accepted
 - Case: ./t22.mx
   Compiler-ExitCode: 0
   Compiler-Output: '888
@@ -8040,13 +8309,27 @@
     -1
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.2 %forStepBlock.2\n union %afterForBlock.2\
+    \ %forStepBlock.1\n union %forBodyBlock.3 %forStepBlock.3\n union %forBodyBlock.5\
+    \ %forStepBlock.5\n union %afterForBlock.5 %forStepBlock.4\n union %afterForBlock.6\
+    \ %returnBlock.0\n union %forBodyBlock.7 %forStepBlock.7\n union %afterForBlock.7\
+    \ %forStepBlock.6\n union %entranceBlock.0 %returnBlock.0\n idom %afterForBlock.4\
+    \ %forCondBlock.6\n idom %afterForBlock.3 %forCondBlock.4\n idom %afterForBlock.1\
+    \ %forCondBlock.3\n idom %afterForBlock.0 %forCondBlock.1\n idom %entranceBlock.0\
+    \ %forCondBlock.0\n idom %forBodyBlock.0 %forCondBlock.0\n idom %afterForBlock.2\
+    \ %forCondBlock.1\n idom %forBodyBlock.1 %forCondBlock.2\n idom %forBodyBlock.2\
+    \ %forCondBlock.2\n idom %forBodyBlock.3 %forCondBlock.3\n idom %afterForBlock.5\
+    \ %forCondBlock.4\n idom %forBodyBlock.4 %forCondBlock.5\n idom %forBodyBlock.5\
+    \ %forCondBlock.5\n idom %afterForBlock.7 %forCondBlock.6\n idom %forBodyBlock.6\
+    \ %forCondBlock.7\n idom %forBodyBlock.7 %forCondBlock.7\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t39.mx
   Compiler-ExitCode: 10
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t68.mx
@@ -8070,7 +8353,14 @@
     4
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forCondBlock.0 %forBodyBlock.0\n union %forCondBlock.0\
+    \ %ifCondBlock.0\n union %thenBodyBlock.0 %afterForBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %thenBodyBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.2\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.2\
+    \ %ifCondBlock.3\n union %elseBodyBlock.0 %afterIfBlock.3\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.1 %afterIfBlock.1\n idom %thenBodyBlock.2\
+    \ %forStepBlock.1\n idom %elseBodyBlock.0 %forStepBlock.1\n idom %thenBodyBlock.3\
+    \ %afterForBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t29.mx
@@ -8082,19 +8372,24 @@
     171
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t58.mx
   Compiler-ExitCode: 0
   Compiler-Output: '11670000'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.1\
+    \ %returnBlock.0\n union %forBodyBlock.2 %ifCondBlock.0\n union %afterForBlock.2\
+    \ %forStepBlock.1\n union %afterIfBlock.0 %forStepBlock.2\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t48.mx
   Compiler-ExitCode: 20
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t19.mx
@@ -8104,19 +8399,27 @@
     10
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %ifCondBlock.2\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.1 %forStepBlock.1\n union %forBodyBlock.2\
+    \ %forStepBlock.2\n union %forBodyBlock.3 %forStepBlock.3\n union %afterForBlock.3\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t59.mx
   Compiler-ExitCode: 0
   Compiler-Output: '284456'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %afterWhileBlock.1 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %entranceBlock.0 %returnBlock.0\n idom %forBodyBlock.1\
+    \ %whileCondBlock.1\n idom %whileBodyBlock.1 %whileCondBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t49.mx
   Compiler-ExitCode: 2
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t18.mx
@@ -10122,19 +10425,28 @@
     999 999
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %whileBodyBlock.0 %ifCondBlock.1\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %forBodyBlock.2 %forStepBlock.2\n union %afterForBlock.2\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %returnBlock.0\n idom %afterWhileBlock.0 %returnBlock.0\n idom %thenBodyBlock.1\
+    \ %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./e10.mx
   Compiler-ExitCode: 0
   Compiler-Output: 'YES'
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %elseBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t38.mx
   Compiler-ExitCode: 210
   Compiler-Output: ''
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterWhileBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./t28.mx
@@ -10146,7 +10458,8 @@
     171
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./std/queue.mt
@@ -10154,7 +10467,15 @@
   Compiler-Output: 'Passed tests.
 
     '
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %ifCondBlock.0\n union %forBodyBlock.1 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %ifCondBlock.2\n union %afterIfBlock.2 %ifCondBlock.3\n union %afterIfBlock.3\
+    \ %forStepBlock.1\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./sorting/bubble_sort.mx
@@ -10163,7 +10484,11 @@
     \ 18 19 19 19 20 20 21 21 22 24 25 25 26 26 27 27 28 29 29 30 31 31 34 36 37 41\
     \ 41 44 44 45 47 47 47 48 48 49 50 50 51 53 53 55 55 56 56 58 62 64 65 66 67 69\
     \ 69 69 69 70 71 71 73 73 74 77 78 79 85 87 87 87 92 93 95 95 96 96 96 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.1 %forStepBlock.1\n union %afterForBlock.1\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %forStepBlock.1\n idom %afterIfBlock.0 %forStepBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./sorting/selection_sort.mx
@@ -10172,7 +10497,11 @@
     \ 18 19 19 19 20 20 21 21 22 24 25 25 26 26 27 27 28 29 29 30 31 31 34 36 37 41\
     \ 41 44 44 45 47 47 47 48 48 49 50 50 51 53 53 55 55 56 56 58 62 64 65 66 67 69\
     \ 69 69 69 70 71 71 73 73 74 77 78 79 85 87 87 87 92 93 95 95 96 96 96 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./sorting/quick_sort.mx
@@ -10181,7 +10510,12 @@
     \ 18 19 19 19 20 20 21 21 22 24 25 25 26 26 27 27 28 29 29 30 31 31 34 36 37 41\
     \ 41 44 44 45 47 47 47 48 48 49 50 50 51 53 53 55 55 56 56 58 62 64 65 66 67 69\
     \ 69 69 69 70 71 71 73 73 74 77 78 79 85 87 87 87 92 93 95 95 96 96 96 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %ifCondBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %afterIfBlock.0 %forStepBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %forBodyBlock.1 %forStepBlock.1\n union %afterForBlock.1\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %returnBlock.0\n idom %afterIfBlock.0 %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./sorting/merge_sort.mx
@@ -10190,7 +10524,21 @@
     \ 18 19 19 19 20 20 21 21 22 24 25 25 26 26 27 27 28 29 29 30 31 31 34 36 37 41\
     \ 41 44 44 45 47 47 47 48 48 49 50 50 51 53 53 55 55 56 56 58 62 64 65 66 67 69\
     \ 69 69 69 70 71 71 73 73 74 77 78 79 85 87 87 87 92 93 95 95 96 96 96 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %ifCondBlock.1\n union %afterIfBlock.1\
+    \ %ifCondBlock.2\n union %entranceBlock.0 %ifCondBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.2 %afterIfBlock.2\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.2\n idom %thenBodyBlock.0 %returnBlock.0\n idom %afterIfBlock.0\
+    \ %returnBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./shortest_path/floyd.mx
@@ -10581,7 +10929,16 @@
     \ 34 28 21 30 40 33 45 24 9 47 48 22 31 27 39 30 47 41 39 30 26 32 29 54 29 43\
     \ 54 40 33 47 46 29 13 38 28 32 33 29 48 16 35 29 39 37 28 16 45 28 34 37 27 38\
     \ 26 23 58 20 41 41 24 18 15 34 38 37 42 0 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %creatorBodyBlock.0 %creatorStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %forStepBlock.0\n union %forBodyBlock.2\
+    \ %forStepBlock.2\n union %forBodyBlock.3 %forStepBlock.3\n union %afterForBlock.3\
+    \ %returnBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterForBlock.3\
+    \ %returnBlock.0\n union %forBodyBlock.2 %ifCondBlock.0\n union %afterForBlock.2\
+    \ %forStepBlock.1\n union %forBodyBlock.4 %ifCondBlock.1\n union %afterForBlock.4\
+    \ %forStepBlock.3\n union %afterIfBlock.0 %forStepBlock.2\n union %afterIfBlock.1\
+    \ %forStepBlock.4\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.1 %afterIfBlock.1\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.1\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./shortest_path/spfa.mx
@@ -10972,7 +11329,23 @@
     \ 34 28 21 30 40 33 45 24 9 47 48 22 31 27 39 30 47 41 39 30 26 32 29 54 29 43\
     \ 54 40 33 47 46 29 13 38 28 32 33 29 48 16 35 29 39 37 28 16 45 28 34 37 27 38\
     \ 26 23 58 20 41 41 24 18 15 34 38 37 42 0 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.1 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %afterForBlock.0\
+    \ %whileCondBlock.0\n idom %afterForBlock.1 %whileCondBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted
 - Case: ./shortest_path/dijkstra.mx
@@ -11363,6 +11736,35 @@
     \ 34 28 21 30 40 33 45 24 9 47 48 22 31 27 39 30 47 41 39 30 26 32 29 54 29 43\
     \ 54 40 33 47 46 29 13 38 28 32 33 29 48 16 35 29 39 37 28 16 45 28 34 37 27 38\
     \ 26 23 58 20 41 41 24 18 15 34 38 37 42 0 \n"
-  Compiler-Stderr: ''
+  Compiler-Stderr: "union %forBodyBlock.0 %forStepBlock.0\n union %forBodyBlock.1\
+    \ %forStepBlock.1\n union %afterForBlock.1 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %ifCondBlock.0\n union %afterIfBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %forBodyBlock.0\
+    \ %forStepBlock.0\n union %afterForBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %whileBodyBlock.0 %ifCondBlock.0\n union %afterWhileBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %returnBlock.0\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %entranceBlock.0 %ifCondBlock.0\n union %afterIfBlock.0\
+    \ %ifCondBlock.1\n union %afterIfBlock.1 %ifCondBlock.2\n union %entranceBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %afterForBlock.0\
+    \ %returnBlock.0\n union %forBodyBlock.0 %forStepBlock.0\n union %whileBodyBlock.0\
+    \ %ifCondBlock.0\n union %afterWhileBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.1\n union %afterForBlock.0 %returnBlock.0\n union %forBodyBlock.1\
+    \ %ifCondBlock.0\n union %afterForBlock.1 %forStepBlock.0\n union %afterIfBlock.0\
+    \ %forStepBlock.1\n union %entranceBlock.0 %returnBlock.0\n idom %thenBodyBlock.0\
+    \ %afterIfBlock.0\n idom %entranceBlock.0 %whileCondBlock.0\n idom %whileBodyBlock.0\
+    \ %whileCondBlock.0\n idom %entranceBlock.0 %forCondBlock.0\n idom %forBodyBlock.0\
+    \ %forCondBlock.0\n idom %thenBodyBlock.0 %afterWhileBlock.0\n idom %thenBodyBlock.2\
+    \ %returnBlock.0\n idom %afterIfBlock.2 %returnBlock.0\n idom %afterForBlock.0\
+    \ %whileCondBlock.0\n idom %thenBodyBlock.0 %whileCondBlock.0\n idom %afterForBlock.1\
+    \ %whileCondBlock.0\n idom %thenBodyBlock.1 %forStepBlock.1\n idom %afterIfBlock.1\
+    \ %forStepBlock.1\n idom %thenBodyBlock.0 %afterIfBlock.0\n idom %elseBodyBlock.0\
+    \ %afterIfBlock.0\n simplify-------------------------\n"
   stage: codegen
   verdict: Accepted

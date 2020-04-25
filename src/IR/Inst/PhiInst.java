@@ -132,4 +132,15 @@ public class PhiInst extends IRInst {
 		}
 		return res;
 	}
+	
+	public void simplify() {
+		if (bbs.size() == 1) {
+			assert symbols.size() == 1;
+			IRSymbol symbol = symbols.get(0);
+			res.replaceUse(symbol);
+			IRBasicBlock bb = bbs.get(0);
+			bb.removePhiUse(this);
+			removeItself();
+		}
+	}
 }

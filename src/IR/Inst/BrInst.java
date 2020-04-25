@@ -42,6 +42,7 @@ public class BrInst extends IRInst {
 	
 	private void removeTrue() {
 		if (ifTrue != null) {
+			ifTrue.removeIncomingBlockInPhi(currentBlock);
 			currentBlock.removeSuccessor(ifTrue);
 			ifTrue.removePredecessor(currentBlock);
 			ifTrue = null;
@@ -50,6 +51,7 @@ public class BrInst extends IRInst {
 	
 	private void removeFalse() {
 		if (ifFalse != null) {
+			ifFalse.removeIncomingBlockInPhi(currentBlock);
 			currentBlock.removeSuccessor(ifFalse);
 			ifFalse.removePredecessor(currentBlock);
 			ifFalse = null;
@@ -66,12 +68,13 @@ public class BrInst extends IRInst {
 	}
 	
 	public void change(IRBasicBlock block) {
-		removeCond();
-		removeTrue();
-		removeFalse();
-		ifTrue = block;
-		currentBlock.addSuccessor(block);
-		block.addPredecessor(currentBlock);
+		assert (block == ifTrue) || (block == ifFalse);
+		if (block == ifTrue) {
+			changeTrue();
+		}
+		else if (block == ifFalse) {
+			changeFalse();
+		}
 	}
 	
 	public void changeTrue() {

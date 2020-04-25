@@ -69,7 +69,8 @@ public class Main {
 		new SSAConstructor(module);
 		new DCE(module);
 		new SCCP(module);
-		//new CFGSimplifier(module); 
+		//System.err.println("simplify-------------------------");
+		new CFGSimplifier(module); 
 		
 		//System.err.println("Printing IR--------------");
 		IRPrinter printer = new IRPrinter();

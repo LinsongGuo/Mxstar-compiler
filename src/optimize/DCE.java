@@ -93,7 +93,7 @@ public class DCE extends PASS {
 			for (IRInst inst : instList) {
 				if (!marked.contains(inst)) {
 					if (inst instanceof BrInst) {
-					//	System.err.println("idom " + block + " " + block.getRIdom());
+						//System.err.println("idom " + block + " " + block.getRIdom());
 						((BrInst) inst).change(block.getRIdom());			
 					}
 					else {

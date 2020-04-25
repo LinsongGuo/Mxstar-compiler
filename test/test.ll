@@ -26,30 +26,23 @@ declare i1 @__stringGreaterEqual(i8* %str1, i8* %str2)
 define i32 @main() {
 entranceBlock.0:
     call void @__init__()
-    br label %afterLogicalAnd.0
+    %call.0 = call i32 @__getInt()
+    br label %forCondBlock.0
 
-elseBodyBlock.0:
-    br label %afterIfBlock.0
+forCondBlock.0:
+    %i.4 = phi i32  [ 0, %entranceBlock.0 ],  [ %prefixIncr.0, %forBodyBlock.0 ]
+    %ans.3 = phi i32  [ 0, %entranceBlock.0 ],  [ %add.0, %forBodyBlock.0 ]
+    %slt.0 = icmp slt i32 %i.4, 10
+    br i1 %slt.0, label %forBodyBlock.0, label %afterForBlock.0
 
-afterIfBlock.0:
-    br label %afterLogicalAnd.1
+forBodyBlock.0:
+    %add.0 = add i32 %ans.3, %i.4
+    %prefixIncr.0 = add i32 %i.4, 1
+    br label %forCondBlock.0
 
-afterLogicalAnd.0:
-    br label %elseBodyBlock.0
-
-thenBodyBlock.1:
-    br label %afterIfBlock.1
-
-afterIfBlock.1:
-    %c.7 = phi i32  [ 20, %afterLogicalAnd.2 ],  [ 30, %thenBodyBlock.1 ]
-    call void @__printlnInt(i32 %c.7)
-    ret i32 %c.7
-
-afterLogicalAnd.1:
-    br label %afterLogicalAnd.2
-
-afterLogicalAnd.2:
-    br label %thenBodyBlock.1
+afterForBlock.0:
+    call void @__printlnInt(i32 %ans.3)
+    ret i32 0
 
 }
 
