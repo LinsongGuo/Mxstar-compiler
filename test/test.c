@@ -1,6 +1,4 @@
-#include <stdio.h>
-int main(void){
-	int x = 10;
-	printf("%d", x);
-	return 0; 
+int main() {
+	return 0;
 }
+//riscv32-unknown-elf-gcc -march=rv32i -mabi=ilp32 -S test.c

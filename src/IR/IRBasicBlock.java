@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import IR.Inst.BrInst;
 import IR.Inst.IRInst;
+import IR.Inst.MoveInst;
 import IR.Inst.PhiInst;
 import IR.Symbol.IRRegister;
 import utility.Pair;
@@ -49,6 +50,7 @@ public class IRBasicBlock {
 		phiMap = new ArrayList<Pair<IRRegister, PhiInst>>();
 		phiUse = new HashSet<PhiInst>(); 
 		executable = false;
+		moveList = new ArrayList<MoveInst>();
 	}
 	
 	public void setCurrentFunction(IRFunction function) {
@@ -407,6 +409,14 @@ public class IRBasicBlock {
 		return phiMap;
 	}
 	
+	public ArrayList<PhiInst> getAllPhiInst() {
+		 ArrayList<PhiInst> phiInsts = new ArrayList<PhiInst>();
+		 for (IRInst inst = head; inst instanceof PhiInst; inst = inst.getNext()) {
+			 phiInsts.add((PhiInst) inst);
+		 }
+		 return phiInsts;
+	}
+	
 	public void mergePhiMap() {
 		for (int i = phiMap.size() - 1; i >= 0; --i) {
 			PhiInst phi = phiMap.get(i).second;
@@ -451,5 +461,63 @@ public class IRBasicBlock {
 	
 	public boolean getExecutable() {
 		return executable;
+	}
+	
+	//for SSA destruction
+	private ArrayList<MoveInst> moveList;
+	
+	public boolean hasMove() {
+		return !moveList.isEmpty();
+	}
+	
+	public ArrayList<MoveInst> getMoveList() {
+		return moveList;
+	}
+	
+	public MoveInst getFirstMove() {
+		return moveList.get(0);
+	}
+	
+	public void addMoveInst(MoveInst inst) {
+		moveList.add(inst);
+	}
+	
+	public MoveInst MoveInstOutsideCircle() {
+		for (MoveInst move : moveList) {
+			boolean flag = true;
+			for (MoveInst other : moveList) {
+				if (move.getRes().equals(other.getSrc())) {
+					//System.err.println(move.getRes());
+					flag = false;
+					break;
+				}
+			}
+			if (flag) {
+				//System.err.println("return " + move);
+				return move;
+			}
+		}
+		return null;
+	}
+	
+	public void mergeMoveInst(MoveInst inst) {
+		if (moveList.contains(inst))
+			moveList.remove(inst);
+		inst.setCurrentBlock(this);
+		inst.InitDefUse();
+		IRInst tailPrev = tail.getPrev();
+		if (tailPrev == null) {
+			assert head == tail;
+			head = inst;
+			head.setNext(tail);
+			tail.setPrev(inst);
+		}
+		else {
+			//System.err.println("insert " + inst + " " + tailPrev);
+			tailPrev.setNext(inst);
+			inst.setPrev(tailPrev);
+			tail.setPrev(inst);
+			inst.setNext(tail);
+		}
 	}
 }	

@@ -34,6 +34,7 @@ public interface IRVisitor {
 	abstract public void visit(PhiInst node);
 	abstract public void visit(RetInst node);
 	abstract public void visit(StoreInst node);
+	abstract public void visit(MoveInst node);
 	
 	//Symbol
 	abstract public void visit(IRSymbol node);

@@ -20,6 +20,7 @@ import IR.Inst.GetElementPtrInst;
 import IR.Inst.IRInst;
 import IR.Inst.IcmpInst;
 import IR.Inst.LoadInst;
+import IR.Inst.MoveInst;
 import IR.Inst.PhiInst;
 import IR.Inst.RetInst;
 import IR.Inst.StoreInst;
@@ -363,6 +364,12 @@ public class SCCP extends PASS implements IRVisitor {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public void visit(MoveInst node) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
 	public void visit(IRSymbol node) {
@@ -465,5 +472,7 @@ public class SCCP extends PASS implements IRVisitor {
 		// TODO Auto-generated method stub
 		
 	}
+
+
 
 }

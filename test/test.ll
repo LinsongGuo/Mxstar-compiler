@@ -27,17 +27,19 @@ define i32 @main() {
 entranceBlock.0:
     call void @__init__()
     %call.0 = call i32 @__getInt()
+   	move %i.4, 0
+    move %ans.3, 0
     br label %forCondBlock.0
 
 forCondBlock.0:
-    %i.4 = phi i32  [ 0, %entranceBlock.0 ],  [ %prefixIncr.0, %forBodyBlock.0 ]
-    %ans.3 = phi i32  [ 0, %entranceBlock.0 ],  [ %add.0, %forBodyBlock.0 ]
-    %slt.0 = icmp slt i32 %i.4, 10
+    %slt.0 = icmp slt i32 %i.4, %call.0
     br i1 %slt.0, label %forBodyBlock.0, label %afterForBlock.0
 
 forBodyBlock.0:
     %add.0 = add i32 %ans.3, %i.4
     %prefixIncr.0 = add i32 %i.4, 1
+    move %i.4, %prefixIncr.0
+    move %ans.3, %add.0
     br label %forCondBlock.0
 
 afterForBlock.0:

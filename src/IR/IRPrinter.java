@@ -168,6 +168,11 @@ public class IRPrinter implements IRVisitor {
 	}
 
 	@Override
+	public void visit(MoveInst node) {
+		printer.println(tab + node.toString());
+	}
+	
+	@Override
 	public void visit(IRType node) {
 		// TODO Auto-generated method stub
 	}
@@ -236,4 +241,6 @@ public class IRPrinter implements IRVisitor {
 	public void visit(IRNull node) {
 		// TODO Auto-generated method stub
 	}
+
+	
 }

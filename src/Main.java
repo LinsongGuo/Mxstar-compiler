@@ -14,6 +14,7 @@ import optimize.DCE;
 import optimize.DominatorTree;
 import optimize.SCCP;
 import optimize.SSAConstructor;
+import optimize.SSADestructor;
 import IR.*;
 
 public class Main {
@@ -71,6 +72,9 @@ public class Main {
 		new SCCP(module);
 		//System.err.println("simplify-------------------------");
 		new CFGSimplifier(module); 
+		System.err.println("SSA destruction.");
+		new SSADestructor(module);
+		System.err.println("SSA destruction finished.");
 		
 		//System.err.println("Printing IR--------------");
 		IRPrinter printer = new IRPrinter();
