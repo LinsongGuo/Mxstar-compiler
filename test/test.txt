@@ -1,8 +1,0 @@
-class A {
-	int x, y;
-};
-A a;
-int main() {
-	if (a == null)printInt(a.x);
-	return 0;
-}
