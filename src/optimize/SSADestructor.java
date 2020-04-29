@@ -42,7 +42,7 @@ public class SSADestructor extends PASS {
 					else {
 						//convert critical edge to noncritical edge 
 						//by splitting critical edge
-						IRBasicBlock newBlock = new IRBasicBlock("newBlock");
+						IRBasicBlock newBlock = new IRBasicBlock("criticalEdge");
 						function.addBasicBlock(newBlock);
 						newBlock.addMoveInst(new MoveInst(res, symbol));
 						newBlock.addInst(new BrInst(newBlock, block));

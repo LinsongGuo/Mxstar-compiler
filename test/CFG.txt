@@ -1,12 +1,10 @@
 @main
-%entranceBlock.0  -->  %forCondBlock.0  
+%entranceBlock.0  -->  %thenBodyBlock.0  %afterIfBlock.0  
 -->  %entranceBlock.0
-%forCondBlock.0  -->  %forBodyBlock.0  %afterForBlock.0  
-%entranceBlock.0  %forBodyBlock.0  -->  %forCondBlock.0
-%forBodyBlock.0  -->  %forCondBlock.0  
-%forCondBlock.0  -->  %forBodyBlock.0
-%afterForBlock.0  -->  
-%forCondBlock.0  -->  %afterForBlock.0
+%thenBodyBlock.0  -->  %afterIfBlock.0  
+%entranceBlock.0  -->  %thenBodyBlock.0
+%afterIfBlock.0  -->  
+%thenBodyBlock.0  %entranceBlock.0  -->  %afterIfBlock.0
 
 @__init__
 %entranceBlock.0  -->  

@@ -1,17 +1,26 @@
-	.file	"test.c"
-	.option nopic
 	.text
-	.align	2
-	.globl	main
-	.type	main, @function
+
+	.globl	main					 # -- Begin function main
+	.p2align	2
+	.type	main,@function
 main:
-	addi	sp,sp,-16
-	sw	s0,12(sp)
-	addi	s0,sp,16
-	li	a5,0
-	mv	a0,a5
-	lw	s0,12(sp)
-	addi	sp,sp,16
-	jr	ra
-	.size	main, .-main
-	.ident	"GCC: (GNU) 8.2.0"
+#entry_0:
+	addi	sp, sp, -16
+	sw	ra,0(sp)
+	la	a0, .str
+	mv	a1, a0
+	call	__stringAdd
+	call	println
+	mv	a0, zero
+	lw	ra, 0(sp)
+	addi	sp, sp, 16
+	ret 
+						 # -- End function
+	.section	.sdata,"aw",@progbits
+	.globl	s					#@s
+	.p2align	2
+s:
+	.word	0
+	.globl	.str					#@.str
+.str:
+	.asciz	"abcd"

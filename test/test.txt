@@ -1,8 +1,8 @@
+class A {
+	int x, y;
+};
+A a;
 int main() {
-	int i, n = getInt(), ans = 0;
-	for (i = 0; i < n; ++i) {
-		ans = ans + i;
-	}
-	printlnInt(ans);
+	if (a == null)printInt(a.x);
 	return 0;
 }

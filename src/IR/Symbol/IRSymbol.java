@@ -8,7 +8,7 @@ import IR.Type.IRType;
 
 abstract public class IRSymbol {
 	protected IRType type;
-	private HashSet<IRInst> useList, defList;
+	protected HashSet<IRInst> useList, defList;
 	
 	public IRSymbol(IRType type) {
 		this.type = type;

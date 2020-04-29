@@ -1,12 +1,12 @@
-int x = 0;
-class A {
-	public: 
-    int x, y;
-    A() {;}
-    A(int a, int b) {x = a; y = b;}
+class A{
+    public:
+    int a, b;
 };
-A a;
 
 int main() {
-
+    int n= 10, i =0 ;
+    for (i = 0; i < n; ++i) {
+        
+    }
+    return 0;
 }

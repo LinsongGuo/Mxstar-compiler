@@ -88,7 +88,11 @@ public class IcmpInst extends IRInst {
 		right.addUse(this);
 		result.addDef(this);
 	}
-
+	
+	public IcmpOpType getOp() {
+		return op;
+	}
+	
 	public IRSymbol getLeft() {
 		return left;
 	}

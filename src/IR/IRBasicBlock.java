@@ -7,6 +7,7 @@ import IR.Inst.IRInst;
 import IR.Inst.MoveInst;
 import IR.Inst.PhiInst;
 import IR.Symbol.IRRegister;
+import Riscv.RvBlock;
 import utility.Pair;
 
 public class IRBasicBlock {
@@ -519,5 +520,16 @@ public class IRBasicBlock {
 			tail.setPrev(inst);
 			inst.setNext(tail);
 		}
+	}
+	
+	//for instruction selection
+	private RvBlock rvBlock;
+	
+	public void setRvBlock(RvBlock rvBlock) {
+		this.rvBlock = rvBlock;
+	}
+	
+	public RvBlock getRvBlock() {
+		return rvBlock;
 	}
 }	

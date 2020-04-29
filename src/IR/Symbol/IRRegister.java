@@ -1,7 +1,10 @@
 package IR.Symbol;
 
 import IR.IRVisitor;
+import IR.Inst.BrInst;
+import IR.Inst.IRInst;
 import IR.Type.IRType;
+import Riscv.Operand.RvRegister;
 
 public class IRRegister extends IRSymbol {	
 	protected String name;
@@ -46,4 +49,24 @@ public class IRRegister extends IRSymbol {
 		return constant;
 	}
 	
+	//for instruction selection
+	private RvRegister rvReg;
+	
+	public void setRvReg(RvRegister rvReg) {
+		this.rvReg = rvReg;
+	}
+	
+	public RvRegister getRvReg() {
+		return rvReg;
+	}
+	
+	public boolean onlyBeUsedByBranch() {
+		for (IRInst inst : useList) {
+			if (!(inst instanceof BrInst)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

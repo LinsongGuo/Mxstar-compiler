@@ -85,7 +85,11 @@ public class BitwiseBinOpInst extends IRInst {
 		right.addUse(this);
 		result.addDef(this);
 	}
-
+	
+	public BitwiseBinOpType getOp() {
+		return op;
+	}
+	
 	public IRSymbol getLeft() {
 		return left;
 	}

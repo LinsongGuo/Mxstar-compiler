@@ -72,9 +72,9 @@ public class Main {
 		new SCCP(module);
 		//System.err.println("simplify-------------------------");
 		new CFGSimplifier(module); 
-		System.err.println("SSA destruction.");
+		//System.err.println("SSA destruction.");
 		new SSADestructor(module);
-		System.err.println("SSA destruction finished.");
+		//System.err.println("SSA destruction finished.");
 		
 		//System.err.println("Printing IR--------------");
 		IRPrinter printer = new IRPrinter();

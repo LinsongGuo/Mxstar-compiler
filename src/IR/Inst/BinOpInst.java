@@ -93,6 +93,10 @@ public class BinOpInst extends IRInst {
 		result.addDef(this);
 	} 
 	
+	public BinOpType getOp() {
+		return op;
+	}
+	
 	public IRSymbol getLeft() {
 		return left;
 	}

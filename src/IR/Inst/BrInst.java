@@ -7,6 +7,7 @@ import IR.IRVisitor;
 import IR.Symbol.IRConstBool;
 import IR.Symbol.IRRegister;
 import IR.Symbol.IRSymbol;
+import Riscv.Inst.RvInst;
 
 public class BrInst extends IRInst {
 	private IRSymbol cond;
@@ -21,6 +22,7 @@ public class BrInst extends IRInst {
 		this.cond = cond;
 		this.ifTrue = ifTrue;
 		this.ifFalse = ifFalse;
+		this.rvInst = null;
 	}
 	
 	@Override
@@ -168,5 +170,16 @@ public class BrInst extends IRInst {
 		if (cond != null && (cond instanceof IRRegister)) 
 			res.add((IRRegister) cond);
 		return res;
+	}
+	
+	//for instruction selection
+	private RvInst rvInst;
+	
+	public void setRvInst(RvInst rvInst) {
+		this.rvInst = rvInst;
+	}
+	
+	public RvInst getRvInst() {
+		return rvInst;
 	}
 }
