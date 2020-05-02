@@ -16,6 +16,10 @@ public class IRGlobalString extends IRRegister {
 	public String toString() {
 		return "@" + name;
 	}
+	
+	public IRConstString getValue() {
+		return value;
+	} 
 
 	@Override
 	public void accept(IRVisitor visitor) {

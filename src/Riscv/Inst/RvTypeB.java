@@ -7,7 +7,18 @@ import Riscv.Operand.RvRegister;
 public class RvTypeB extends RvInst {
 	
 	public enum Op{ 
-		beq, bne, ble, bge, blt, bgt
+		beq("beq"), bne("bne"), ble("ble"), bge("bge"), blt("blt"), bgt("bgt");
+		
+		private String str;
+		
+		private Op(String str) {
+			this.str = str;
+		}
+		
+		@Override
+		public String toString() {
+			return str;
+		}
 	}
 	
 	private Op op;
@@ -37,6 +48,11 @@ public class RvTypeB extends RvInst {
 	@Override
 	public void accept(RvVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "\t" + op + "     " + rs + "," + rt + "," + offset.getName();
 	}
 
 }

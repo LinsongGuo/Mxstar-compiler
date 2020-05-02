@@ -7,7 +7,18 @@ import Riscv.Operand.RvRegister;
 public class RvTypeR extends RvInst {
 	
 	public enum Op{
-        add, sub, mul, div, rem, and, or, xor, sll, sra, slt, sltu
+        add("add"), sub("sub"), mul("mul"), div("div"), rem("rem"), and("and"), or("or"), xor("xor"), sll("sll"), sra("sra"), slt("slt"), sltu("sltu");
+		
+		private String str;
+		
+		private Op(String str) {
+			this.str = str;
+		}
+		
+		@Override
+		public String toString() {
+			return str;
+		}
     }
 	
 	private Op op;
@@ -36,6 +47,16 @@ public class RvTypeR extends RvInst {
 	@Override
 	public void accept(RvVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		if (op == Op.or)
+			return "\tor      " + rd + "," + rs1 + "," + rs2;
+		else if (op == Op.sltu)
+			return "\tsltu    " + rd + ","  + rs1 + "," + rs2;
+		else 
+			return "\t" +  op + "     " + rd + "," + rs1 + "," + rs2;
 	}
 
 	

@@ -10,4 +10,9 @@ public class RvImm extends RvOperand {
 	public int getValue() {
 		return value;
 	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(value);
+	}
 }

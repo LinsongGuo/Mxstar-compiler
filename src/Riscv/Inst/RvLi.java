@@ -28,4 +28,9 @@ public class RvLi extends RvInst {
 		visitor.visit(this);
 	}
 
+	@Override
+	public String toString() {
+		return "\tli      " + rd + "," + imm;
+	}
+
 }

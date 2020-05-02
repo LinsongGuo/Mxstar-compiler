@@ -1,5 +1,10 @@
 package Riscv.Operand;
 
-public class RvOperand {
+import Riscv.RvVisitor;
+
+abstract public class RvOperand {
+	
+	@Override
+	abstract public String toString();
 
 }

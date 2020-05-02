@@ -529,7 +529,7 @@ public class IRBasicBlock {
 		this.rvBlock = rvBlock;
 	}
 	
-	public RvBlock getRvBlock() {
+	public RvBlock toRvBlock() {
 		return rvBlock;
 	}
 }	

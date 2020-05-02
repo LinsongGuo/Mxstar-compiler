@@ -21,7 +21,7 @@ public class IRNull extends IRConst {
 	}
 
 	@Override
-	boolean equals(IRConst other) {
+	public boolean valueEquals(IRConst other) {
 		return (other instanceof IRNull);
 	}
 

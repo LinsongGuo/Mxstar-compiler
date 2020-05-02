@@ -15,6 +15,10 @@ public class IRGlobalVariable extends IRRegister {
 		this.init = init;
 	}
 	
+	public IRSymbol getInit() {
+		return init;
+	}
+	
 	@Override
 	public String toString() {
 		return "@" + super.name;
@@ -26,6 +30,7 @@ public class IRGlobalVariable extends IRRegister {
 	}
 	
 	public String declarationString() {
-		return "@" + name + " = global " + ((IRPtrType) type).getType().toString() + " " + init.toString();
+		return "@" + name + " = global " + ((IRPtrType) type).getType().toString() + " " +
+				(init instanceof IRGlobalString ? "null" : init.toString());
 	}
 }

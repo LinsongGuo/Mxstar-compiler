@@ -15,6 +15,6 @@ abstract public class IRConst extends IRSymbol {
 	@Override
 	abstract public void accept(IRVisitor visitor);
 
-	abstract boolean equals(IRConst other);
+	abstract public boolean valueEquals(IRConst other);
 
 }

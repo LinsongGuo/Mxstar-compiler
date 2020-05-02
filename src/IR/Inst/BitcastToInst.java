@@ -39,7 +39,11 @@ public class BitcastToInst extends IRInst {
 	public IRRegister getRes() {
 		return dest;
 	}
-
+	
+	public IRSymbol getSrc() {
+		return src;
+	}
+	
 	@Override
 	public void removeAllUse() {
 		src.removeUse(this);

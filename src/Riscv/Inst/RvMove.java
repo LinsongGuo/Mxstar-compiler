@@ -26,4 +26,9 @@ public class RvMove extends RvInst {
 	public void accept(RvVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	@Override
+	public String toString() {
+		return "\tmv      " + rd + "," + rs;
+	}
 }

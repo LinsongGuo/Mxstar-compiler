@@ -22,7 +22,6 @@ public class BrInst extends IRInst {
 		this.cond = cond;
 		this.ifTrue = ifTrue;
 		this.ifFalse = ifFalse;
-		this.rvInst = null;
 	}
 	
 	@Override
@@ -172,14 +171,4 @@ public class BrInst extends IRInst {
 		return res;
 	}
 	
-	//for instruction selection
-	private RvInst rvInst;
-	
-	public void setRvInst(RvInst rvInst) {
-		this.rvInst = rvInst;
-	}
-	
-	public RvInst getRvInst() {
-		return rvInst;
-	}
 }

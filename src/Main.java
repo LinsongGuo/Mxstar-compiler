@@ -9,6 +9,8 @@ import parser.*;
 import AST.*;
 import utility.*;
 import SemanticChecker.*;
+import codegen.InstructionSelection;
+import codegen.RvPrinter;
 import optimize.CFGSimplifier;
 import optimize.DCE;
 import optimize.DominatorTree;
@@ -16,6 +18,8 @@ import optimize.SCCP;
 import optimize.SSAConstructor;
 import optimize.SSADestructor;
 import IR.*;
+import Riscv.RvModule;
+import Riscv.Operand.RegisterTable;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
@@ -62,22 +66,31 @@ public class Main {
 		IRBuilder ir = new IRBuilder(globalScope, stringTemplate, errorReminder);
 		ir.visit(root);
 		
-		IRModule module = ir.getModule(); 
+		IRModule irModule = ir.getModule(); 
 		
 		//System.err.println("optimizing------------------");
-		new CFGSimplifier(module); 
-		new DominatorTree(module);
-		new SSAConstructor(module);
-		new DCE(module);
-		new SCCP(module);
-		//System.err.println("simplify-------------------------");
-		new CFGSimplifier(module); 
+		new CFGSimplifier(irModule); 
+		new DominatorTree(irModule);
+		new SSAConstructor(irModule);
+		new DCE(irModule);
+		new SCCP(irModule);
+		new CFGSimplifier(irModule); 
+		
 		//System.err.println("SSA destruction.");
-		new SSADestructor(module);
+		new SSADestructor(irModule);
 		//System.err.println("SSA destruction finished.");
 		
 		//System.err.println("Printing IR--------------");
-		IRPrinter printer = new IRPrinter();
-		printer.visit(module);
+		IRPrinter irPrinter = new IRPrinter();
+		irPrinter.visit(irModule);
+		
+		System.err.println("codegen------------------");
+		RegisterTable regTable = new RegisterTable();
+		InstructionSelection selector = new InstructionSelection(irModule, regTable);
+		RvModule rvModule = selector.run();
+		System.err.println("end codegen");
+		
+		RvPrinter rvPrinter = new RvPrinter("test/pseudo.s");
+		rvPrinter.visit(rvModule);
 	}
 }

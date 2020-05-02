@@ -1,0 +1,45 @@
+/*
+int g(int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8, int x9, int x10) {
+	//if (x1 == 0) return 0;
+	//return g(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10);
+	return  x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10;
+}
+
+int f(int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8, int x9, int x10) {
+	//if (x1 == 0) return 0;
+	//return f(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10);
+	return  x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10;
+}
+
+
+int main() {
+   	int x1 = getInt();
+    int x2 = getInt();
+    int x3 = getInt();
+    int x4 = getInt();
+    int x5 = getInt();
+    int x6 = getInt();
+    int x7 = getInt();
+    int x8 = getInt();
+    int x9 = getInt();
+    int x10 = getInt();
+    printInt(f(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10));
+    printInt(g(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10));
+    return 0;
+}
+*/
+/*
+class A {
+	int x, y, z;
+	A() {x = 1; y = 2; z = 3;}
+	void f() {x = 11; y = 22; z = 33;}
+};
+*/
+
+int a = 110;
+int main() {
+	int x = getInt();
+	a = x;
+	printInt(a);
+	return 0;
+}

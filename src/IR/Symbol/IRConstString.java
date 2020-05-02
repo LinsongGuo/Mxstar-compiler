@@ -9,18 +9,19 @@ public class IRConstString extends IRConst {
 	
 	public IRConstString(String value) {
 		super(new IRPtrType(new IRInt8Type()));
-		value = value.replace("\\", "\\5C");
-        value = value.replace("\n","\\0A");
-        value = value.replace("\0", "\\00");
-        value = value.replace("\t","\\09");
-        value = value.replace("\"", "\\22");
-        value = "c\"" + value + "\"";
 		this.value = value;
 	}
 
 	@Override
 	public String toString() {
-		return value;
+		String tmp = value;
+		tmp = tmp.replace("\\", "\\5C");
+        tmp = tmp.replace("\n","\\0A");
+        tmp = tmp.replace("\0", "\\00");
+        tmp = tmp.replace("\t","\\09");
+        tmp = tmp.replace("\"", "\\22");
+        tmp = "c\"" + tmp + "\"";
+		return tmp;
 	}
 
 	@Override
@@ -33,7 +34,7 @@ public class IRConstString extends IRConst {
 	}
 	
 	@Override
-	boolean equals(IRConst other) {
+	public boolean valueEquals(IRConst other) {
 		return (other instanceof IRConstString) && value.equals(((IRConstString) other).getValue());
 	}
 }

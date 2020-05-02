@@ -3,6 +3,8 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Inst.BrInst;
 import IR.Inst.IRInst;
+import IR.Inst.LoadInst;
+import IR.Inst.StoreInst;
 import IR.Type.IRType;
 import Riscv.Operand.RvRegister;
 
@@ -63,6 +65,15 @@ public class IRRegister extends IRSymbol {
 	public boolean onlyBeUsedByBranch() {
 		for (IRInst inst : useList) {
 			if (!(inst instanceof BrInst)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean onlyBeUsedByLoadStore() {
+		for (IRInst inst : useList) {
+			if (!(inst instanceof LoadInst) && !(inst instanceof StoreInst)) {
 				return false;
 			}
 		}

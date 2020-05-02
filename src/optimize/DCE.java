@@ -49,8 +49,8 @@ public class DCE extends PASS {
 			for (IRInst inst = block.getTail(); inst != null; inst = inst.getPrev()) {
 				if ((inst instanceof StoreInst) || 
 					(inst instanceof CallInst)  || 
-					(inst instanceof RetInst)   ||
-					(inst instanceof GetElementPtrInst)) {
+					(inst instanceof RetInst)   /*||
+					(inst instanceof GetElementPtrInst)*/) {
 					push(inst);
 				}
 			}

@@ -110,4 +110,12 @@ public class CallInst extends IRInst {
 		}
 		return res;
 	}
+	
+	public ArrayList<IRSymbol> getParameters() {
+		return parameters;
+	}
+	
+	public IRFunction getFunction() {
+		return function;
+	}
 }

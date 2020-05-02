@@ -161,6 +161,7 @@ public class IRBuilder implements ASTVisitor {
 					varSymbol.setIRType(type);
 					module.addGlobalVariable(globalVariable);
 					ExprNode init = var.getInitValue();
+					//System.err.println(init);
 					if (init != null) {
 						init.accept(this);
 						IRSymbol initRes = init.getResult();
@@ -173,8 +174,17 @@ public class IRBuilder implements ASTVisitor {
 							}
 						}
 						else {
-							globalVariable.setInit(new IRNull());
-							currentBlock.addInst(new StoreInst(initRes, globalVariable));
+							//System.err.println(currentBlock.getTail());
+							IRInst tail = currentBlock.getTail();
+							if (tail instanceof GetElementPtrInst && tail.getRes().getName().indexOf("__stringLiteral") != -1) {
+								globalVariable.setInit(((GetElementPtrInst) tail).getPtr());
+								tail.setIgnored();
+							}
+							else 
+								globalVariable.setInit(new IRNull());
+							IRInst inst = new StoreInst(initRes, globalVariable);
+							inst.setIgnored();
+							currentBlock.addInst(inst);		
 						}	
 					}
 					else {
@@ -1437,7 +1447,7 @@ public class IRBuilder implements ASTVisitor {
 	public void visit(StringLiteralNode node) {
 	    IRGlobalString globalString = module.addGlobalString(node.getString());
 	    globalString.getType();
-	    IRRegister res = new IRRegister(new IRPtrType(new IRInt8Type()), "stringLiteral");
+	    IRRegister res = new IRRegister(new IRPtrType(new IRInt8Type()), "__stringLiteral");
 	    currentFunction.addRegister(res);
 	    currentBlock.addInst(new GetElementPtrInst(res, globalString, new IRConstInt(0), new IRConstInt(0)));
 	    

@@ -1,0 +1,11 @@
+buildlimit: 10
+instlimit: -1
+memlimit: 512
+path:
+  compiler: /mnt/d/courses/compiler/Mxstar-compiler
+  dataset: /mnt/d/courses/compiler/Mxstar-compiler/test/testcase
+  simulator: /mnt/d/courses/compiler/Compiler-2020/ravel/build/bin
+  simulator-executable: /mnt/d/courses/compiler/Compiler-2020/ravel/build/bin/ravel
+  built-in: /Users/peterzheng/Documents/Projects/OldProject/Compiler/localJudge/built-in.s
+stage: codegen
+timelimit: 15

@@ -330,19 +330,20 @@ public class SCCP extends PASS implements IRVisitor {
 			IRSymbol symbol = symbols.get(i);
 			IRBasicBlock bb = bbs.get(i);
 			if (bb.getExecutable()) {
-			//	System.err.println("for " + i + " " + symbol + " " + bb + " " + isMultiDefined(symbol));
-				
+				//System.err.println("for " + i + " " + symbol + " " + bb + " " + isMultiDefined(symbol));	
 				if (isMultiDefined(symbol)) {
 					markMultiDefined(res);
 					return;
 				}
 				IRConst tmp = toConstant(symbol);
 				if (tmp != null) {
+					//System.err.println("constant " + constant + " " + tmp);
 					if (constant == null) constant = tmp;
-					else if (!constant.equals(tmp)) {
+					else if (!constant.valueEquals(tmp)) {
 						markMultiDefined(res);
 						return;
 					}	
+					
 				}
 			}
 		}

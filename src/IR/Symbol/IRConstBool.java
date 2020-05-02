@@ -26,7 +26,7 @@ public class IRConstBool extends IRConst {
 	}
 
 	@Override
-	boolean equals(IRConst other) {
+	public boolean valueEquals(IRConst other) {
 		return (other instanceof IRConstBool) && value == ((IRConstBool) other).getValue();
 	}
 }

@@ -1,33 +1,25 @@
 package Riscv;
 
-import java.util.LinkedList;
-
-import IR.IRFunction;
+import java.util.ArrayList;
 
 public class RvFunction {
 	private String name;
-	private IRFunction irFunction;
-	private LinkedList<RvBlock> blockList; 
+	private ArrayList<RvBlock> blockList; 
 	
-	public RvFunction(String name, IRFunction irFunction) {
+	public RvFunction(String name) {
 		this.name = name;
-		this.irFunction = irFunction;
-		this.blockList = new LinkedList<RvBlock>();
+		this.blockList = new ArrayList<RvBlock>();
 	}
 	
 	public String getName() {
 		return name;
 	}
 	
-	public IRFunction getIRFunction() {
-		return irFunction;
-	}
-	
 	public void addBlock(RvBlock block) {
 		blockList.add(block);
 	}
 	
-	public LinkedList<RvBlock> getBlockList() {
+	public ArrayList<RvBlock> getBlockList() {
 		return blockList;
 	}	
 	

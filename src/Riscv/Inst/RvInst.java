@@ -37,4 +37,7 @@ public abstract class RvInst {
 	}
 	
 	abstract public void accept(RvVisitor visitor);
+	
+	@Override
+	abstract public String toString();
 }

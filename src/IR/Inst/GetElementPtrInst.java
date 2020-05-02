@@ -118,4 +118,18 @@ public class GetElementPtrInst extends IRInst {
 		}
 		return res;
 	}
+	
+	public IRSymbol getPtr() {
+		return ptr;
+	}
+	
+	public IRSymbol getIndex0() {
+		return index.get(0);
+	}
+	
+	public IRSymbol getIndex1() {
+		if (index.size() == 1) 
+			return null;
+		return index.get(1);
+	}
 }

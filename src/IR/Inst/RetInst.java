@@ -48,6 +48,10 @@ public class RetInst extends IRInst {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public IRSymbol getValue() {
+		return value;
+	}
 
 	@Override
 	public void removeAllUse() {

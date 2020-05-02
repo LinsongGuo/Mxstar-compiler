@@ -1,5 +1,10 @@
 package codegen;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
 import Riscv.RvBlock;
 import Riscv.RvFunction;
 import Riscv.RvModule;
@@ -9,7 +14,6 @@ import Riscv.Inst.RvCmpZ;
 import Riscv.Inst.RvInst;
 import Riscv.Inst.RvJ;
 import Riscv.Inst.RvJr;
-import Riscv.Inst.RvLa;
 import Riscv.Inst.RvLi;
 import Riscv.Inst.RvLoad;
 import Riscv.Inst.RvLui;
@@ -18,109 +22,145 @@ import Riscv.Inst.RvStore;
 import Riscv.Inst.RvTypeB;
 import Riscv.Inst.RvTypeI;
 import Riscv.Inst.RvTypeR;
+import Riscv.Operand.RvGlobalString;
+import Riscv.Operand.RvGlobalVariable;
+import Riscv.Operand.RvOperand;
 
 public class RvPrinter implements RvVisitor {
-
+	private PrintWriter printer;
+	
+	public RvPrinter(String path) throws FileNotFoundException {
+		printer = new PrintWriter(new FileOutputStream(path));
+	}
+	
 	@Override
 	public void visit(RvModule module) {
-		// TODO Auto-generated method stub
+		ArrayList<RvGlobalString> globalStrings = module.getGlobalString();
+		ArrayList<RvGlobalVariable> globalVariables = module.getGlobalVariables();
 		
+		if (!globalStrings.isEmpty() || !globalVariables.isEmpty())
+			printer.println("\t.data\n");
+		
+		for (RvGlobalString globalString : globalStrings) {
+			globalString.accept(this);
+		}
+		
+		for (RvGlobalVariable globalVariable : globalVariables) {
+			globalVariable.accept(this);
+		}
+	
+		printer.println("\t.text");
+		ArrayList<RvFunction> functions = module.getFunctions();
+		for (RvFunction function : functions) {
+			function.accept(this);
+		}
+		
+		printer.close();
+	}
+
+	@Override
+	public void visit(RvGlobalString globalString) {
+		printer.println("\t.globl  " + globalString);
+		printer.println(globalString + ":");
+		printer.println("\t.asciz  " + globalString.getValue() + "\n");
+	}
+
+	@Override
+	public void visit(RvGlobalVariable globalVariable) {
+		printer.println("\t.globl  " + globalVariable);
+		printer.println("\t.p2align	2");
+		printer.println(globalVariable + ":");
+		RvOperand value = globalVariable.getValue();
+		if (value != null)
+			printer.println("\t.word   " + value + "\n");
+		else
+			printer.println("\t.word   0\n");		
 	}
 
 	@Override
 	public void visit(RvFunction function) {
-		// TODO Auto-generated method stub
-		
+		printer.println("\t.globl  " + function.getName());
+		printer.println("\t.p2align	2");
+		printer.println(function.getName() + ":");
+		ArrayList<RvBlock> blocks = function.getBlockList();
+		//System.err.println("blocks " + blocks);
+		for (RvBlock block : blocks) {
+			block.accept(this);
+		}
+		printer.println("");
 	}
 
 	@Override
 	public void visit(RvBlock block) {
-		// TODO Auto-generated method stub
-		
+		printer.println(block.getName() + ":");
+		for (RvInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
+			inst.accept(this);
+		}
 	}
 
 	@Override
 	public void visit(RvInst inst) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void visit(RvCall inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvJ inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvJr inst) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(RvLa inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvLi inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvLoad inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvLui inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvMove inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvStore inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvTypeI inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvTypeR inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvTypeB inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 	@Override
 	public void visit(RvCmpZ inst) {
-		// TODO Auto-generated method stub
-		
+		printer.println(inst);
 	}
 
 }

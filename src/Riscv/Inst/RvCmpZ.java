@@ -7,7 +7,18 @@ import Riscv.Operand.RvRegister;
 public class RvCmpZ extends RvInst {
 	
 	public enum Op {
-		seqz, snez, sltz, sgtz
+		seqz("seqz"), snez("snez"), sltz("sltz"), sgtz("sgtz");
+		
+		private String str;
+		
+		private Op(String str) {
+			this.str = str;
+		}
+		
+		@Override
+		public String toString() {
+			return str;
+		}
 	};
 	
 	private Op op;
@@ -30,8 +41,12 @@ public class RvCmpZ extends RvInst {
 	
 	@Override
 	public void accept(RvVisitor visitor) {
-		// TODO Auto-generated method stub
-		
+		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "\t" + op.toString() + "    " + rd + "," + rs;
 	}
 
 }

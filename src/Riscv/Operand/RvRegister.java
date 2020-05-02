@@ -10,4 +10,9 @@ public class RvRegister extends RvOperand {
 	public String getName() {
 		return name;
 	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
 }

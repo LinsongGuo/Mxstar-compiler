@@ -7,6 +7,7 @@ import java.util.HashSet;
 
 import IR.Symbol.IRRegister;
 import IR.Type.IRType;
+import Riscv.RvFunction;
 
 public class IRFunction {
 	private IRType type;
@@ -165,5 +166,16 @@ public class IRFunction {
 	//	System.err.println("exit " + exitBlock);
 		exitBlock.Rdfs(Rvisited, RdfsSeq);
 		return RdfsSeq;
+	}
+	
+	//for instruction selection
+	private RvFunction function;
+	
+	public void setRvFunction(RvFunction function) {
+		this.function = function;
+	}
+	
+	public RvFunction toRvFunction() {
+		return function;
 	}
 }

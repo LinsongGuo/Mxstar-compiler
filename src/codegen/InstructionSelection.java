@@ -1,5 +1,7 @@
 package codegen;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 
 import IR.IRBasicBlock;
@@ -39,20 +41,30 @@ import IR.Type.IRType;
 import IR.Type.IRVoidType;
 import Riscv.RvBlock;
 import Riscv.RvFunction;
+import Riscv.RvModule;
+import Riscv.Inst.RvCall;
 import Riscv.Inst.RvCmpZ;
 import Riscv.Inst.RvInst;
 import Riscv.Inst.RvJ;
+import Riscv.Inst.RvJr;
 import Riscv.Inst.RvLi;
+import Riscv.Inst.RvLoad;
+import Riscv.Inst.RvLui;
+import Riscv.Inst.RvMove;
+import Riscv.Inst.RvStore;
 import Riscv.Inst.RvTypeB;
 import Riscv.Inst.RvTypeI;
 import Riscv.Inst.RvTypeR;
 import Riscv.Operand.RegisterTable;
+import Riscv.Operand.RvAddress;
+import Riscv.Operand.RvGlobalString;
+import Riscv.Operand.RvGlobalVariable;
 import Riscv.Operand.RvImm;
 import Riscv.Operand.RvOperand;
 import Riscv.Operand.RvPhysicalRegister;
 import Riscv.Operand.RvRegister;
+import Riscv.Operand.RvStackSlot;
 import Riscv.Operand.RvVirtualRegister;
-
 
 public class InstructionSelection implements IRVisitor {
 
@@ -61,14 +73,27 @@ public class InstructionSelection implements IRVisitor {
     private RvFunction currentFunction;
     private RvBlock currentBlock;
     private RegisterTable regTable;
+    private RvModule module;
+    private IRModule irModule;
+    private RvVirtualRegister[] calleeSaved;
     
-    
-	public InstructionSelection(IRModule module, RegisterTable regTable) {
-		visit(module);
+	public InstructionSelection(IRModule irModule, RegisterTable regTable) {
+		this.irModule = irModule;
 		this.regTable = regTable;
+		this.calleeSaved = new RvVirtualRegister[12];
+	}
+	
+	public RvModule run() {
+		module = new RvModule();
+		visit(irModule);
+		return module;
 	}
 	
 	private boolean canBeImm(int value) {
+		return value >= IMM_MIN && value <= IMM_MAX;
+	}
+	
+	private boolean canBeImm(long value) {
 		return value >= IMM_MIN && value <= IMM_MAX;
 	}
 	
@@ -89,21 +114,22 @@ public class InstructionSelection implements IRVisitor {
 		}
 		else if (symbol instanceof IRConstBool) {
 			boolean value = ((IRConstBool) symbol).getValue();
-			if (!value) return regTable.zero;
+			if (!value) return RegisterTable.zero;
 			else {
 				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
-				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, tmp, regTable.zero, new RvImm(1)));
+				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, tmp, RegisterTable.zero, new RvImm(1)));
 				return tmp;
 			}
 		}
 		else if (symbol instanceof IRNull) {
-			return regTable.zero;
+			return RegisterTable.zero;
 		}
 		else if (symbol instanceof IRRegister) {
 			RvRegister res = ((IRRegister) symbol).getRvReg();
 			if (res != null) return res;
 			res = new RvVirtualRegister(((IRRegister) symbol).getName());
 			((IRRegister) symbol).setRvReg(res);
+			//System.err.println("----save " + symbol);
 			return res;
 		}
 		return null;
@@ -111,20 +137,78 @@ public class InstructionSelection implements IRVisitor {
 	
 	@Override
 	public void visit(IRModule node) {
-		// TODO Auto-generated method stub
+		Collection<IRFunction> functions = node.getFunctList().values();
+		for (IRFunction function : functions) {
+			RvFunction rvFunction = new RvFunction(function.getName().substring(1));
+			function.setRvFunction(rvFunction);
+			module.addFunction(rvFunction);
+		}
 		
+		Collection<IRGlobalString> stringList = node.getStringList().values();
+		for (IRGlobalString str : stringList) {
+			RvGlobalString res = new RvGlobalString(str.getName(), str.getValue().getValue());
+			str.setRvReg(res);
+			module.addGlobalString(res);
+		}
+			
+		Collection<IRGlobalVariable> globalVarList = node.getGlobalVarList().values();
+		for (IRGlobalVariable var : globalVarList) {
+			RvGlobalVariable res = new RvGlobalVariable(var.getName());
+			var.setRvReg(res);
+			module.addGlobalVariable(res);
+			IRSymbol init = var.getInit();
+			if (init != null && init instanceof IRGlobalString) {
+				RvGlobalString str = (RvGlobalString) ((IRGlobalString) init).getRvReg();
+				res.setValue(str);
+			}
+		}
+		
+		for (IRFunction function : functions) {
+			function.accept(this);
+		}
 	}
 
 	@Override
 	public void visit(IRFunction node) {
-		// TODO Auto-generated method stub
+		currentFunction = node.toRvFunction();
+		//System.err.println(currentFunction.getName());
 		
+		ArrayList<IRBasicBlock> blocks = node.getBlockList();
+		for (IRBasicBlock block : blocks) {
+			RvBlock rvBlock = new RvBlock(block.getName(), currentFunction);
+			block.setRvBlock(rvBlock);
+			currentFunction.addBlock(rvBlock);
+		}
+		//callee saved registers
+		IRBasicBlock entranceBlock = node.getEntranceBlock();
+		currentBlock = entranceBlock.toRvBlock();
+		
+		for (int i = 0; i < 12; ++i) {
+			RvPhysicalRegister reg = RegisterTable.calleeSavedRegisters[i];
+			calleeSaved[i] = new RvVirtualRegister("calleeSaved");
+			currentBlock.addInst(new RvMove(currentBlock, calleeSaved[i], reg));
+		}
+		//function arguments
+		ArrayList<IRRegister> parameters = node.getParameters();
+		for (int i = 0; i < 8 && i < parameters.size(); ++i) {
+			currentBlock.addInst(new RvMove(currentBlock, toRvRegister(parameters.get(i)), regTable.getRegister("a" + i)));
+		}
+		for (int i = 8; i < parameters.size(); ++i) {
+			currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(parameters.get(i)), new RvStackSlot(4 * (i - 8), true)));
+		}
+		
+		for (IRBasicBlock block : blocks) {
+			block.accept(this);
+		}
 	}
 
 	@Override
 	public void visit(IRBasicBlock node) {
-		// TODO Auto-generated method stub
-		
+		currentBlock = node.toRvBlock();
+		//System.err.println(currentBlock.getName());
+		for (IRInst inst = node.getHead(); inst != null; inst = inst.getNext()) {
+			inst.accept(this);
+		}
 	}
 
 	@Override
@@ -143,7 +227,8 @@ public class InstructionSelection implements IRVisitor {
 	public void visit(BinOpInst node) {
 		BinOpInst.BinOpType op = node.getOp();
 		IRRegister res = node.getRes();
-		RvVirtualRegister result = new RvVirtualRegister(res.getName());
+		//System.err.println("binop " + res);
+		RvRegister result = toRvRegister(res);
 		IRSymbol left = node.getLeft(), right = node.getRight();
 		if (op == BinOpInst.BinOpType.add) {
 			if (right instanceof IRConstInt) {
@@ -195,15 +280,16 @@ public class InstructionSelection implements IRVisitor {
 
 	@Override
 	public void visit(BitcastToInst node) {
-		// TODO Auto-generated method stub
-		
+		IRRegister res = node.getRes();
+		IRSymbol src = node.getSrc();
+		currentBlock.addInst(new RvMove(currentBlock, toRvRegister(res), toRvRegister(src)));
 	}
 
 	@Override
 	public void visit(BitwiseBinOpInst node) {
 		BitwiseBinOpInst.BitwiseBinOpType op = node.getOp();
 		IRRegister res = node.getRes();
-		RvVirtualRegister result = new RvVirtualRegister(res.getName());
+		RvRegister result = toRvRegister(res);
 		IRSymbol left = node.getLeft(), right = node.getRight();
 		if (op == BitwiseBinOpInst.BitwiseBinOpType.shl || op == BitwiseBinOpInst.BitwiseBinOpType.ashr) { 
 			RvTypeI.Op typeI = op == BitwiseBinOpInst.BitwiseBinOpType.shl ? RvTypeI.Op.slli :  RvTypeI.Op.srai;
@@ -258,7 +344,7 @@ public class InstructionSelection implements IRVisitor {
 		}
 	}
 	
-	private void handleIcmpBranch(IcmpInst inst, IRRegister reg) {
+	private void handleIcmpWithBranch(IcmpInst inst, IRRegister reg) {
 		HashSet<IRInst> useList = reg.getUseList();
 		IRSymbol left = inst.getLeft(), right = inst.getRight();
 		RvTypeB.Op op = null;
@@ -271,7 +357,7 @@ public class InstructionSelection implements IRVisitor {
 	        case sge: op = RvTypeB.Op.bge; break;
 		}
 		for (IRInst brInst : useList) {
-			 ((BrInst) brInst).setRvInst(new RvTypeB(currentBlock, op, toRvRegister(left), toRvRegister(right), ((BrInst) brInst).getTrue().getRvBlock()));
+			 ((BrInst) brInst).setRvInst(new RvTypeB(currentBlock, op, toRvRegister(left), toRvRegister(right), ((BrInst) brInst).getTrue().toRvBlock()));
 		}
 	}
 	
@@ -279,13 +365,13 @@ public class InstructionSelection implements IRVisitor {
 	public void visit(IcmpInst node) {
 		IRRegister res = node.getRes();
 		if (res.onlyBeUsedByBranch()) {
-			handleIcmpBranch(node, res);
+			handleIcmpWithBranch(node, res);
 			return;
 		}
 		IcmpInst.IcmpOpType op = node.getOp();
 		IRSymbol left = node.getLeft(), right = node.getRight();
 		if (op == IcmpInst.IcmpOpType.eq || op == IcmpInst.IcmpOpType.ne) {
-			RvVirtualRegister cmpzRes = new RvVirtualRegister(res.getName());
+			RvRegister cmpzRes = toRvRegister(res);
 			if (right instanceof IRNull) {
 				currentBlock.addInst(new RvCmpZ(currentBlock, op == IcmpInst.IcmpOpType.eq ? RvCmpZ.Op.seqz : RvCmpZ.Op.snez, cmpzRes, toRvRegister(left)));
 			}
@@ -293,7 +379,7 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(new RvCmpZ(currentBlock, op == IcmpInst.IcmpOpType.eq ? RvCmpZ.Op.seqz : RvCmpZ.Op.snez, cmpzRes, toRvRegister(right)));
 			}
 			else {
-				RvVirtualRegister xorRes = new RvVirtualRegister(res.getName());
+				RvVirtualRegister xorRes = (RvVirtualRegister) toRvRegister(res);
 				if (right instanceof IRConstInt) {
 					int rightValue = (int) ((IRConstInt) right).getValue();
 					if (canBeImm(rightValue)) {
@@ -319,7 +405,7 @@ public class InstructionSelection implements IRVisitor {
 			} 
 		}
 		else if (op == IcmpInst.IcmpOpType.slt || op == IcmpInst.IcmpOpType.sge) {
-			RvRegister sltRes = new RvVirtualRegister(res.getName());  
+			RvRegister sltRes = toRvRegister(res);  
 			if (right instanceof IRConstInt) {
 				int rightValue = (int) ((IRConstInt) right).getValue();
 				if (canBeImm(rightValue)) {
@@ -333,12 +419,12 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(new RvTypeR(currentBlock, RvTypeR.Op.slt, sltRes, toRvRegister(left), toRvRegister(right)));		
 			}
 			if (op == IcmpInst.IcmpOpType.sge) {
-				RvRegister xorRes = new RvVirtualRegister(res.getName());  
+				RvRegister xorRes = toRvRegister(res);  
 				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.xori, xorRes, sltRes, new RvImm(1)));		
 			}
 		}
 		else {
-			RvRegister sltRes = new RvVirtualRegister(res.getName());  
+			RvRegister sltRes = toRvRegister(res);  
 			if (left instanceof IRConstInt) {
 				int leftValue = (int) ((IRConstInt) left).getValue();
 				if (canBeImm(leftValue)) {
@@ -352,7 +438,7 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(new RvTypeR(currentBlock, RvTypeR.Op.slt, sltRes, toRvRegister(right), toRvRegister(left)));		
 			}
 			if (op == IcmpInst.IcmpOpType.sle) {
-				RvRegister xorRes = new RvVirtualRegister(res.getName());  
+				RvRegister xorRes = toRvRegister(res);  
 				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.xori, xorRes, sltRes, new RvImm(1)));		
 			}
 		}
@@ -363,7 +449,7 @@ public class InstructionSelection implements IRVisitor {
 	public void visit(BrInst node) {
 		IRSymbol cond = node.getCond();
 		if (cond == null) {
-			RvBlock block = node.getTrue().getRvBlock();
+			RvBlock block = node.getTrue().toRvBlock();
 			currentBlock.addInst(new RvJ(currentBlock, block));
 		}
 		else {
@@ -373,51 +459,178 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(rvInst);
 			}
 			else {
-				currentBlock.addInst(new RvTypeB(currentBlock, RvTypeB.Op.bne, toRvRegister(cond), regTable.zero, node.getTrue().getRvBlock()));
+				currentBlock.addInst(new RvTypeB(currentBlock, RvTypeB.Op.bne, toRvRegister(cond), RegisterTable.zero, node.getTrue().toRvBlock()));
 			}
-			currentBlock.addInst(new RvJ(currentBlock, node.getFalse().getRvBlock()));
+			currentBlock.addInst(new RvJ(currentBlock, node.getFalse().toRvBlock()));
 		}
 	}
 
-	@Override
-	public void visit(CallInst node) {
-		// TODO Auto-generated method stub
-		
+	public void handleGEPWithLoadStore(IRRegister res, RvRegister reg, RvImm imm) {
+		HashSet<IRInst> instList = res.getUseList();
+		//System.err.println("handleGEPWithLoadStore " + reg + " " + imm);
+		//System.err.println(instList);
+		for (IRInst inst : instList) {
+			//System.err.println("store " + inst);
+			if (inst instanceof LoadInst) 
+				inst.setRvInst(new RvLoad(currentBlock, toRvRegister(inst.getRes()), reg, imm));
+			else 
+				inst.setRvInst(new RvStore(currentBlock, toRvRegister(((StoreInst) inst).getValue()), reg, imm));	
+		}
 	}
-
+	
 	@Override
 	public void visit(GetElementPtrInst node) {
-		// TODO Auto-generated method stub
-		
+		IRRegister res = node.getRes();
+		IRSymbol ptr = node.getPtr();
+		if (res.getName().indexOf("__stringLiteral") != -1) {
+			if (!node.isIgnored()) {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				RvGlobalString var =  (RvGlobalString) ((IRGlobalString) ptr).getRvReg();
+				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(regTable.hi, var)));
+				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, toRvRegister(res), tmp, new RvAddress(regTable.lo, var)));
+			}
+			return;
+		}
+		IRSymbol index0 = node.getIndex0(), index1 = node.getIndex1();
+		boolean only = res.onlyBeUsedByLoadStore();
+		//System.err.println(res + " only " + only);
+		if (index0 instanceof IRConstInt && canBeImm(((IRConstInt) index0).getValue() << 2)) {
+			int offset = ((int) ((IRConstInt) index0).getValue()) << 2;
+			if (index1 == null || (index1 instanceof IRConstInt && canBeImm(offset + ((IRConstInt)index1).getValue())) ) {
+				offset += (index1 == null ? 0 : (int)((IRConstInt)index1).getValue());
+				if (only) 
+					handleGEPWithLoadStore(res, toRvRegister(ptr), new RvImm(0));
+				else {	
+					if (offset == 0) 
+						currentBlock.addInst(new RvMove(currentBlock, toRvRegister(res), toRvRegister(ptr)));
+					else 
+						currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, toRvRegister(res), toRvRegister(ptr), new RvImm(offset)));		
+				}
+			}
+			else {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, tmp, toRvRegister(index1), new RvImm(offset)));
+				currentBlock.addInst(new RvTypeR(currentBlock, RvTypeR.Op.add, toRvRegister(res), toRvRegister(ptr), tmp));
+			}
+		}
+		else {
+			RvVirtualRegister slliTmp = new RvVirtualRegister("tmp");
+			currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.slli, slliTmp, toRvRegister(index0), new RvImm(2)));
+			RvVirtualRegister addTmp;			
+			if (index1 != null) {
+				addTmp = new RvVirtualRegister("tmp");
+				if ((index1 instanceof IRConstInt) && canBeImm(((IRConstInt) index1).getValue())) 
+					currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, addTmp, slliTmp, new RvImm((int) ((IRConstInt) index1).getValue())));
+				else
+					currentBlock.addInst(new RvTypeR(currentBlock, RvTypeR.Op.add, addTmp, slliTmp, toRvRegister(index1)));	
+			}
+			else
+				addTmp = slliTmp;
+			currentBlock.addInst(new RvTypeR(currentBlock, RvTypeR.Op.add, toRvRegister(res), toRvRegister(ptr), addTmp));
+		}
 	}
 
 	
 	@Override
 	public void visit(LoadInst node) {
-		// TODO Auto-generated method stub
-		
+		RvInst inst = node.getRvInst();
+		if (inst != null) {
+			inst.setCurrentBlock(currentBlock);
+			currentBlock.addInst(inst);
+		}
+		else {
+			IRSymbol ptr = node.getPtr();
+			if (ptr instanceof IRGlobalVariable) {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				RvGlobalVariable var =  (RvGlobalVariable) ((IRGlobalVariable) ptr).getRvReg();
+				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(regTable.hi, var)));
+				currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(node.getRes()), tmp, new RvAddress(regTable.lo, var)));
+			}
+			else if (ptr instanceof IRGlobalString) {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				RvGlobalString var =  (RvGlobalString) ((IRGlobalString) ptr).getRvReg();
+				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(regTable.hi, var)));
+				currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(node.getRes()), tmp, new RvAddress(regTable.lo, var)));
+			} 
+			else 
+				currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(node.getRes()), toRvRegister(node.getPtr()), new RvImm(0)));
+		}
 	}
-
+	
 	@Override
-	public void visit(PhiInst node) {
-		// TODO Auto-generated method stub
+	public void visit(StoreInst node) {
+		if (node.getValue() instanceof IRRegister && ((IRRegister) node.getValue()).getName().indexOf("__stringLiteral") != -1) {
+			if (node.isIgnored())
+				return;
+		}
+		RvInst inst = node.getRvInst();
+		if (inst != null) {
+			inst.setCurrentBlock(currentBlock);
+			currentBlock.addInst(inst);
+		}
+		else {
+			IRSymbol ptr = node.getPtr();
+			if (ptr instanceof IRGlobalVariable) {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				RvGlobalVariable var =  (RvGlobalVariable) ((IRGlobalVariable) ptr).getRvReg();
+				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(regTable.hi, var)));
+				currentBlock.addInst(new RvStore(currentBlock, toRvRegister(node.getValue()), tmp, new RvAddress(regTable.lo, var)));
+			}
+			else if (ptr instanceof IRGlobalString) {
+				RvVirtualRegister tmp = new RvVirtualRegister("tmp");
+				RvGlobalString var =  (RvGlobalString) ((IRGlobalString) ptr).getRvReg();
+				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(regTable.hi, var)));
+				currentBlock.addInst(new RvStore(currentBlock, toRvRegister(node.getRes()), tmp, new RvAddress(regTable.lo, var)));
+			} 
+			else 
+				currentBlock.addInst(new RvStore(currentBlock, toRvRegister(node.getValue()), toRvRegister(node.getPtr()), new RvImm(0)));
+		}
+	}
+	
+	@Override
+	public void visit(MoveInst node) {
+		currentBlock.addInst(new RvMove(currentBlock, toRvRegister(node.getRes()), toRvRegister(node.getSrc())));
+	}
+	
+	@Override
+	public void visit(CallInst node) {
+		//System.err.println(node + " " + currentBlock.getName());
+		ArrayList<IRSymbol> parameters = node.getParameters();
+		for (int i = 0; i < 8 && i < parameters.size(); ++i) {
+			RvPhysicalRegister reg = RegisterTable.argumentRegisters[i];
+			currentBlock.addInst(new RvMove(currentBlock, reg, toRvRegister(parameters.get(i))));
+		}
+		for (int i = 8; i < parameters.size(); ++i) {
+			currentBlock.addInst(new RvStore(currentBlock, toRvRegister(parameters.get(i)), new RvStackSlot((i - 8) * 4, true)));
+		}
+		//System.err.println("addInst");
+		currentBlock.addInst(new RvCall(currentBlock, node.getFunction().getName().substring(1)));
 		
+		IRRegister res = node.getRes();
+		if (res != null) {
+			currentBlock.addInst(new RvMove(currentBlock, toRvRegister(res), regTable.a0));
+		}
 	}
 
 	@Override
 	public void visit(RetInst node) {
-		// TODO Auto-generated method stub
+		IRSymbol value = node.getValue();
+		//System.err.println("ret " + value);
+		if (value != null) {
+			currentBlock.addInst(new RvMove(currentBlock, regTable.ra, toRvRegister(value)));
+		}
 		
+		//callee saved registers
+		for (int i = 0; i < 12; ++i) {
+			RvPhysicalRegister reg = RegisterTable.calleeSavedRegisters[i];
+			currentBlock.addInst(new RvMove(currentBlock, reg, calleeSaved[i]));
+		}
+		
+		currentBlock.addInst(new RvJr(currentBlock, regTable.ra));
 	}
 
 	@Override
-	public void visit(StoreInst node) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(MoveInst node) {
+	public void visit(PhiInst node) {
 		// TODO Auto-generated method stub
 		
 	}

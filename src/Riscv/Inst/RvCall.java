@@ -6,19 +6,20 @@ import Riscv.RvVisitor;
 
 public class RvCall extends RvInst {
 
-	RvFunction function;
+	private String function;
 	
-	public RvCall(RvBlock currentBlock, RvFunction function) {
+	public RvCall(RvBlock currentBlock, String function) {
 		super(currentBlock);
 		this.function = function;
-	}
-
-	public RvFunction getFunction() {
-		return function;
 	}
 	
 	@Override
 	public void accept(RvVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return "\tcall    " + function;
 	}
 }
