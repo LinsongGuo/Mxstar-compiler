@@ -13,7 +13,7 @@ public class RvStore extends RvInst {
 	private RvOperand dest;
 	private RvImm offset;
 	
-	public RvStore(RvBlock currentBlock, RvRegister rd, RvOperand dest, RvImm offset) {
+	public RvStore(RvBlock currentBlock, RvRegister rd, RvRegister dest, RvImm offset) {
 		super(currentBlock);
 		this.rd = rd;
 		this.dest = dest;
@@ -24,6 +24,16 @@ public class RvStore extends RvInst {
 		super(currentBlock);
 		this.rd = rd;
 		this.dest = dest;
+	}
+	
+	@Override
+	public void init() {
+		addUse(rd);
+		rd.increaseSpillCost(inLoop);
+		if (dest instanceof RvRegister) {
+			addUse((RvRegister) dest);
+			((RvRegister) dest).increaseSpillCost(inLoop);
+		}
 	}
 	
 	public RvRegister getRd() {
@@ -50,4 +60,5 @@ public class RvStore extends RvInst {
 		else
 			return "\tsw      " + rd + "," + offset + "(" + dest + ")";
 	}
+
 }

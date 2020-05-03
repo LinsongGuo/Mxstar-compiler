@@ -10,6 +10,7 @@ import AST.*;
 import utility.*;
 import SemanticChecker.*;
 import codegen.InstructionSelection;
+import codegen.LivenessAnalysis;
 import codegen.RvPrinter;
 import optimize.CFGSimplifier;
 import optimize.DCE;
@@ -86,8 +87,10 @@ public class Main {
 		
 		System.err.println("codegen------------------");
 		RegisterTable regTable = new RegisterTable();
-		InstructionSelection selector = new InstructionSelection(irModule, regTable);
-		RvModule rvModule = selector.run();
+		InstructionSelection instructionSelection = new InstructionSelection(irModule, regTable);
+		RvModule rvModule = instructionSelection.run();
+		//LivenessAnalysis livenessAnalysis = new LivenessAnalysis(rvModule);
+		//livenessAnalysis.run();
 		System.err.println("end codegen");
 		
 		RvPrinter rvPrinter = new RvPrinter("test/pseudo.s");

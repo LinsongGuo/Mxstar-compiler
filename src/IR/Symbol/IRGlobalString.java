@@ -3,6 +3,7 @@ package IR.Symbol;
 import IR.IRVisitor;
 import IR.Type.IRPtrType;
 import IR.Type.IRType;
+import Riscv.Operand.RvGlobalString;
 
 public class IRGlobalString extends IRRegister {
 	private IRConstString value;
@@ -28,5 +29,16 @@ public class IRGlobalString extends IRRegister {
 	
 	public String declarationString() {
 		return "@" + name + " = private unnamed_addr constant " + ((IRPtrType) type).getType().toString() + " " + value.toString();
+	}
+	
+	//for instruction selection
+	private RvGlobalString rvGlobalString;
+	
+	public RvGlobalString toRvGlobalString() {
+		return rvGlobalString;
+	}
+	
+	public void setRvGlobalString(RvGlobalString rvGlobalString) {
+		this.rvGlobalString = rvGlobalString;
 	}
 }

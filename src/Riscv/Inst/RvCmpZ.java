@@ -31,6 +31,14 @@ public class RvCmpZ extends RvInst {
 		this.rs = rs;
 	}
 	
+	@Override
+	public void init() {
+		addDef(rd);
+		addUse(rs);
+		rd.increaseSpillCost(inLoop);
+		rs.increaseSpillCost(inLoop);
+	}
+
 	public RvRegister getRd() {
 		return rd;
 	}

@@ -32,6 +32,16 @@ public class RvTypeR extends RvInst {
 		this.rs2 = rs2;
 	}
 	
+	@Override
+	public void init() {
+		addDef(rd);
+		addUse(rs1);
+		addUse(rs2);
+		rd.increaseSpillCost(inLoop);
+		rs1.increaseSpillCost(inLoop);
+		rs2.increaseSpillCost(inLoop);
+	}
+
 	public RvRegister getRd() {
 		return rd;
 	}
@@ -58,6 +68,5 @@ public class RvTypeR extends RvInst {
 		else 
 			return "\t" +  op + "     " + rd + "," + rs1 + "," + rs2;
 	}
-
 	
 }

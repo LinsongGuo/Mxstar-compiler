@@ -1,5 +1,7 @@
 package Riscv.Inst;
 
+import java.util.Set;
+
 import Riscv.RvBlock;
 import Riscv.RvVisitor;
 import Riscv.Operand.RvRegister;
@@ -12,6 +14,14 @@ public class RvMove extends RvInst {
 		super(currentBlock);
 		this.rs = rs;
 		this.rd = rd;
+	}
+
+	@Override
+	public void init() {
+		addDef(rd);
+		addUse(rs);
+		rd.increaseSpillCost(inLoop);
+		rs.increaseSpillCost(inLoop);
 	}
 	
 	public RvRegister getRs() {
@@ -31,4 +41,5 @@ public class RvMove extends RvInst {
 	public String toString() {
 		return "\tmv      " + rd + "," + rs;
 	}
+
 }

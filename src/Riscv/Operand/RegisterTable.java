@@ -1,6 +1,7 @@
 package Riscv.Operand;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class RegisterTable  {
 	public static RvPhysicalRegister zero = new RvPhysicalRegister("zero");
@@ -44,10 +45,17 @@ public class RegisterTable  {
     public static String[] callerSavedNames = {"ra", "t0", "t1", "t2", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "t3", "t4", "t5", "t6"};
     public static String[] argumentNames = {"a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7"};
     public static String[] allocableNames = {"ra", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6" };
-    public static HashMap<String, RvPhysicalRegister> map;
-      
+   
+    public static RvPhysicalRegister[] registers = {zero, ra, sp, gp, tp, t0, t1, t2, s0, s1, a0, a1, a2, a3, a4, a5, a6, a7, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, t3, t4, t5, t6};  
     public static RvPhysicalRegister[] argumentRegisters = {a0, a1, a2, a3, a4, a5, a6, a7};
-    public static RvPhysicalRegister[] calleeSavedRegisters = {s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11};
+    public static RvPhysicalRegister[] calleeSavedRegisters = {s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11}; //12
+    public static RvPhysicalRegister[] callerSavedRegisters = {ra, t0, t1, t2, a0, a1, a2, a3, a4, a5, a6, a7, t3, t4, t5, t6}; //16
+    public static RvPhysicalRegister[] allocableRegisters = {ra, t0, t1, t2, s0, s1, a0, a1, a2, a3, a4, a5, a6, a7, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, t3, t4, t5, t6};
+    public static int allocableNumber = 28;
+    
+    public static Set<RvPhysicalRegister> allocableSet = Set.of(ra, t0, t1, t2, s0, s1, a0, a1, a2, a3, a4, a5, a6, a7, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, t3, t4, t5, t6);
+    
+    public static HashMap<String, RvPhysicalRegister> map;
     
     public RegisterTable() {
     	map = new HashMap<String, RvPhysicalRegister>();

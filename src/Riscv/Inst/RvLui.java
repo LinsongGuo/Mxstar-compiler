@@ -16,6 +16,12 @@ public class RvLui extends RvInst {
 		this.imm = imm;
 	}
 	
+	@Override
+	public void init() {
+		addDef(rd);
+		rd.increaseSpillCost(inLoop);
+	}
+	
 	public RvRegister getRd() {
 		return rd;
 	}

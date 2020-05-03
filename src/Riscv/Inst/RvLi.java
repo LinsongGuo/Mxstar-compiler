@@ -15,6 +15,12 @@ public class RvLi extends RvInst {
 		this.imm = imm;
 	}
 	
+	@Override
+	public void init() {
+		addDef(rd);
+		rd.increaseSpillCost(inLoop);
+	}
+	
 	public RvRegister getRd() {
 		return rd;
 	}
@@ -32,5 +38,4 @@ public class RvLi extends RvInst {
 	public String toString() {
 		return "\tli      " + rd + "," + imm;
 	}
-
 }

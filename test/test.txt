@@ -36,10 +36,12 @@ class A {
 };
 */
 
-int a = 110;
+int a;
+int b = 10;
+string c = "1234";
+string d;
 int main() {
 	int x = getInt();
-	a = x;
-	printInt(a);
+	printInt(x / 1000);
 	return 0;
 }

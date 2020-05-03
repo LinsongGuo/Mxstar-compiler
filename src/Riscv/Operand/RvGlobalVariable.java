@@ -2,11 +2,12 @@ package Riscv.Operand;
 
 import Riscv.RvVisitor;
 
-public class RvGlobalVariable extends RvRegister {
+public class RvGlobalVariable extends RvOperand {
 	private RvOperand value;
+	private String name;
 	
 	public RvGlobalVariable(String name) {
-		super(name);
+		this.name = name;
 	}
 	
 	public void setValue(RvOperand value) {
@@ -23,5 +24,10 @@ public class RvGlobalVariable extends RvRegister {
 	
 	public void accept(RvVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }

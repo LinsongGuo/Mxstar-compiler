@@ -33,6 +33,16 @@ public class RvTypeB extends RvInst {
 		this.offset = offset;
 	}
 
+	@Override
+	public void init() {
+		addUse(rs);
+		addUse(rt);
+		currentBlock.addSuccessor(offset);
+		offset.addPredecessor(currentBlock);
+		rs.increaseSpillCost(inLoop);
+		rt.increaseSpillCost(inLoop);
+	}
+
 	public RvRegister getRs() {
 		return rs;
 	}
@@ -54,5 +64,4 @@ public class RvTypeB extends RvInst {
 	public String toString() {
 		return "\t" + op + "     " + rs + "," + rt + "," + offset.getName();
 	}
-
 }

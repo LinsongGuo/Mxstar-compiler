@@ -13,6 +13,12 @@ public class RvJr extends RvInst {
 		this.rs = rs;
 	}
 	
+	@Override
+	public void init() {
+		addUse(rs);
+		rs.increaseSpillCost(inLoop);
+	}
+	
 	public RvRegister getRs() {
 		return rs;
 	}
@@ -26,4 +32,5 @@ public class RvJr extends RvInst {
 	public String toString() {
 		return "\tjr      " + rs.getName();
 	}
+
 }

@@ -3,7 +3,12 @@ source_filename = "test.txt"
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-@a = global i32 110
+@.str.0 = private unnamed_addr constant [5 x i8] c"1234\00"
+
+@a = global i32 0
+@b = global i32 10
+@c = global i8* null
+@d = global i8* null
 
 declare i8* @__malloc(i32 %n)
 declare void @__print(i8* %str)
@@ -29,15 +34,16 @@ define i32 @main() {
 entranceBlock.0:
     call void @__init__()
     %call.0 = call i32 @__getInt()
-    store i32 %call.0, i32* @a
-    %a.1 = load i32, i32* @a
-    call void @__printInt(i32 %a.1)
+    %sdiv.0 = sdiv i32 %call.0, 1000
+    call void @__printInt(i32 %sdiv.0)
     ret i32 0
 
 }
 
 define void @__init__() {
 entranceBlock.0:
+    %__stringLiteral.0 = getelementptr [5 x i8], [5 x i8]* @.str.0, i32 0, i32 0
+    store i8* %__stringLiteral.0, i8** @c
     ret void
 
 }

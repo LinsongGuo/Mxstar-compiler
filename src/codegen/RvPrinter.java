@@ -38,18 +38,19 @@ public class RvPrinter implements RvVisitor {
 		ArrayList<RvGlobalString> globalStrings = module.getGlobalString();
 		ArrayList<RvGlobalVariable> globalVariables = module.getGlobalVariables();
 		
-		if (!globalStrings.isEmpty() || !globalVariables.isEmpty())
+		if (!globalStrings.isEmpty() || !globalVariables.isEmpty()) {
 			printer.println("\t.data\n");
-		
-		for (RvGlobalString globalString : globalStrings) {
-			globalString.accept(this);
+			
+			for (RvGlobalString globalString : globalStrings) {
+				globalString.accept(this);
+			}
+			
+			for (RvGlobalVariable globalVariable : globalVariables) {
+				globalVariable.accept(this);
+			}
 		}
-		
-		for (RvGlobalVariable globalVariable : globalVariables) {
-			globalVariable.accept(this);
-		}
-	
-		printer.println("\t.text");
+			
+		printer.println("\t.text\n");
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
 			function.accept(this);
@@ -62,7 +63,7 @@ public class RvPrinter implements RvVisitor {
 	public void visit(RvGlobalString globalString) {
 		printer.println("\t.globl  " + globalString);
 		printer.println(globalString + ":");
-		printer.println("\t.asciz  " + globalString.getValue() + "\n");
+		printer.println("\t.asciz  " + globalString.getStr() + "\n");
 	}
 
 	@Override

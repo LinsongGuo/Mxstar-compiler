@@ -1,11 +1,31 @@
 	.data
 
+	.globl  .str.0
+.str.0:
+	.asciz  "1234"
+
 	.globl  a
 	.p2align	2
 a:
 	.word   0
 
+	.globl  b
+	.p2align	2
+b:
+	.word   10
+
+	.globl  c
+	.p2align	2
+c:
+	.word   .str.0
+
+	.globl  d
+	.p2align	2
+d:
+	.word   0
+
 	.text
+
 	.globl  main
 	.p2align	2
 main:
@@ -25,14 +45,12 @@ main:
 	call    __init__
 	call    __getInt
 	mv      call.0_12,a0
-	lui     tmp_13,%hi(a)
-	sw      call.0_12,%lo(a)(tmp_13)
-	lui     tmp_14,%hi(a)
-	lw      a.1_15,%lo(a)(tmp_14)
-	mv      a0,a.1_15
+	li      tmp_14,1000
+	div     sdiv.0_13,call.0_12,tmp_14
+	mv      a0,sdiv.0_13
 	call    __printInt
-	li      tmp_16,0
-	mv      ra,tmp_16
+	li      tmp_15,0
+	mv      ra,tmp_15
 	mv      s0,calleeSaved_0
 	mv      s1,calleeSaved_1
 	mv      s2,calleeSaved_2
@@ -51,29 +69,29 @@ main:
 	.p2align	2
 __init__:
 .entranceBlock.0:
-	mv      calleeSaved_17,s0
-	mv      calleeSaved_18,s1
-	mv      calleeSaved_19,s2
-	mv      calleeSaved_20,s3
-	mv      calleeSaved_21,s4
-	mv      calleeSaved_22,s5
-	mv      calleeSaved_23,s6
-	mv      calleeSaved_24,s7
-	mv      calleeSaved_25,s8
-	mv      calleeSaved_26,s9
-	mv      calleeSaved_27,s10
-	mv      calleeSaved_28,s11
-	mv      s0,calleeSaved_17
-	mv      s1,calleeSaved_18
-	mv      s2,calleeSaved_19
-	mv      s3,calleeSaved_20
-	mv      s4,calleeSaved_21
-	mv      s5,calleeSaved_22
-	mv      s6,calleeSaved_23
-	mv      s7,calleeSaved_24
-	mv      s8,calleeSaved_25
-	mv      s9,calleeSaved_26
-	mv      s10,calleeSaved_27
-	mv      s11,calleeSaved_28
+	mv      calleeSaved_16,s0
+	mv      calleeSaved_17,s1
+	mv      calleeSaved_18,s2
+	mv      calleeSaved_19,s3
+	mv      calleeSaved_20,s4
+	mv      calleeSaved_21,s5
+	mv      calleeSaved_22,s6
+	mv      calleeSaved_23,s7
+	mv      calleeSaved_24,s8
+	mv      calleeSaved_25,s9
+	mv      calleeSaved_26,s10
+	mv      calleeSaved_27,s11
+	mv      s0,calleeSaved_16
+	mv      s1,calleeSaved_17
+	mv      s2,calleeSaved_18
+	mv      s3,calleeSaved_19
+	mv      s4,calleeSaved_20
+	mv      s5,calleeSaved_21
+	mv      s6,calleeSaved_22
+	mv      s7,calleeSaved_23
+	mv      s8,calleeSaved_24
+	mv      s9,calleeSaved_25
+	mv      s10,calleeSaved_26
+	mv      s11,calleeSaved_27
 	jr      ra
 

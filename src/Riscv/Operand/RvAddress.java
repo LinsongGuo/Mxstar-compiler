@@ -1,20 +1,18 @@
 package Riscv.Operand;
 
-import Riscv.RvVisitor;
-
 public class RvAddress extends RvImm {
 	private RvPhysicalRegister reg; //%hi or %lo
-	private RvRegister symbol;
+	private RvGlobalVariable var;
 	
-	public RvAddress(RvPhysicalRegister reg, RvRegister symbol) {
+	public RvAddress(RvPhysicalRegister reg, RvGlobalVariable var) {
 		super(0);
 		this.reg = reg;
-		this.symbol = symbol;
+		this.var = var;
 	}
 
 	@Override
 	public String toString() {
-		return reg + "(" + symbol + ")";
+		return reg + "(" + var + ")";
 	}
 
 }

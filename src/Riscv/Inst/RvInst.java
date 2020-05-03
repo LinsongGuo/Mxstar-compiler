@@ -1,16 +1,34 @@
 package Riscv.Inst;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import Riscv.RvBlock;
 import Riscv.RvVisitor;
+import Riscv.Operand.RvRegister;
 
 public abstract class RvInst {
 	protected RvInst prev, next;
 	protected RvBlock currentBlock;
 	
+	protected HashSet<RvRegister> def, use;
+	protected boolean inLoop;
+	
+	private boolean checkInLoop() {
+		return currentBlock.getName().contains("forCond")  || 
+			   currentBlock.getName().contains("forBody")  || 
+			   currentBlock.getName().contains("forStep")  ||
+			   currentBlock.getName().contains("whileCond") || 
+			   currentBlock.getName().contains("whileBody");
+	}
+	
 	public RvInst(RvBlock currentBlock) {
 		this.currentBlock = currentBlock;
 		prev = next = null;
+		inLoop = checkInLoop();
 	}
+	
+	abstract public void init();
 	
 	public void setPrev(RvInst inst) {
 		prev = inst;
@@ -30,6 +48,7 @@ public abstract class RvInst {
 	
 	public void setCurrentBlock(RvBlock currentBlock) {
 		this.currentBlock = currentBlock;
+		inLoop = checkInLoop();
 	}
 	
 	public RvBlock getCurrentBlock() {
@@ -40,4 +59,20 @@ public abstract class RvInst {
 	
 	@Override
 	abstract public String toString();
+	
+	public HashSet<RvRegister> getDef() {
+		return def;
+	}
+	
+	public HashSet<RvRegister> getUse() {
+		return use;
+	}
+	
+	public void addDef(RvRegister reg) {
+		def.add(reg);
+	}
+	
+	public void addUse(RvRegister reg) {
+		use.add(reg);
+	}
 }

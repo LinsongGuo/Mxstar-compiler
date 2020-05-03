@@ -12,6 +12,12 @@ public class RvJ extends RvInst {
 		this.offset = offset;
 	}
 	
+	@Override
+	public void init() {
+		currentBlock.addSuccessor(offset);
+		offset.addPredecessor(currentBlock);
+	}
+	
 	public RvBlock getOffset() {
 		return offset;
 	}
@@ -25,4 +31,5 @@ public class RvJ extends RvInst {
 	public String toString() {
 		return "\tj       " + offset.getName();
 	}
+
 }
