@@ -3,13 +3,18 @@ package Riscv;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import Riscv.Inst.RvInst;
+import Riscv.Inst.RvTypeI;
+import Riscv.Operand.RegisterTable;
+import Riscv.Operand.RvImm;
 import Riscv.Operand.RvRegister;
+import Riscv.Operand.RvStackSlot;
 import Riscv.Operand.RvVirtualRegister;
 
 public class RvFunction {
 	private String name;
 	private ArrayList<RvBlock> blockList; 
-	private RvBlock entranceBlock;
+	private RvBlock entranceBlock, exitBlock;
 	private int parameters;
 	private ArrayList<RvRegister> regList;
 	
@@ -18,12 +23,17 @@ public class RvFunction {
 		this.parameters = parameters;
 		blockList = new ArrayList<RvBlock>();
 		regList = new ArrayList<RvRegister>();
+		spills = new ArrayList<RvStackSlot>();
+		calls = new ArrayList< ArrayList<RvStackSlot> >();
+		entranceBlock = exitBlock = null;
 	}
 	
 	public RvVirtualRegister newRegister(String name) {
+		//System.err.println("enter " + regList);
 		name = name + "_" + String.valueOf(regList.size());
 		RvVirtualRegister reg = new RvVirtualRegister(name);
 		regList.add(reg);
+		//System.err.println("new reg " + reg + " " + regList);
 		return reg;
 	}
 	
@@ -33,6 +43,10 @@ public class RvFunction {
 	
 	public void setEntranceBlock(RvBlock entranceBlock) {
 		this.entranceBlock = entranceBlock;
+	}
+	
+	public void setExitBlock(RvBlock exitBlock) {
+		this.exitBlock = exitBlock;
 	}
 	
 	public RvBlock getEntranceBlock() {
@@ -65,4 +79,44 @@ public class RvFunction {
 		entranceBlock.dfs(order, visited);
 		return order;
 	}
+	
+	//stack slot allocation.
+	private ArrayList<RvStackSlot> spills;
+	private ArrayList< ArrayList<RvStackSlot> > calls;
+	
+	public void addSpillStackSlot(RvStackSlot slot) {
+		spills.add(slot);
+	}
+	
+	public void addCallStackSlot(ArrayList<RvStackSlot> slots) {
+		calls.add(slots);
+	}
+	
+	public void stackSlotAllocation() {
+		int maxCall = 0;
+		for (ArrayList<RvStackSlot> slots : calls) {
+			if (maxCall < slots.size())
+				maxCall = slots.size();
+		}
+		int size = maxCall + spills.size();
+		size = (size + 3) / 4 * 4;
+		
+		for (int i = 0; i < spills.size(); ++i) {
+			spills.get(i).setIndex((size - (i + 1)) << 2);
+		}
+		
+		for (ArrayList<RvStackSlot> slots : calls) {
+			for (int i = 0; i < slots.size(); ++i) {
+				slots.get(i).setIndex(i << 2);
+			}
+		}
+		
+		if (size > 0) {
+			RvInst inst = new RvTypeI(entranceBlock, RvTypeI.Op.addi, RegisterTable.sp, RegisterTable.sp, new RvImm(-size << 2));
+			entranceBlock.insertPrev(entranceBlock.getHead(), inst);
+			inst = new RvTypeI(entranceBlock, RvTypeI.Op.addi, RegisterTable.sp, RegisterTable.sp, new RvImm(size <<2));
+			exitBlock.insertPrev(exitBlock.getTail(), inst);
+		}
+	}
+	
 }

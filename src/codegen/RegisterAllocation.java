@@ -9,10 +9,13 @@ import Riscv.RvBlock;
 import Riscv.RvFunction;
 import Riscv.RvModule;
 import Riscv.Inst.RvInst;
+import Riscv.Inst.RvLoad;
 import Riscv.Inst.RvMove;
+import Riscv.Inst.RvStore;
 import Riscv.Operand.RegisterTable;
 import Riscv.Operand.RvPhysicalRegister;
 import Riscv.Operand.RvRegister;
+import Riscv.Operand.RvStackSlot;
 
 public class RegisterAllocation {
 	
@@ -36,8 +39,8 @@ public class RegisterAllocation {
 	}
 	 
 	private RvModule module;
-	private RegisterTable regTable;
 	private int K;
+	private static int INF = 0x3f3f3f3f;
 	
 	//every register is always in exactly one of the HashSets or lists.
 	//private HashSet<RvRegister> preColored;
@@ -59,16 +62,18 @@ public class RegisterAllocation {
 	
 	private HashSet<Edge> adjSet;
 	
-	public RegisterAllocation(RvModule module, RegisterTable regTable) {
+	public RegisterAllocation(RvModule module) {
 		this.module = module;
-		this.regTable = regTable;
-		this.K = regTable.allocableNumber;
+		this.K = RegisterTable.allocableNumber;
 	}
 	
 	public void run() {
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
-			while (true) {
+			if (function.getName().contains("f")) continue;
+			//while (true) {
+			for (int i = 1; i <= 1; ++i) {
+				//System.err.println("for----------------- " + function.getName());
 				init(function);
 				new LivenessAnalysis(function);
 				build(function);
@@ -80,23 +85,36 @@ public class RegisterAllocation {
 				{	
 					if (!simplifyWorkList.isEmpty()) simplify();
 					if (!workListMoves.isEmpty()) coalesce();	
-					if (!freezeWorkList.isEmpty()) ;
-					if (!spillWorkList.isEmpty());
+					if (!freezeWorkList.isEmpty()) freeze();
+					if (!spillWorkList.isEmpty()) selectSpill();
+					/*
+					System.err.println("simplifyWorkList " + simplifyWorkList);
+					System.err.println("workListMoves " + workListMoves);
+					System.err.println("freezeWorkList " + freezeWorkList);
+					System.err.println("spillWorkList " + spillWorkList);
+					*/
 				}
+				assignColors();
+				if (spilledNodes.isEmpty())
+					break;
+				else 
+					rewriteProgram(function);
 			}
+			removeRedundantMove(function);
+			function.stackSlotAllocation();
 		}
 	}
 	
 	public void init(RvFunction function) {
 		//preColored = new HashSet<RvRegister>();
-		initial = new HashSet<RvRegister>(function.getRegList());
-		simplifyWorkList = new LinkedHashSet<RvRegister>();
-		freezeWorkList = new LinkedHashSet<RvRegister>();
-		spillWorkList = new LinkedHashSet<RvRegister>();
-		spilledNodes = new HashSet<RvRegister>();
-		coalescedNodes = new HashSet<RvRegister>();
-		coloredNodes = new HashSet<RvRegister>();
-		selectStack = new Stack<RvRegister>();
+		initial = new HashSet<RvRegister>();// all virtual registers
+		simplifyWorkList = new LinkedHashSet<RvRegister>(); // low-degree, non-move-related.
+		freezeWorkList = new LinkedHashSet<RvRegister>(); // low-degree, move-related.
+		spillWorkList = new LinkedHashSet<RvRegister>(); // hign-degree.
+		spilledNodes = new HashSet<RvRegister>(); // marked for spilling.
+		coalescedNodes = new HashSet<RvRegister>(); // if u<--v coalesced, v is added. 
+		coloredNodes = new HashSet<RvRegister>(); // has been colored.
+		selectStack = new Stack<RvRegister>(); // nodes removed from graph and will be colored.
 		
 		coalescedMoves = new HashSet<RvMove>(); //moves that have been coalesced.
 		constrainedMoves = new HashSet<RvMove>(); //moves whose source and target interfere.
@@ -105,6 +123,19 @@ public class RegisterAllocation {
 		activeMoves = new HashSet<RvMove>(); //moves not yet ready for coalescing.
 		
 		adjSet = new HashSet<Edge>();
+		
+		ArrayList<RvRegister> regs = function.getRegList();
+		for (RvRegister reg : regs) {
+			reg.clearColor();
+			if (!reg.isSpilled()) {
+				initial.add(reg);
+		///		System.err.println("init " + reg);
+			}
+		}
+		
+		for (int i = 0; i < 32; ++i) {
+			RegisterTable.registers[i].setDegree(INF);
+		}
 	}
 	
 	private void addEdge(RvRegister u, RvRegister v) {
@@ -114,10 +145,14 @@ public class RegisterAllocation {
 			if (!isPreColored(u)) {
 				u.addAdj(v);
 				u.increaseDegree();
+				//System.err.println("edge " + u + " " + v);
+				
 			}
 			if (!isPreColored(v)) {
 				v.addAdj(u);
 				v.increaseDegree();
+				//System.err.println("edge " + v + " " + u);
+				
 			}
 		}
 	}
@@ -139,9 +174,13 @@ public class RegisterAllocation {
 					workListMoves.add((RvMove) inst);
 				}
 				
-				//live.addAll(def); ???
+				//System.err.println(inst);
+				//live.addAll(def); //???
+				//System.err.println("def " + inst + " " + def);
+				//System.err.println(live);
 				for (RvRegister u : def) {
 					for (RvRegister v : live) {
+					//	System.err.println("addedge " + u + " " + v);
 						addEdge(u, v);
 					}
 				}
@@ -151,24 +190,10 @@ public class RegisterAllocation {
 		}
 	}
 	
-	private boolean isPreColored(RvRegister reg) {
-		return (reg instanceof RvPhysicalRegister);
-	}
-	
-	private HashSet<RvMove> nodeMoves(RvRegister reg) { //moves that related to reg and may be coalesced in the future.
-		HashSet<RvMove> res = new HashSet<>(activeMoves);
-		res.addAll(workListMoves);
-		res.retainAll(reg.getMoveList());
-		return res;
-	}
-	
-	private boolean moveRelated(RvRegister reg) {// Is reg in moves that may be coalesced in the future?
-		return !nodeMoves(reg).isEmpty();
-	}
-	
 	private void makeWorkList() {
 		for (RvRegister reg : initial) {
-			if (reg.getDegree() >= K) 
+			System.err.println("initial " + reg + " " + reg.getDegree() + " " + reg.getAdjList());
+			if (reg.getDegree() >= K) 	
 				spillWorkList.add(reg);
 			else if (moveRelated(reg))
 				freezeWorkList.add(reg);
@@ -178,11 +203,27 @@ public class RegisterAllocation {
 		initial.clear();
 	}
 	
+	private boolean isPreColored(RvRegister reg) {
+		return (reg instanceof RvPhysicalRegister);
+	}
+	
+	private HashSet<RvMove> nodeMoves(RvRegister reg) { 
+		//moves that related to reg and may be coalesced in the future.
+		HashSet<RvMove> res = new HashSet<>(activeMoves);
+		res.addAll(workListMoves);
+		res.retainAll(reg.getMoveList());
+		return res;
+	}
+	
+	private boolean moveRelated(RvRegister reg) {
+		// Is reg in moves that may be coalesced in the future?
+		return !nodeMoves(reg).isEmpty();
+	}
+	
 	private HashSet<RvRegister> adjacent(RvRegister reg) { //nodes adjacent with reg but not simplified or coalesced.
-		HashSet<RvRegister> tmp = new HashSet<RvRegister>(coalescedNodes);
-		tmp.addAll(selectStack);
 		HashSet<RvRegister> res = new HashSet<RvRegister>(reg.getAdjList());
-		res.removeAll(tmp);
+		res.removeAll(selectStack);
+		res.removeAll(coalescedNodes);
 		return res;
 	}
 	
@@ -231,6 +272,7 @@ public class RegisterAllocation {
 	}
 	
 	private boolean OK(RvRegister t, RvRegister u) {
+		//System.err.println("OK " + u + " " + t + " " + t.getDegree());
 		return t.getDegree() < K || isPreColored(t) || adjSet.contains(new Edge(t, u));
 	}
 	
@@ -265,6 +307,7 @@ public class RegisterAllocation {
 			v = u;
 			u = tmp;
 		}
+	//	System.err.println("coalesce " + u + " " + v + " " + adjSet.contains(new Edge(u, v)));
 		workListMoves.remove(move);
 		if (u.equals(v)) {
 			coalescedMoves.add(move);
@@ -294,6 +337,7 @@ public class RegisterAllocation {
 	}
 	
 	private void combine(RvRegister u, RvRegister v) {
+		System.err.println("combine " + u + " " + v);
 		if (freezeWorkList.contains(v)) // low-degree and move-related.
 			freezeWorkList.remove(v);
 		else                            // high-degree and move-related.
@@ -301,18 +345,22 @@ public class RegisterAllocation {
 		coalescedNodes.add(v);
 		v.setAlias(u);
 		u.getMoveList().addAll(v.getMoveList());
-		enableMoves(v);
+		
+		HashSet<RvRegister> nodes = new HashSet<RvRegister>();
+		nodes.add(v);
+		enableMoves(nodes);
+		
 		HashSet<RvRegister> adjs = adjacent(v);
 		for (RvRegister t : adjs) {
 			addEdge(t, u);
-			t.decreaseDegree();
+			decreaseDegree(t);
 		}
 		if (u.getDegree() >= K && freezeWorkList.contains(u)) {
 			freezeWorkList.remove(u);
 			spillWorkList.add(u);
 		}
 	}
-	
+	/*
 	private void enableMoves(RvRegister reg) {
 		HashSet<RvMove> moves = nodeMoves(reg);
 		for (RvMove move : moves) {
@@ -322,7 +370,7 @@ public class RegisterAllocation {
 			}
 		}
 	}
-	
+	*/
 	private void freezeMoves(RvRegister u) {
 		HashSet<RvMove> moves = nodeMoves(u);
 		for (RvMove move : moves) {
@@ -331,7 +379,7 @@ public class RegisterAllocation {
 			RvRegister v = yAlias.equals(uAlias) ? xAlias : yAlias;
 			activeMoves.remove(move);
 			frozenMoves.add(move);
-			if (freezeWorkList.contains(v) || nodeMoves(v).isEmpty()) {
+			if (freezeWorkList.contains(v) && nodeMoves(v).isEmpty()) {
 				freezeWorkList.remove(v);
 				simplifyWorkList.add(v);
 			}
@@ -348,10 +396,16 @@ public class RegisterAllocation {
 	private void selectSpill() {
 		RvRegister res = null;
 		for (RvRegister reg : spillWorkList) {
-			if (res == null || reg.getSpillCost() < res.getSpillCost()) 
-				res = reg;
+		//	System.err.println("select " + reg + " " + reg.getName().contains("calleeSaved") + " "+ getAlias(reg));
+			if (res == null 
+			//|| RegisterTable.calleeSavedSet.contains(getAlias(reg)) //let s0, s1.... spill  
+			//|| (reg.getName().contains("calleeSaved") && !res.getName().contains("calleeSaved"))
+			|| reg.getSpillCost() < res.getSpillCost()) 
+			{
+				res = reg;		
+			}
 		}
-		
+		System.err.println("selected " + res);
 		spillWorkList.remove(res);
 		simplifyWorkList.add(res);
 		freezeMoves(res);	
@@ -360,18 +414,24 @@ public class RegisterAllocation {
 	private void assignColors() {
 		while (!selectStack.isEmpty()) {
 			RvRegister u = selectStack.pop();
+			System.err.println("selectStack " + u);
 			HashSet<RvPhysicalRegister> colors = new HashSet<RvPhysicalRegister>(RegisterTable.allocableSet);
 			LinkedHashSet<RvRegister> adjs = u.getAdjList();
 			for (RvRegister v : adjs) {
-				if (isPreColored(v) || coloredNodes.contains(v)) {
-					colors.remove(getAlias(v).getColor());
+				RvRegister vAlias = getAlias(v);
+				if (isPreColored(vAlias) || coloredNodes.contains(vAlias)) {
+					//System.err.println("color " +  vAlias + " " +  vAlias.getColor());
+					colors.remove(vAlias.getColor());
 				}
 			}
 			
-			if(colors.isEmpty())
+			if(colors.isEmpty()) {
+				System.err.println("color empty " + u);
 				spilledNodes.add(u);
+			}
 			else {
 				u.setColor(colors.iterator().next());
+			//	System.err.println("assign " + u + " " + u.getColor());
 				coloredNodes.add(u);
 			}
 		}
@@ -380,4 +440,45 @@ public class RegisterAllocation {
 			u.setColor(getAlias(u).getColor());
 		}
 	}
+	
+	private void rewriteProgram(RvFunction function) {
+		for (RvRegister reg : spilledNodes) {
+			//System.err.println("spill " + reg);
+			RvStackSlot slot = new RvStackSlot();
+			function.addSpillStackSlot(slot);
+			
+			HashSet<RvInst> def = new HashSet<>(reg.getDef());
+			for (RvInst inst : def) {
+				RvRegister spill = function.newRegister("spill");
+				inst.replaceDef(reg,  spill);
+				RvBlock block = inst.getCurrentBlock();
+				block.insertNext(inst, new RvStore(block, spill, slot));
+			}
+			
+			HashSet<RvInst> use = new HashSet<>(reg.getUse());
+			for (RvInst inst : use) {
+				RvRegister spill = function.newRegister("spill");
+				inst.replaceUse(reg, spill);
+				RvBlock block = inst.getCurrentBlock();
+				block.insertPrev(inst, new RvLoad(block, spill, slot));
+			}
+			
+			reg.setSpilled();
+			//System.err.println("set spilled " + reg + " " + reg.isSpilled());
+		}
+	}
+	
+	private void removeRedundantMove(RvFunction function) {
+		ArrayList<RvBlock> blocks = function.getBlockList();
+		for (RvBlock block : blocks) {
+			ArrayList<RvMove> moves = block.getAllMoves();
+			for (RvMove move : moves) {
+				if (move.getRd().getColor() == move.getRs().getColor()) {
+					block.removeInst(move);
+					move.removeUseAndDef();
+				}
+			}
+		}
+	}
+	
 }

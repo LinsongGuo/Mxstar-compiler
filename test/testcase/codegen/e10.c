@@ -21,3 +21,10 @@ int main()
     scanf("%d",&n);
 printf((n%4==0)||(n%7==0)||(n%47==0)||(n%74==0)||(n%477==0) ? "YES" : "NO");
 }
+
+/*
+for (int i = 0; i < n; ++i)
+	for (int j = 0; j < n; ++j) {
+		d[i][j] = min(d[i][j], d[i][a] + w(a, b) + d[b][j], d[i][b] + w(a, b) + d[a][j])	
+	}
+	*/

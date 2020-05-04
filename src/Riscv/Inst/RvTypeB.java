@@ -37,6 +37,8 @@ public class RvTypeB extends RvInst {
 	public void init() {
 		addUse(rs);
 		addUse(rt);
+		rs.addUse(this);
+		rt.addUse(this);
 		currentBlock.addSuccessor(offset);
 		offset.addPredecessor(currentBlock);
 		rs.increaseSpillCost(inLoop);
@@ -63,5 +65,45 @@ public class RvTypeB extends RvInst {
 	@Override
 	public String toString() {
 		return "\t" + op + "     " + rs + "," + rt + "," + offset.getName();
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		boolean flag = false;
+		if (rs == old) {
+			old.decreaseSpillCost(inLoop);
+			rs = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (rt == old) {
+			old.decreaseSpillCost(inLoop);
+			rt = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (flag) {
+			old.removeUse(this);
+			use.remove(old);
+			nw.addUse(this);
+			use.add(nw);
+		}
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		rs.removeUse(this);
+		use.remove(rs);
+		rs.decreaseSpillCost(inLoop);
+		
+		rt.removeUse(this);
+		use.remove(rt);
+		rt.decreaseSpillCost(inLoop);
 	}
 }

@@ -109,6 +109,15 @@ public class BrInst extends IRInst {
 			}
 		}
 	}
+	
+	public void replaceBlock(IRBasicBlock old, IRBasicBlock nw) {
+		if (ifTrue == old) {
+			ifTrue = nw;
+		}
+		if (ifFalse == old) {
+			ifFalse = nw;
+		}
+	}
 
 	@Override
 	public IRRegister getRes() {

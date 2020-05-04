@@ -2,6 +2,7 @@ package Riscv.Inst;
 
 import Riscv.RvBlock;
 import Riscv.RvVisitor;
+import Riscv.Operand.RvRegister;
 
 public class RvJ extends RvInst {
 	
@@ -30,6 +31,24 @@ public class RvJ extends RvInst {
 	@Override
 	public String toString() {
 		return "\tj       " + offset.getName();
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

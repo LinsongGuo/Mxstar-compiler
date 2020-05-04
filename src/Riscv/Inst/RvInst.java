@@ -25,6 +25,8 @@ public abstract class RvInst {
 	public RvInst(RvBlock currentBlock) {
 		this.currentBlock = currentBlock;
 		prev = next = null;
+		def = new HashSet<RvRegister>();
+		use = new HashSet<RvRegister>();
 		inLoop = checkInLoop();
 	}
 	
@@ -75,4 +77,10 @@ public abstract class RvInst {
 	public void addUse(RvRegister reg) {
 		use.add(reg);
 	}
+	
+	public abstract void replaceUse(RvRegister old, RvRegister nw);
+	
+	public abstract void replaceDef(RvRegister old, RvRegister nw);
+	
+	public abstract void removeUseAndDef();
 }

@@ -16,6 +16,7 @@ public class RvJr extends RvInst {
 	@Override
 	public void init() {
 		addUse(rs);
+		rs.addUse(this);
 		rs.increaseSpillCost(inLoop);
 	}
 	
@@ -31,6 +32,32 @@ public class RvJr extends RvInst {
 	@Override
 	public String toString() {
 		return "\tjr      " + rs.getName();
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		if (rs == old) {
+			old.removeUse(this);
+			use.remove(old);
+			old.decreaseSpillCost(inLoop);
+			rs = nw;
+			nw.addUse(this);
+			use.add(nw);
+			nw.increaseSpillCost(inLoop);
+		}
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		rs.removeUse(this);
+		use.remove(rs);
+		rs.decreaseSpillCost(inLoop);
 	}
 
 }

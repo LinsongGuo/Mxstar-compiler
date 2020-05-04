@@ -1285,6 +1285,7 @@ public class IRBuilder implements ASTVisitor {
 		
 	}
 	
+	
 	@Override
 	public void visit(MemberExprNode node) {
 		ExprNode nameExpr = node.getNameExpr();

@@ -29,9 +29,11 @@ public class RvStore extends RvInst {
 	@Override
 	public void init() {
 		addUse(rd);
+		rd.addUse(this);
 		rd.increaseSpillCost(inLoop);
 		if (dest instanceof RvRegister) {
 			addUse((RvRegister) dest);
+			((RvRegister) dest).addUse(this);
 			((RvRegister) dest).increaseSpillCost(inLoop);
 		}
 	}
@@ -59,6 +61,48 @@ public class RvStore extends RvInst {
 			return "\tsw      " + rd + "," + dest;
 		else
 			return "\tsw      " + rd + "," + offset + "(" + dest + ")";
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		boolean flag = false;
+		if (rd == old) {
+			old.decreaseSpillCost(inLoop);
+			rd = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (dest instanceof RvRegister && dest == old) {
+			old.decreaseSpillCost(inLoop);
+			dest = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (flag) {
+			old.removeUse(this);
+			use.remove(old);
+			nw.addUse(this);
+			use.add(nw);
+		}
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		rd.removeUse(this);
+		use.remove(rd);
+		rd.decreaseSpillCost(inLoop);
+		
+		if (dest instanceof RvRegister) {
+			((RvRegister) dest).removeUse(this);
+			use.remove((RvRegister) dest);
+			((RvRegister) dest).decreaseSpillCost(inLoop);		
+		}
 	}
 
 }

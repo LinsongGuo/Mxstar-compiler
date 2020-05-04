@@ -11,6 +11,7 @@ import utility.*;
 import SemanticChecker.*;
 import codegen.InstructionSelection;
 import codegen.LivenessAnalysis;
+import codegen.RegisterAllocation;
 import codegen.RvPrinter;
 import optimize.CFGSimplifier;
 import optimize.DCE;
@@ -77,23 +78,26 @@ public class Main {
 		new SCCP(irModule);
 		new CFGSimplifier(irModule); 
 		
-		//System.err.println("SSA destruction.");
 		new SSADestructor(irModule);
-		//System.err.println("SSA destruction finished.");
 		
-		//System.err.println("Printing IR--------------");
+		
 		IRPrinter irPrinter = new IRPrinter();
 		irPrinter.visit(irModule);
+
+		System.err.println("instruction selection------------------");
+		InstructionSelection selector = new InstructionSelection(irModule);
+		RvModule rvModule = selector.run();
+		System.err.println("instruction selection finished.");
 		
-		System.err.println("codegen------------------");
-		RegisterTable regTable = new RegisterTable();
-		InstructionSelection instructionSelection = new InstructionSelection(irModule, regTable);
-		RvModule rvModule = instructionSelection.run();
-		//LivenessAnalysis livenessAnalysis = new LivenessAnalysis(rvModule);
-		//livenessAnalysis.run();
-		System.err.println("end codegen");
+		RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s");
+		pseudoPrinter.visit(rvModule);
 		
-		RvPrinter rvPrinter = new RvPrinter("test/pseudo.s");
+		System.err.println("register allocation------------------");
+		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
+		allocator.run();
+		System.err.println("register allocation finished.");
+		
+		RvPrinter rvPrinter = new RvPrinter("test/test.s");
 		rvPrinter.visit(rvModule);
 	}
 }

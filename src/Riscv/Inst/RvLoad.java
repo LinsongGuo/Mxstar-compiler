@@ -29,9 +29,11 @@ public class RvLoad extends RvInst {
 	@Override
 	public void init() {
 		addDef(rd);
+		rd.addDef(this);
 		rd.increaseSpillCost(inLoop);
 		if (src instanceof RvRegister) {
 			addUse((RvRegister) src);
+			((RvRegister) src).addUse(this);
 			((RvRegister) src).increaseSpillCost(inLoop);
 		}
 	}
@@ -59,6 +61,45 @@ public class RvLoad extends RvInst {
 			return "\tlw      " + rd + "," + src;
 		else
 			return "\tlw      " + rd + "," + offset + "(" + src + ")";
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		if (src instanceof RvRegister && src == old) {
+			old.removeUse(this);
+			use.remove(old);
+			old.decreaseSpillCost(inLoop);
+			src = nw;
+			nw.addUse(this);
+			use.add(nw);
+			nw.increaseSpillCost(inLoop);
+		}
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		if (rd == old) {
+			old.removeDef(this);
+			def.remove(old);
+			old.decreaseSpillCost(inLoop);
+			rd = nw;
+			nw.addDef(this);
+			def.add(nw);
+			nw.increaseSpillCost(inLoop);	
+		}
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		rd.removeDef(this);
+		def.remove(rd);
+		rd.decreaseSpillCost(inLoop);
+		
+		if (src instanceof RvRegister) {
+			((RvRegister) src).removeUse(this);
+			use.remove((RvRegister) src);
+			((RvRegister) src).decreaseSpillCost(inLoop);
+		}
 	}
 	
 }

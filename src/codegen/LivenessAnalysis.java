@@ -18,12 +18,22 @@ public class LivenessAnalysis {
 			for (RvInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
 				HashSet<RvRegister> def = inst.getDef();
 				HashSet<RvRegister> use = new HashSet<>(inst.getUse());
-				use.removeAll(def);
+			//	System.err.println(inst + " " + def + " " + use);
+				use.removeAll(block.getDef());
 				block.addUseNotDef(use);
 				block.addDef(def);
 			}
 		}
+		
+		/*
+		for (RvBlock block : blocks) {
+			System.err.println("use not def " + block.getName());
+			for (RvRegister reg : block.getUseNotDef()) {
+				System.err.println(reg + " ");
+			}
 			
+		}*/
+		
 		boolean flag = true;
 		while (flag) {
 			flag = false;
@@ -49,9 +59,15 @@ public class LivenessAnalysis {
 				}
 			}
 		}
+		
+		/*
+		for (RvBlock block : blocks) {
+			System.err.println("liveIn " + block.getName());
+			for (RvRegister reg : block.getLiveIn()) {
+				System.err.println(reg + " ");
+			}
+		}
+		*/
 	}
 	
-	public void run() {
-		
-	}
 }

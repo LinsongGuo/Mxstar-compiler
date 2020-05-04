@@ -48,6 +48,7 @@ public class RvPrinter implements RvVisitor {
 			for (RvGlobalVariable globalVariable : globalVariables) {
 				globalVariable.accept(this);
 			}
+			printer.println("");
 		}
 			
 		printer.println("\t.text\n");
@@ -82,6 +83,7 @@ public class RvPrinter implements RvVisitor {
 	public void visit(RvFunction function) {
 		printer.println("\t.globl  " + function.getName());
 		printer.println("\t.p2align	2");
+		printer.println("\t.type   " + function.getName() + ", @function");
 		printer.println(function.getName() + ":");
 		ArrayList<RvBlock> blocks = function.getBlockList();
 		//System.err.println("blocks " + blocks);
@@ -93,7 +95,8 @@ public class RvPrinter implements RvVisitor {
 
 	@Override
 	public void visit(RvBlock block) {
-		printer.println(block.getName() + ":");
+		if (!block.getName().contains("entranceBlock"))
+			printer.println(block.getName() + ":");
 		for (RvInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
 			inst.accept(this);
 		}

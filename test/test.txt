@@ -1,47 +1,41 @@
 /*
-int g(int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8, int x9, int x10) {
-	//if (x1 == 0) return 0;
-	//return g(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10);
-	return  x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10;
-}
+Test Package: Codegen
+Author: Pikachu
+Time: 2020-02-03
+Input:
+=== input ===
+2
+1 0 0
+1 1 1
+=== end ===
+Output:
+=== output ===
+1
 
-int f(int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8, int x9, int x10) {
-	//if (x1 == 0) return 0;
-	//return f(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10);
-	return  x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10;
-}
+=== end ===
+ExitCode: 0
+InstLimit: -1
+Origin Package: Codeforces 231A #46181712
 
 
+int main(){
+	int n;
+	int x;
+	int y;
+	int c = 0;
+	int k;
+	n = getInt();
+    for(k=0;k<n;k++){
+		x = getInt();
+        y = getInt();
+        if(x+y>1)c++;
+	}
+    printlnInt(c);
+}*/
+
+int f(int x, int y) {return f(x, y);}
 int main() {
-   	int x1 = getInt();
-    int x2 = getInt();
-    int x3 = getInt();
-    int x4 = getInt();
-    int x5 = getInt();
-    int x6 = getInt();
-    int x7 = getInt();
-    int x8 = getInt();
-    int x9 = getInt();
-    int x10 = getInt();
-    printInt(f(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10));
-    printInt(g(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10));
-    return 0;
-}
-*/
-/*
-class A {
-	int x, y, z;
-	A() {x = 1; y = 2; z = 3;}
-	void f() {x = 11; y = 22; z = 33;}
-};
-*/
-
-int a;
-int b = 10;
-string c = "1234";
-string d;
-int main() {
-	int x = getInt();
-	printInt(x / 1000);
+	int x = getInt(), y = getInt();
+	printInt(f(x, y));
 	return 0;
 }

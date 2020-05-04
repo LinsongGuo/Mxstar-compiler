@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import Riscv.Inst.RvInst;
+import Riscv.Inst.RvMove;
 import Riscv.Operand.RvRegister;
 
 public class RvBlock {
@@ -13,8 +14,8 @@ public class RvBlock {
 	private HashSet<RvRegister> def, useNotDef, liveIn, liveOut;
 	private ArrayList<RvBlock> successors, predecessors;
 	
-	public RvBlock(String name, RvFunction currentFunction) {
-		this.name = "." + name;
+	public RvBlock(String name, String functionName, RvFunction currentFunction) {
+		this.name = "." + functionName + "_" + name;
 		this.currentFunction = currentFunction;
 		head = tail = null;
 		def = new HashSet<RvRegister>();
@@ -26,7 +27,7 @@ public class RvBlock {
 	}
 	
 	public void addInst(RvInst inst) {
-		//System.err.println("addinst " + inst);
+		inst.init();
 		if (head == null) {
 			head = tail = inst;
 		}
@@ -35,7 +36,6 @@ public class RvBlock {
 			inst.setPrev(tail);
 			tail = inst;
 		}
-		//System.err.println("tail " + tail);
 	}
 	
 	public void accept(RvVisitor visitor) {
@@ -46,12 +46,72 @@ public class RvBlock {
 		return name;
 	}
 	
+	public ArrayList<RvMove> getAllMoves() {
+		ArrayList<RvMove> moves = new ArrayList<RvMove>();
+		for (RvInst inst = head; inst != null; inst = inst.getNext()) {
+			if (inst instanceof RvMove)
+				moves.add((RvMove) inst);
+		}
+		return moves;
+	}
+	
 	public RvInst getHead() {
 		return head;
 	}
 	
 	public RvInst getTail() {
 		return tail;
+	}
+	
+	public void removeInst(RvInst inst) {
+		if (inst == head) {
+			if (inst == tail)
+				head = tail = null;
+			else {
+				head = inst.getNext();
+				head.setPrev(null);
+			}
+		}
+		else if (inst == tail) {
+			tail = inst.getPrev();
+			tail.setNext(null);
+		}
+		else {
+			RvInst prev = inst.getPrev(), next = inst.getNext();
+			prev.setNext(next);
+			next.setPrev(prev);
+		}
+	}
+	
+	public void insertPrev(RvInst inst, RvInst prev) {
+		prev.init();
+		if (inst == head) {
+			head = prev;
+			prev.setNext(inst);
+			inst.setPrev(prev);
+		}
+		else {
+			//System.err.println("prev " + inst + " " + inst.getPrev());
+			inst.getPrev().setNext(prev);
+			prev.setPrev(inst.getPrev());
+			inst.setPrev(prev);
+			prev.setNext(inst);
+		}
+	}
+	
+	public void insertNext(RvInst inst, RvInst next) {
+		next.init();
+		if (inst == tail) {
+			tail = next;
+			next.setPrev(inst);
+			inst.setNext(next);
+		}
+		else {
+			inst.getNext().setPrev(next);
+			next.setNext(inst.getNext());
+			inst.setNext(next);
+			next.setPrev(inst);
+		}
 	}
 	
 	public void addDef(HashSet<RvRegister> regs) {

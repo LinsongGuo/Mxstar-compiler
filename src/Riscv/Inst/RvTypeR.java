@@ -37,6 +37,9 @@ public class RvTypeR extends RvInst {
 		addDef(rd);
 		addUse(rs1);
 		addUse(rs2);
+		rd.addDef(this);
+		rs1.addUse(this);
+		rs2.addUse(this);
 		rd.increaseSpillCost(inLoop);
 		rs1.increaseSpillCost(inLoop);
 		rs2.increaseSpillCost(inLoop);
@@ -67,6 +70,57 @@ public class RvTypeR extends RvInst {
 			return "\tsltu    " + rd + ","  + rs1 + "," + rs2;
 		else 
 			return "\t" +  op + "     " + rd + "," + rs1 + "," + rs2;
+	}
+
+	@Override
+	public void replaceUse(RvRegister old, RvRegister nw) {
+		boolean flag = false;
+		if (rs1 == old) {
+			old.decreaseSpillCost(inLoop);
+			rs1 = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (rs2 == old) {
+			old.decreaseSpillCost(inLoop);
+			rs2 = nw;
+			nw.increaseSpillCost(inLoop);
+			flag = true;
+		}
+		if (flag) {
+			old.removeUse(this);
+			use.remove(old);
+			nw.addUse(this);
+			use.add(nw);
+		}
+	}
+
+	@Override
+	public void replaceDef(RvRegister old, RvRegister nw) {
+		if (rd == old) {
+			old.removeDef(this);
+			def.remove(old);
+			old.decreaseSpillCost(inLoop);
+			rd = nw;
+			nw.addDef(this);
+			def.add(nw);
+			nw.increaseSpillCost(inLoop);
+		}
+	}
+
+	@Override
+	public void removeUseAndDef() {
+		rs1.removeUse(this);
+		use.remove(rs1);
+		rs1.decreaseSpillCost(inLoop);
+		
+		rs2.removeUse(this);
+		use.remove(rs2);
+		rs2.decreaseSpillCost(inLoop);
+		
+		rd.removeDef(this);
+		def.remove(rd);
+		rd.decreaseSpillCost(inLoop);
 	}
 	
 }

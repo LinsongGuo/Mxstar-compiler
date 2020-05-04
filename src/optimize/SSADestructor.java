@@ -29,6 +29,7 @@ public class SSADestructor extends PASS {
 		for (IRBasicBlock block : blockList) {
 			ArrayList<PhiInst> phiInsts = block.getAllPhiInst();
 			for (PhiInst phi : phiInsts) {
+				//System.err.println("phi " + block + " " + phi);
 				ArrayList<IRBasicBlock> predecessors = phi.getBBs();
 				ArrayList<IRSymbol> symbols = phi.getSymbols();
 				IRRegister res = phi.getRes();	
@@ -40,6 +41,7 @@ public class SSADestructor extends PASS {
 						predecessor.addMoveInst(new MoveInst(res, symbol));
 					}
 					else {
+						System.err.println("critical " + predecessor + " " + block);
 						//convert critical edge to noncritical edge 
 						//by splitting critical edge
 						IRBasicBlock newBlock = new IRBasicBlock("criticalEdge");
@@ -51,9 +53,14 @@ public class SSADestructor extends PASS {
 						predecessor.addSuccessor(newBlock);
 						block.removePredecessor(predecessor);
 						block.addPredecessor(newBlock);
-						for (IRInst inst = block.getHead(); inst instanceof PhiInst; inst = inst.getPrev()) {
-							((PhiInst) inst).replacePhiUse(predecessor, newBlock);
+						//System.err.println("head " + block.getHead());
+						for (IRInst inst = block.getHead(); inst instanceof PhiInst; inst = inst.getNext()) {
+							((PhiInst) inst).replacePhiUse(predecessor, newBlock);	
+							//System.err.println("--phi " + inst);
 						}
+						
+						assert block.getTail() instanceof BrInst;
+						((BrInst) predecessor.getTail()).replaceBlock(block, newBlock);
 					}
 				}
 				phi.removeItself();
