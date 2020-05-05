@@ -1,0 +1,8 @@
+@main
+%entranceBlock.0 --> %whileBodyBlock.0  %afterWhileBlock.0  
+%whileBodyBlock.0 --> 
+%afterWhileBlock.0 --> 
+
+@__init__
+%entranceBlock.0 --> 
+
