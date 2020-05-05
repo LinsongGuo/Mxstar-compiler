@@ -257,6 +257,7 @@ public class SCCP extends PASS implements IRVisitor {
 
 	@Override
 	public void visit(IcmpInst node) {
+		///System.err.println(node + " " );
 		IRRegister res = node.getRes();
 		IRSymbol left = node.getLeft(), right = node.getRight();
 		if (res.status == IRRegister.Status.undefined) {
@@ -264,10 +265,16 @@ public class SCCP extends PASS implements IRVisitor {
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
 				if (node.op == IcmpInst.IcmpOpType.eq) {
-					markConstant(res, new IRConstBool(((IRConstInt) leftConst).getValue() == ((IRConstInt) rightConst).getValue()));
+					if (leftConst instanceof IRConstInt)
+						markConstant(res, new IRConstBool(((IRConstInt) leftConst).getValue() == ((IRConstInt) rightConst).getValue()));
+					else if (leftConst instanceof IRConstBool)
+						markConstant(res, new IRConstBool(((IRConstBool) leftConst).getValue() == ((IRConstBool) rightConst).getValue()));
 				}
 				else if (node.op == IcmpInst.IcmpOpType.ne) {
-					markConstant(res, new IRConstBool(((IRConstInt) leftConst).getValue() != ((IRConstInt) rightConst).getValue()));
+					if (leftConst instanceof IRConstInt)
+						markConstant(res, new IRConstBool(((IRConstInt) leftConst).getValue() != ((IRConstInt) rightConst).getValue()));
+					else if (leftConst instanceof IRConstBool)
+						markConstant(res, new IRConstBool(((IRConstBool) leftConst).getValue() != ((IRConstBool) rightConst).getValue()));
 				}
 				else if (node.op == IcmpInst.IcmpOpType.sgt) {
 					markConstant(res, new IRConstBool(((IRConstInt) leftConst).getValue() > ((IRConstInt) rightConst).getValue()));
