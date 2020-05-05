@@ -27,7 +27,7 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
 		InputStream IS = System.in;
-		//InputStream IS = new FileInputStream("test/test.txt");
+	//	InputStream IS = new FileInputStream("test/test.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);

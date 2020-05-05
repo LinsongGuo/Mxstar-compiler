@@ -6,8 +6,6 @@ Time: 2019-10-20
 Verdict: Success
 Origin Package: Semantic Extended
 */
-///////////////////////////////////
-
 int countA;
 int countB;
 int countC;
@@ -83,7 +81,7 @@ void count()
 	print("\n");
 	println(toString(something.Me().str.substring(1, something.str.length()-1).parseInt()));
 	string temp = toString(something.str.ord(42 & 21));
-	if(something.str > temp)
+	if(temp < something.str)
 		println(something.str + ">" + temp);
 	else
 		println(something.str + "<=" + temp);
