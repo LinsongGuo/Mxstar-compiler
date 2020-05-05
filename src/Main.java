@@ -44,8 +44,8 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-		if (count > 0) {
-			System.exit(count);
+		if(args[0].equals("0")) {
+			System.exit(count);			
 		}
 		
 		GlobalScope globalScope = checker.getGlobalScope();

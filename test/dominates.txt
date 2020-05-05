@@ -1,50 +1,49 @@
-@digt
-%entranceBlock.0 --> %thenBodyBlock.0  %returnBlock.0  %afterIfBlock.0  
-%thenBodyBlock.0 --> 
-%afterIfBlock.0 --> %thenBodyBlock.1  %afterIfBlock.1  
+@A.A
+%entranceBlock.0 --> %thenBodyBlock.0  %afterIfBlock.0  %elseBodyBlock.0  
+%thenBodyBlock.0 --> %thenBodyBlock.1  %afterIfBlock.1  %elseBodyBlock.1  
+%elseBodyBlock.0 --> 
+%afterIfBlock.0 --> %creatorCondBlock.0  
 %thenBodyBlock.1 --> 
-%afterIfBlock.1 --> %thenBodyBlock.2  %afterIfBlock.2  
+%elseBodyBlock.1 --> 
+%afterIfBlock.1 --> 
+%creatorCondBlock.0 --> %creatorBodyBlock.0  %afterCreatorBlock.0  
+%creatorBodyBlock.0 --> %creatorCondBlock.1  
+%afterCreatorBlock.0 --> %thenBodyBlock.2  %afterIfBlock.2  
+%creatorCondBlock.1 --> %creatorBodyBlock.1  %afterCreatorBlock.1  
+%creatorBodyBlock.1 --> %creatorCondBlock.2  
+%afterCreatorBlock.1 --> 
+%creatorCondBlock.2 --> %creatorBodyBlock.2  %afterCreatorBlock.2  
+%creatorBodyBlock.2 --> 
+%afterCreatorBlock.2 --> 
 %thenBodyBlock.2 --> 
-%afterIfBlock.2 --> %thenBodyBlock.3  %afterIfBlock.3  
-%thenBodyBlock.3 --> 
-%afterIfBlock.3 --> %thenBodyBlock.4  %afterIfBlock.4  
-%thenBodyBlock.4 --> 
-%afterIfBlock.4 --> %thenBodyBlock.5  %afterIfBlock.5  
-%thenBodyBlock.5 --> 
-%afterIfBlock.5 --> %thenBodyBlock.6  %afterIfBlock.6  
-%thenBodyBlock.6 --> 
-%afterIfBlock.6 --> %thenBodyBlock.7  %afterIfBlock.7  
-%thenBodyBlock.7 --> 
-%afterIfBlock.7 --> %thenBodyBlock.8  %afterIfBlock.8  
-%thenBodyBlock.8 --> 
-%afterIfBlock.8 --> %thenBodyBlock.9  %afterIfBlock.9  
-%thenBodyBlock.9 --> 
-%afterIfBlock.9 --> 
-%returnBlock.0 --> 
+%afterIfBlock.2 --> 
 
-@s2
-%entranceBlock.0 --> %thenBodyBlock.0  %returnBlock.0  %afterIfBlock.0  
-%thenBodyBlock.0 --> 
-%afterIfBlock.0 --> 
-%returnBlock.0 --> 
+@A.getc0
+%entranceBlock.0 --> 
 
-@c2
-%entranceBlock.0 --> %thenBodyBlock.0  %returnBlock.0  %afterIfBlock.0  
+@B.B
+%entranceBlock.0 --> 
+
+@C.C
+%entranceBlock.0 --> 
+
+@C.Me
+%entranceBlock.0 --> 
+
+@count
+%entranceBlock.0 --> %thenBodyBlock.0  %afterIfBlock.0  %elseBodyBlock.0  
 %thenBodyBlock.0 --> 
+%elseBodyBlock.0 --> 
 %afterIfBlock.0 --> 
-%returnBlock.0 --> 
 
 @main
 %entranceBlock.0 --> %forCondBlock.0  
-%forCondBlock.0 --> %forBodyBlock.0  %afterForBlock.0  
-%forBodyBlock.0 --> 
-%afterForBlock.0 --> %forCondBlock.1  
-%forCondBlock.1 --> %forBodyBlock.1  %afterForBlock.1  
-%forBodyBlock.1 --> 
-%afterForBlock.1 --> %forCondBlock.2  
-%forCondBlock.2 --> %forBodyBlock.2  %afterForBlock.2  
-%forBodyBlock.2 --> 
-%afterForBlock.2 --> 
+%forCondBlock.0 --> %thenBodyBlock.0  %afterIfBlock.0  
+%thenBodyBlock.0 --> %whileCondBlock.0  
+%afterIfBlock.0 --> 
+%whileCondBlock.0 --> %thenBodyBlock.1  %afterIfBlock.1  
+%thenBodyBlock.1 --> 
+%afterIfBlock.1 --> 
 
 @__init__
 %entranceBlock.0 --> 
