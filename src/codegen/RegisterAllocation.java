@@ -70,9 +70,9 @@ public class RegisterAllocation {
 	public void run() {
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
-			if (function.getName().contains("f")) continue;
-			//while (true) {
-			for (int i = 1; i <= 1; ++i) {
+		//	if (function.getName().contains("f")) continue;
+			while (true) {
+			//for (int i = 1; i <= 1; ++i) {
 				//System.err.println("for----------------- " + function.getName());
 				init(function);
 				new LivenessAnalysis(function);
@@ -83,10 +83,15 @@ public class RegisterAllocation {
 					  !freezeWorkList.isEmpty()   ||
 					  !spillWorkList.isEmpty()) 
 				{	
+					//System.err.println("simplifyWorkList " + simplifyWorkList);
 					if (!simplifyWorkList.isEmpty()) simplify();
-					if (!workListMoves.isEmpty()) coalesce();	
-					if (!freezeWorkList.isEmpty()) freeze();
-					if (!spillWorkList.isEmpty()) selectSpill();
+					//System.err.println("simplifyWorkList after simplify " + simplifyWorkList);
+					else if (!workListMoves.isEmpty()) coalesce();	
+					//System.err.println("simplifyWorkList after coalesce " + simplifyWorkList);
+					else if (!freezeWorkList.isEmpty()) freeze();
+					//System.err.println("simplifyWorkList after freeze " + simplifyWorkList);
+					else if (!spillWorkList.isEmpty()) selectSpill();
+					//System.err.println("simplifyWorkList after select " + simplifyWorkList);
 					/*
 					System.err.println("simplifyWorkList " + simplifyWorkList);
 					System.err.println("workListMoves " + workListMoves);
@@ -101,7 +106,7 @@ public class RegisterAllocation {
 					rewriteProgram(function);
 			}
 			removeRedundantMove(function);
-			function.stackSlotAllocation();
+			stackSlotAllocation(function);
 		}
 	}
 	
@@ -140,6 +145,9 @@ public class RegisterAllocation {
 	
 	private void addEdge(RvRegister u, RvRegister v) {
 		if (!u.equals(v) && !adjSet.contains(new Edge(u, v))) {
+		//	if (u.getName().contains("calleeSaved_6") || v.getName().contains("calleeSaved_6")) {
+		//		System.err.println("add " + u + " " + v);
+		//	}
 			adjSet.add(new Edge(u, v));
 			adjSet.add(new Edge(v, u));
 			if (!isPreColored(u)) {
@@ -174,13 +182,16 @@ public class RegisterAllocation {
 					workListMoves.add((RvMove) inst);
 				}
 				
-				//System.err.println(inst);
-				//live.addAll(def); //???
-				//System.err.println("def " + inst + " " + def);
-				//System.err.println(live);
+				live.add(RegisterTable.zero);
+			/*
+				 although zero isn't a allocable register, but may be coalesced with zero, such as the following case.  
+				 addi    tmp_25,zero,1
+				 mv      returnValue.1_24,tmp_25
+			*/
+				//	System.err.println("def " + inst + " " + def);
+				//	System.err.println(live);
 				for (RvRegister u : def) {
 					for (RvRegister v : live) {
-					//	System.err.println("addedge " + u + " " + v);
 						addEdge(u, v);
 					}
 				}
@@ -192,7 +203,7 @@ public class RegisterAllocation {
 	
 	private void makeWorkList() {
 		for (RvRegister reg : initial) {
-			System.err.println("initial " + reg + " " + reg.getDegree() + " " + reg.getAdjList());
+		//	System.err.println("initial " + reg + " " + reg.getDegree() + " " + reg.getAdjList());
 			if (reg.getDegree() >= K) 	
 				spillWorkList.add(reg);
 			else if (moveRelated(reg))
@@ -220,7 +231,8 @@ public class RegisterAllocation {
 		return !nodeMoves(reg).isEmpty();
 	}
 	
-	private HashSet<RvRegister> adjacent(RvRegister reg) { //nodes adjacent with reg but not simplified or coalesced.
+	private HashSet<RvRegister> adjacent(RvRegister reg) { 
+		//nodes adjacent with reg but not simplified or coalesced.
 		HashSet<RvRegister> res = new HashSet<RvRegister>(reg.getAdjList());
 		res.removeAll(selectStack);
 		res.removeAll(coalescedNodes);
@@ -231,6 +243,7 @@ public class RegisterAllocation {
 		RvRegister reg = simplifyWorkList.iterator().next();
 		simplifyWorkList.remove(reg);
 		selectStack.push(reg);
+	//	System.err.println("selectStack push " + reg);
 		HashSet<RvRegister> adjs = adjacent(reg);
 		for (RvRegister adj : adjs) {
 			decreaseDegree(adj);
@@ -279,6 +292,8 @@ public class RegisterAllocation {
 	private boolean George(RvRegister u, RvRegister v) {
 		//George: u and v can be coalesced if, for every neighbor t of v, either t already interferes with u or t is of insignificant degree.
 		HashSet<RvRegister> adjs = adjacent(v);
+	//	if(u.getName().contains("calleeSaved_0") || v.getName().contains("calleeSaved_0"))
+	//		System.err.println("george " + u + " " + v + " " + adjs.size() + " " + adjs);	
 		for (RvRegister t : adjs) {
 			if (!OK(t, u))
 				return false; 
@@ -307,7 +322,8 @@ public class RegisterAllocation {
 			v = u;
 			u = tmp;
 		}
-	//	System.err.println("coalesce " + u + " " + v + " " + adjSet.contains(new Edge(u, v)));
+		//if(u.getName().contains("calleeSaved_0") || v.getName().contains("calleeSaved_0"))
+	//		System.err.println("coalesce " + u + " " + v);
 		workListMoves.remove(move);
 		if (u.equals(v)) {
 			coalescedMoves.add(move);
@@ -337,7 +353,13 @@ public class RegisterAllocation {
 	}
 	
 	private void combine(RvRegister u, RvRegister v) {
-		System.err.println("combine " + u + " " + v);
+		/*if (u.getName().contains("returnValue") 
+				|| v.getName().contains("returnValue")
+				|| u.getName().contains("tmp_25")
+				|| v.getName().contains("tmp_25")
+			)
+			System.err.println("combine " + u + " " + v);
+		*/
 		if (freezeWorkList.contains(v)) // low-degree and move-related.
 			freezeWorkList.remove(v);
 		else                            // high-degree and move-related.
@@ -399,14 +421,15 @@ public class RegisterAllocation {
 		//	System.err.println("select " + reg + " " + reg.getName().contains("calleeSaved") + " "+ getAlias(reg));
 			if (res == null 
 			//|| RegisterTable.calleeSavedSet.contains(getAlias(reg)) //let s0, s1.... spill  
-			//|| (reg.getName().contains("calleeSaved") && !res.getName().contains("calleeSaved"))
+			//|| (!reg.getName().contains("calleeSaved") && res.getName().contains("calleeSaved"))
 			|| reg.getSpillCost() < res.getSpillCost()) 
 			{
 				res = reg;		
 			}
 		}
-		System.err.println("selected " + res);
+		//System.err.println("selected " + res);
 		spillWorkList.remove(res);
+	//	System.err.println("spillworklist " + res + " " + spillWorkList);
 		simplifyWorkList.add(res);
 		freezeMoves(res);	
 	}
@@ -414,7 +437,7 @@ public class RegisterAllocation {
 	private void assignColors() {
 		while (!selectStack.isEmpty()) {
 			RvRegister u = selectStack.pop();
-			System.err.println("selectStack " + u);
+	//		System.err.println("selectStack " + u);
 			HashSet<RvPhysicalRegister> colors = new HashSet<RvPhysicalRegister>(RegisterTable.allocableSet);
 			LinkedHashSet<RvRegister> adjs = u.getAdjList();
 			for (RvRegister v : adjs) {
@@ -426,12 +449,12 @@ public class RegisterAllocation {
 			}
 			
 			if(colors.isEmpty()) {
-				System.err.println("color empty " + u);
+	//			System.err.println("color empty " + u);
 				spilledNodes.add(u);
 			}
 			else {
+			//	System.err.println("assign " + u + " " + colors.iterator().next());
 				u.setColor(colors.iterator().next());
-			//	System.err.println("assign " + u + " " + u.getColor());
 				coloredNodes.add(u);
 			}
 		}
@@ -481,4 +504,38 @@ public class RegisterAllocation {
 		}
 	}
 	
+	private void stackSlotAllocation(RvFunction function) {
+		int size = function.stackSlotAllocation();
+		ArrayList<RvBlock> blocks = function.getBlockList();
+		int i = 1;
+		for (RvBlock block : blocks) {
+			for (RvInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
+				//System.err.println("inst " + inst);
+				if (inst instanceof RvLoad) {
+					RvStackSlot slot = ((RvLoad) inst).getStackSlot();
+					if (slot != null) {
+						if (slot.call() == 1) {
+							slot.setIndex((size - i) << 2);
+							++i;
+						}
+						else if (slot.call() == 2) {
+							slot.addIndex(size);
+						}
+					}
+				}
+				if (inst instanceof RvStore) {
+					RvStackSlot slot = ((RvStore) inst).getStackSlot();
+					if (slot != null) {
+						if (slot.call() == 1) {
+							slot.setIndex((size - i) << 2);
+							++i;
+						}
+						else if (slot.call() == 2) {
+							slot.addIndex(size);
+						}
+					}
+				}
+			}
+		}
+	}
 }

@@ -73,9 +73,16 @@ public class IRRegister extends IRSymbol {
 	
 	public boolean onlyBeUsedByLoadStore() {
 		for (IRInst inst : useList) {
-			if (!(inst instanceof LoadInst) && !(inst instanceof StoreInst)) {
-				return false;
+			if (inst instanceof LoadInst) {
+				if (inst.getRes().equals(this) || !((LoadInst) inst).getPtr().equals(this))
+					return false;
 			}
+			else if (inst instanceof StoreInst) {
+				if (((StoreInst) inst).getValue().equals(this) || !((StoreInst) inst).getPtr().equals(this))
+					return false;
+			}
+			else
+				return false;
 		}
 		return true;
 	}

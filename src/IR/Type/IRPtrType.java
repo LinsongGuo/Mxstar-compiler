@@ -25,6 +25,6 @@ public class IRPtrType extends IRType {
 
 	@Override
 	public int bytes() {
-		return 8;
+		return 4;
 	}
 }

@@ -105,4 +105,7 @@ public class RvStore extends RvInst {
 		}
 	}
 
+	public RvStackSlot getStackSlot() {
+		return (dest instanceof RvStackSlot) ? (RvStackSlot)dest : null;	
+	}
 }

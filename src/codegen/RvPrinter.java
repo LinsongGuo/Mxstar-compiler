@@ -29,8 +29,11 @@ import Riscv.Operand.RvOperand;
 public class RvPrinter implements RvVisitor {
 	private PrintWriter printer;
 	
-	public RvPrinter(String path) throws FileNotFoundException {
-		printer = new PrintWriter(new FileOutputStream(path));
+	public RvPrinter(String path, boolean file) throws FileNotFoundException {
+		if (file)
+			printer = new PrintWriter(new FileOutputStream(path));
+		else 
+			printer = new PrintWriter(System.out);
 	}
 	
 	@Override
@@ -100,6 +103,7 @@ public class RvPrinter implements RvVisitor {
 		for (RvInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
 			inst.accept(this);
 		}
+		printer.println("");
 	}
 
 	@Override

@@ -41,7 +41,7 @@ public class SSADestructor extends PASS {
 						predecessor.addMoveInst(new MoveInst(res, symbol));
 					}
 					else {
-						System.err.println("critical " + predecessor + " " + block);
+						//System.err.println("critical " + predecessor + " " + block);
 						//convert critical edge to noncritical edge 
 						//by splitting critical edge
 						IRBasicBlock newBlock = new IRBasicBlock("criticalEdge");

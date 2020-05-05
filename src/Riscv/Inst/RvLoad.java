@@ -102,4 +102,7 @@ public class RvLoad extends RvInst {
 		}
 	}
 	
+	public RvStackSlot getStackSlot() {
+		return (src instanceof RvStackSlot) ? (RvStackSlot) src : null;
+	}
 }

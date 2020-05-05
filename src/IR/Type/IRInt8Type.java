@@ -16,7 +16,7 @@ public class IRInt8Type extends IRIntType {
 
 	@Override
 	public int bytes() {
-		return 1;
+		return 4;
 	}
 
 }

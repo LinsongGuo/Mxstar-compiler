@@ -15,7 +15,7 @@ public class RvBlock {
 	private ArrayList<RvBlock> successors, predecessors;
 	
 	public RvBlock(String name, String functionName, RvFunction currentFunction) {
-		this.name = "." + functionName + "_" + name;
+		this.name = functionName + "_" + name;
 		this.currentFunction = currentFunction;
 		head = tail = null;
 		def = new HashSet<RvRegister>();

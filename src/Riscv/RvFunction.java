@@ -92,7 +92,7 @@ public class RvFunction {
 		calls.add(slots);
 	}
 	
-	public void stackSlotAllocation() {
+	public int stackSlotAllocation() {
 		int maxCall = 0;
 		for (ArrayList<RvStackSlot> slots : calls) {
 			if (maxCall < slots.size())
@@ -100,7 +100,7 @@ public class RvFunction {
 		}
 		int size = maxCall + spills.size();
 		size = (size + 3) / 4 * 4;
-		
+		/*
 		for (int i = 0; i < spills.size(); ++i) {
 			spills.get(i).setIndex((size - (i + 1)) << 2);
 		}
@@ -110,13 +110,15 @@ public class RvFunction {
 				slots.get(i).setIndex(i << 2);
 			}
 		}
-		
+		*/
 		if (size > 0) {
 			RvInst inst = new RvTypeI(entranceBlock, RvTypeI.Op.addi, RegisterTable.sp, RegisterTable.sp, new RvImm(-size << 2));
 			entranceBlock.insertPrev(entranceBlock.getHead(), inst);
 			inst = new RvTypeI(entranceBlock, RvTypeI.Op.addi, RegisterTable.sp, RegisterTable.sp, new RvImm(size <<2));
 			exitBlock.insertPrev(exitBlock.getTail(), inst);
 		}
+		
+		return size;
 	}
 	
 }

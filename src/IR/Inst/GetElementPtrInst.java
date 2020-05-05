@@ -56,6 +56,11 @@ public class GetElementPtrInst extends IRInst {
 			return null;
 		}
 	}
+	
+	public int bytes() {
+		 return ((IRPtrType) ptr.getType()).getType().bytes();
+	}
+	
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
