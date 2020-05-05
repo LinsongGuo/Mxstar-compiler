@@ -60,7 +60,7 @@ public class Main {
 		new DominatorTree(irModule);
 		new SSAConstructor(irModule);
 		new DCE(irModule);
-		new SCCP(irModule);
+		//new SCCP(irModule);
 		new CFGSimplifier(irModule); 
 		
 		new SSADestructor(irModule);

@@ -7,5 +7,5 @@ path:
   simulator: /mnt/d/courses/compiler/Mxstar-compiler/test/ravel/bin
   simulator-executable: /mnt/d/courses/compiler/Mxstar-compiler/test/ravel/bin/ravel
   built-in: /mnt/d/courses/compiler/Mxstar-compiler/test/builtin.s
-stage: codegen
+stage: semantic
 timelimit: 15
