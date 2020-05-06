@@ -6,6 +6,4 @@ public interface Type {
 	public abstract String typeString();
 	
 	public abstract boolean isBuiltInType();
-	
-//	public abstract IRType toIRType();
 }

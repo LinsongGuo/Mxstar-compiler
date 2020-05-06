@@ -30,10 +30,4 @@ public class IntType extends Symbol implements Type {
 	public boolean isBuiltInType() {
 		return true;
 	}
-
-	/*
-	@Override
-	public IRType toIRType() {
-		return new IRInt32Type();
-	}*/
 }

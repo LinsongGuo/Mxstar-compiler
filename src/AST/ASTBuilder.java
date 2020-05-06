@@ -289,17 +289,14 @@ public class ASTBuilder extends MxstarBaseVisitor<ASTNode> {
 	@Override
 	public ASTNode visitLiteralExpr(MxstarParser.LiteralExprContext ctx) {
 		//System.err.println("visitLiteralExpr: " + ctx.getText());
-		if (ctx.literal().BoolLiteral() != null) {
+		if (ctx.literal().BoolLiteral() != null) 
 			return new BoolLiteralNode( new Location(ctx.getStart()), 
-				ctx.literal().BoolLiteral().getText().equals("true") ? true : false
+				ctx.literal().BoolLiteral().getText() == "true" ? true : false
 			);
-		}	
-		else if (ctx.literal().StringLiteral() != null) {
-			String value = ctx.literal().StringLiteral().getText();
+		else if (ctx.literal().StringLiteral() != null)
 			return new StringLiteralNode( new Location(ctx.getStart()),
-				value.substring(1, value.length() - 1)
+				ctx.literal().StringLiteral().getText()
 			);
-		}	
 		else if (ctx.literal().IntLiteral() != null) 
 			return new IntLiteralNode( new Location(ctx.getStart()),
 				Long.parseLong(ctx.literal().IntLiteral().getText())   

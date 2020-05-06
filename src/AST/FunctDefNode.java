@@ -2,7 +2,6 @@ package AST;
 
 import utility.Location;
 import java.util.ArrayList;
-import Scope.FunctSymbol;
 
 public class FunctDefNode extends DefNode {
 	private TypeNode type;
@@ -40,15 +39,5 @@ public class FunctDefNode extends DefNode {
 
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
-	}
-	
-	private FunctSymbol functSymbol;
-	
-	public void setFunctSymbol(FunctSymbol functSymbol) {
-		this.functSymbol = functSymbol;
-	}
-	
-	public FunctSymbol getFunctSymbol() {
-		return functSymbol;
 	}
 }

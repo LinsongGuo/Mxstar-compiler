@@ -30,11 +30,4 @@ public class NullType extends Symbol implements Type {
 	public boolean isBuiltInType() {
 		return false;
 	}
-
-	/*
-	@Override
-	public IRType toIRType() {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
 }

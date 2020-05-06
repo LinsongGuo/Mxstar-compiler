@@ -2,7 +2,6 @@ package AST;
 
 import utility.Location;
 import java.util.ArrayList;
-import Scope.ClassSymbol;
 
 public class ClassDefNode extends DefNode {
 	private String identifier;
@@ -36,15 +35,5 @@ public class ClassDefNode extends DefNode {
 	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
-	}
-	
-	private ClassSymbol classSymbol;
-	
-	public void setIRClass(ClassSymbol classSymbol) {
-		this.classSymbol = classSymbol;
-	}
-	
-	public ClassSymbol getClassSymbol() {
-		return classSymbol;
 	}
 }

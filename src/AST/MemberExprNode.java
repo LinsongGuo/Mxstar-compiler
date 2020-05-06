@@ -1,6 +1,5 @@
 package AST;
 
-import Scope.Symbol;
 import utility.Location;
 
 public class MemberExprNode extends ExprNode {
@@ -12,7 +11,6 @@ public class MemberExprNode extends ExprNode {
 		this.nameExpr = nameExpr;
 		this.identifier = identifier;
 		this.memberExpr = memberExpr;
-		this.symbol = null;
 	}
 	
 	public ExprNode getNameExpr() {
@@ -33,16 +31,6 @@ public class MemberExprNode extends ExprNode {
 	
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
-	}
-	
-	private Symbol symbol;
-	
-	public void setSymbol(Symbol symbol) {
-		this.symbol = symbol;
-	}
-	
-	public Symbol getSymbol() {
-		return symbol;
 	}
 }
 

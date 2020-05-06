@@ -1,6 +1,5 @@
 package Scope;
 
-
 public class ArrayType extends ClassSymbol implements Type {
 	private int dimension;
 	
