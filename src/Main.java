@@ -80,7 +80,7 @@ public class Main {
 		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
 		//rvPrinter.visit(rvModule);
 	
-		RvPrinter output = new RvPrinter("", false);
+		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
 	}
 }
