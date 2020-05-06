@@ -1,14 +1,18 @@
 package Scope;
 
 import AST.ExprNode;
+import IR.Symbol.IRRegister;
+import IR.Type.IRType;
 import utility.ErrorReminder;
 
 public class VarSymbol extends Symbol{
-	protected Type type;
+	private Type type;
+	private Scope scope;
 	
-	public VarSymbol(String identifier, Type type) {
+	public VarSymbol(String identifier, Type type, Scope scope) {
 		super(identifier);
 		this.type = type;
+		this.scope = scope;
 	}
 	
 	public Type getType() {
@@ -41,5 +45,33 @@ public class VarSymbol extends Symbol{
 				);
 			}
 		}
-	}	
+	}
+	
+	//for IR
+	private IRRegister address;
+	private IRType IRtype;
+	
+	public void setAddress(IRRegister address) {
+		this.address = address;
+	}
+	
+	public IRRegister toIRAddress() {
+		return address;
+	}
+	
+	public void setIRType(IRType IRtype) {
+		this.IRtype = IRtype;
+	}
+	
+	public IRType getIRType() {
+		return IRtype;
+	}
+	
+	public void setScope(Scope scope) {
+		this.scope = scope;
+	}
+	
+	public Scope getScope() {
+		return scope;
+	}
 }

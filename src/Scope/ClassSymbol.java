@@ -12,10 +12,12 @@ import AST.FunctExprNode;
 import AST.TypeNode;
 import AST.VarDefNode;
 import AST.VarExprNode;
+import IR.Type.IRClassType;
 import utility.ErrorReminder;
 
 public class ClassSymbol extends ScopedSymbol implements Type {
 	protected LinkedHashMap<String, FunctSymbol> functList;
+	private FunctSymbol constructor;
 	
 	public ClassSymbol(Scope parent, String identifier) {
 		super(parent, identifier);
@@ -130,12 +132,16 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		return false;
 	}
 	
-	public Scope declareConstructor() {
+	public FunctSymbol declareConstructor() {
 		String identifier = toString();
-		FunctSymbol functSymbol = new FunctSymbol(this, identifier, this);
-		functSymbol.setConstructor();
-		functList.put(identifier, functSymbol);
-		return functSymbol;
+		constructor = new FunctSymbol(this, identifier, this);
+		constructor.setConstructor();
+		functList.put(identifier, constructor);
+		return constructor;
+	}
+	
+	public FunctSymbol getConstructor() {
+		return constructor;
 	}
 	
 	public VarSymbol findVar(VarExprNode node, ErrorReminder errorReminder) {
@@ -148,6 +154,10 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 		}
 		else 
 			return varList.get(identifier);
+	}
+	
+	public VarSymbol findArray(String name) {
+		return varList.get(name);
 	}
 	
 	public VarSymbol findArray(ArrayExprNode node, ErrorReminder errorReminder) {
@@ -176,9 +186,9 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			int tmp = ((ArrayType)type).getDimension();
 			String typeIdentifier = type.typeString();
 			if (tmp == 1)
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
+				return new VarSymbol(identifier, resolveType(typeIdentifier), this);
 			else 
-				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1), this);
 		} 
 		else {
 			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
@@ -218,5 +228,26 @@ public class ClassSymbol extends ScopedSymbol implements Type {
 			i++;
 		}
 		return functSymbol;
+	}
+
+	//for IR
+	private IRClassType classType;
+	
+	public void setIRClass(IRClassType classType) {
+		this.classType = classType;
+	}
+	
+	public IRClassType toIRClass() {
+		return classType;
+	}
+	
+	public int order(String name) {
+		int i = 0;
+		for (Map.Entry<String, VarSymbol> entry : varList.entrySet()) {
+			if (entry.getKey().equals(name))
+				return i;
+			++i;
+		}
+		return 0;
 	}
 }

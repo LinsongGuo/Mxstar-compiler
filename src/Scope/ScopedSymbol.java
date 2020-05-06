@@ -71,7 +71,7 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			return null;
 		}
 		else {
-			VarSymbol varSymbol = new VarSymbol(identifier, type);
+			VarSymbol varSymbol = new VarSymbol(identifier, type, this);
 			this.varList.put(identifier, varSymbol);
 			return varSymbol;
 		}	
@@ -86,34 +86,21 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	}
 	
 	@Override
-	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveVar(VarExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			return parent.resovleVar(node, errorReminder);
+			return parent.resolveVar(node, errorReminder);
 		}
 		else 
 			return varList.get(identifier);
 	}
 	
 	@Override
-	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			return parent.resovleArray(node, errorReminder);
+			return parent.resolveArray(node, errorReminder);
 		}
-		/*
-		//check index
-		ExprNode indexExpr = node.getIndexExpr();
-		if (indexExpr != null) {
-			Type indexType = indexExpr.getType();
-			if (!(indexType instanceof IntType)) {
-				errorReminder.error(indexExpr.getLoc(), "cannot convert \'" + indexType.toString() + "\' to \'int\'.");
-			}
-		}
-		else {
-			errorReminder.error(node.getLoc(), "empty index of array.");
-		}
-		*/	
 		//get type
 		VarSymbol var = varList.get(identifier);
 		Type type = var.getType();
@@ -121,9 +108,9 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 			int tmp = ((ArrayType)type).getDimension();
 			String typeIdentifier = type.typeString();
 			if (tmp == 1)
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
+				return new VarSymbol(identifier, resolveType(typeIdentifier), null);
 			else 
-				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1), null);
 		} 
 		else {
 			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
@@ -169,4 +156,25 @@ abstract public class ScopedSymbol extends Symbol implements Scope {
 	}
 	
 	public abstract boolean isFunct();
+	
+	/*
+	//for IR
+	protected LinkedHashMap<String, IRRegister> registerList;
+	
+	@Override
+	public void addRegister(String name, IRRegister reg) {
+		if (registerList.containsKey(name)) {
+			System.err.println("error in ScopedSymbol.addRegister");
+		}	
+		registerList.put(name, reg);
+	}
+	
+	@Override
+	public IRRegister resolveRegister(String name) {
+		if (registerList.containsKey(name)) 
+			return registerList.get(name);
+		if (parent != null)
+			return parent.resolveRegister(name);
+		return null;
+	}*/
 }

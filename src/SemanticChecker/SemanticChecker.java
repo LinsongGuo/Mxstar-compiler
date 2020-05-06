@@ -7,7 +7,8 @@ import Scope.*;
 import utility.*;
 
 public class SemanticChecker implements ASTVisitor {
-	private Scope currentScope, globalScope;
+	private Scope currentScope;
+	private GlobalScope globalScope;
 	private ErrorReminder errorReminder;
 	private StringType stringTemplate;
 	private HashSet<String> classSet; 
@@ -21,6 +22,14 @@ public class SemanticChecker implements ASTVisitor {
 		((GlobalScope)currentScope).setBuiltInMember(currentScope, stringTemplate);
 	}
 	
+	public GlobalScope getGlobalScope() {
+		return globalScope;
+	}
+	
+	public StringType getStringTemplate() {
+		return stringTemplate;
+	}
+	
 	private boolean isReservedWord(String identifier) {
 		for (int i = 0; i < 17; ++i) {
 			if (identifier.equals(reservedWordList[i]))
@@ -31,8 +40,8 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ProgramNode node){
+		node.setScope(currentScope);
 		ArrayList<DefNode> defList = node.getDefList();
-		
 		//declare classes.
 		for (DefNode classItem : defList) {
 			if (classItem instanceof ClassDefNode) {
@@ -43,7 +52,8 @@ public class SemanticChecker implements ASTVisitor {
 					);
 				}
 				else {
-					currentScope.declareClass((ClassDefNode)classItem, errorReminder);					
+					ClassSymbol classSymbol = currentScope.declareClass((ClassDefNode)classItem, errorReminder);					
+					((ClassDefNode) classItem).setIRClass(classSymbol);
 				}
 			}
 		}
@@ -56,7 +66,7 @@ public class SemanticChecker implements ASTVisitor {
 				//declare members in the class
 				if (!isReservedWord(identifier)) {
 					ClassSymbol classScope = currentScope.getClassScope(identifier);
-					//declare variables in the class
+					//define variables in the class
 					ArrayList<VarDefListNode> varLists =  ((ClassDefNode) classItem).getVarList();
 					for (VarDefListNode varListItem : varLists) {
 						ArrayList<VarDefNode> varList = varListItem.getVarList();
@@ -73,12 +83,16 @@ public class SemanticChecker implements ASTVisitor {
 								);
 							}
 							else {
-								classScope.declareVar(varItem, errorReminder);		
+								VarSymbol varSymbol = classScope.declareVar(varItem, errorReminder);		
+								varItem.setVarSymbol(varSymbol);
 							}
 						}
 					}
 					//declare constructor in the class
-					classScope.declareConstructor();
+					FunctSymbol constructor = classScope.declareConstructor();
+					FunctDefNode constructorDef = ((ClassDefNode) classItem).getConstructorDef(); 
+					if(constructorDef != null)
+						constructorDef.setFunctSymbol(constructor);
 					//declare functions in the class
 					ArrayList<FunctDefNode> functList = ((ClassDefNode) classItem).getFunctList();
 					for (FunctDefNode functItem : functList) {
@@ -96,6 +110,7 @@ public class SemanticChecker implements ASTVisitor {
 						else {
 							FunctSymbol functSymbol = classScope.declareFunct(functItem, errorReminder);
 							functSymbol.declareParaList(functItem.getParaList(), errorReminder);
+							functItem.setFunctSymbol(functSymbol);
 						}
 					}
 				}
@@ -103,7 +118,7 @@ public class SemanticChecker implements ASTVisitor {
 			}
 		}
 		
-		//define all functions in global scope.
+		//declare all functions in global scope.
 		boolean hasMain = false;
 		for (DefNode functItem : defList) {
 			if (functItem instanceof FunctDefNode) {
@@ -143,14 +158,17 @@ public class SemanticChecker implements ASTVisitor {
 								hasMain = true;
 								FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
 								functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
+								((FunctDefNode) functItem).setFunctSymbol(functSymbol);
 							}
 						}	
 					}
 					else {
 						FunctSymbol functSymbol = currentScope.declareFunct((FunctDefNode)functItem, errorReminder);
-						if (functSymbol != null)
+						if (functSymbol != null) {
 							functSymbol.declareParaList(((FunctDefNode)functItem).getParaList(), errorReminder);
-					}	
+							((FunctDefNode) functItem).setFunctSymbol(functSymbol);
+						}
+					}
 				}
 			}	
 		}
@@ -167,7 +185,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(VarDefListNode node){
-		//System.err.println("visit varDefList node ");
+		node.setScope(currentScope);		
 		ArrayList<VarDefNode> varList = node.getVarList();
 		for (VarDefNode item : varList) {
 			//initial value
@@ -190,6 +208,7 @@ public class SemanticChecker implements ASTVisitor {
 			else {
 				VarSymbol varSymbol = currentScope.declareVar(item, errorReminder);
 				if (varSymbol != null) {
+					item.setVarSymbol(varSymbol);
 					if (initValue != null)
 						varSymbol.checkInitValue(initValue, errorReminder);
 					varSymbol.beenDefined();
@@ -200,9 +219,11 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(VarDefNode node) {
+		node.setScope(currentScope);
 		String identifier = node.getIdentifier();
 		if (!isReservedWord(identifier) && !currentScope.duplicateClass(identifier)) {
 			VarSymbol varSymbol = currentScope.getVarSymbol(identifier);
+			node.setVarSymbol(varSymbol);
 			if (varSymbol != null && !varSymbol.definedOrNot()) {
 				ExprNode initValue = node.getInitValue();
 				if(initValue != null) {
@@ -217,12 +238,12 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(FunctDefNode node){
 		String identifier = node.getIdentifier();
-		//System.err.println("visit function " + identifier);
 		if (!isReservedWord(identifier)) {
 			if (!currentScope.duplicateClass(identifier)) {
 				FunctSymbol functSymbol = currentScope.getFunctScope(identifier);
 				if (functSymbol != null && !functSymbol.definedOrNot()) {
 					currentScope = functSymbol;
+					node.setScope(currentScope);
 					ArrayList<StmtNode> stmtList = node.getStmtList();
 					for (StmtNode stmt : stmtList) {
 						if (stmt != null)
@@ -238,11 +259,11 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(ClassDefNode node){
 		String identifier = node.getIdentifier();
-		//System.err.println("visit class " + identifier);
 		if (!isReservedWord(identifier)) {
 			ClassSymbol classSymbol = currentScope.getClassScope(identifier);
 			if (classSymbol != null && !classSymbol.definedOrNot()) {
 				currentScope = classSymbol;
+				node.setScope(currentScope);
 				//define variables;
 				ArrayList<VarDefListNode> varLists = node.getVarList();
 				for (VarDefListNode varListNode : varLists) {
@@ -286,6 +307,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(BlockStmtNode node) {
 		currentScope = new LocalScope(currentScope, ScopeType.BlockScope);
+		node.setScope(currentScope);
 		ArrayList<StmtNode> stmtList = node.getStmtList();
 		for (StmtNode item : stmtList) {
 			item.accept(this);
@@ -295,11 +317,12 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(BrankStmtNode node) {
-		;
+		node.setScope(currentScope);
 	}
 	
 	@Override
-	public void visit(BreakStmtNode node) { 
+	public void visit(BreakStmtNode node) {
+		node.setScope(currentScope);
 		if (!currentScope.inLoopScope()) {
 			errorReminder.error(node.getLoc(), 
 				"break-statement not within loop."	
@@ -309,6 +332,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ContinueStmtNode node) { 
+		node.setScope(currentScope);
 		if (!currentScope.inLoopScope()) {
 			errorReminder.error(node.getLoc(), 
 				"continue-statement not within loop."		
@@ -318,6 +342,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ExprStmtNode node) {
+		node.setScope(currentScope);
 		node.getExpr().accept(this);
 	}
 	
@@ -325,6 +350,7 @@ public class SemanticChecker implements ASTVisitor {
 	public void visit(IfStmtNode node) { 
 		//System.err.println("enter if");
 		currentScope = new LocalScope(currentScope, ScopeType.IfScope);
+		node.setScope(currentScope);
 		//check the type of cond-expr
 		ExprNode cond = node.getCond();
 		if (cond == null) {
@@ -353,6 +379,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(ForStmtNode node) {
 		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
+		node.setScope(currentScope);
 		//init-expr
 		ExprNode initExpr = node.getInitExpr();
 		if (initExpr != null) 
@@ -380,6 +407,7 @@ public class SemanticChecker implements ASTVisitor {
 	@Override
 	public void visit(WhileStmtNode node) {
 		currentScope = new LocalScope(currentScope, ScopeType.LoopScope);
+		node.setScope(currentScope);
 		//check the type of cond-expr
 		ExprNode condExpr = node.getExpr();
 		if (condExpr == null) {
@@ -401,6 +429,7 @@ public class SemanticChecker implements ASTVisitor {
 		
 	@Override
 	public void visit(ReturnStmtNode node) {
+		node.setScope(currentScope);
 		FunctSymbol functSymbol = currentScope.InFunctSymbol();
 		ExprNode expr = node.getExpr();
 		if (functSymbol == null) {
@@ -452,12 +481,14 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(VarDefStmtNode node) {
+		node.setScope(currentScope);
 		node.getVarDefList().accept(this);
 	}
 	
 	//expression--------------------------------------------------
 	@Override
 	public void visit(ThisExprNode node) {
+		node.setScope(currentScope);
 		ClassSymbol classSymbol = currentScope.InClassSymbol();
 		if (classSymbol == null) {
 			errorReminder.error(node.getLoc(), 
@@ -470,7 +501,9 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(VarExprNode node) {
-		VarSymbol var = currentScope.resovleVar(node, errorReminder);
+		node.setScope(currentScope);
+		VarSymbol var = currentScope.resolveVar(node, errorReminder);
+		node.setSymbol(var);
 		if (var != null) {
 			node.setType(var.getType());
 			node.setLvalue(true);
@@ -479,6 +512,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(ArrayExprNode node) {
+		node.setScope(currentScope);
 		//check index.
 		ExprNode indexExpr = node.getIndexExpr();
 		if (indexExpr != null) {
@@ -501,8 +535,10 @@ public class SemanticChecker implements ASTVisitor {
 			node.setLvalue(true);
 		}
 		else if (nameExpr instanceof VarExprNode){
+			nameExpr.setScope(currentScope);
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
-			VarSymbol varSymbol = currentScope.resovleArray(node, errorReminder);
+			VarSymbol varSymbol = currentScope.resolveArray(node, errorReminder);
+			((VarExprNode)nameExpr).setSymbol(currentScope.resolveVar((VarExprNode) nameExpr, errorReminder));
 			if (varSymbol != null) {
 				node.setType(varSymbol.getType());
 				node.setLvalue(true);
@@ -532,7 +568,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(FunctExprNode node) {
-		//System.err.println("visit functexpr.");
+		node.setScope(currentScope);
 		//check parameters
 		ArrayList<ExprNode> paraList = node.getParaList();
 		for (ExprNode item : paraList) {
@@ -550,9 +586,9 @@ public class SemanticChecker implements ASTVisitor {
 		else if (nameExpr instanceof VarExprNode) {
 			node.setIdentifier(((VarExprNode) nameExpr).getIdentifier());
 			FunctSymbol functSymbol = currentScope.resolveFunct(node, errorReminder);
+			((VarExprNode)nameExpr).setSymbol(functSymbol);
 			if (functSymbol != null) {
 				node.setType(functSymbol.getType());
-				
 				node.setLvalue(false);
 			}
 		}
@@ -563,6 +599,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(MemberExprNode node) { 
+		node.setScope(currentScope);
 		//System.err.println("visit memberexpr.");
 		ExprNode nameExpr = node.getNameExpr(), memberExpr = node.getMemberExpr();
 		nameExpr.accept(this);
@@ -574,6 +611,7 @@ public class SemanticChecker implements ASTVisitor {
 			else {
 				if (memberExpr instanceof VarExprNode) {
 					VarSymbol varSymbol = ((ClassSymbol)type).findVar((VarExprNode)memberExpr, errorReminder);
+					node.setSymbol(varSymbol);
 					if (varSymbol != null) {
 						node.setType(varSymbol.getType());
 						node.setLvalue(true);
@@ -581,6 +619,7 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (memberExpr instanceof ArrayExprNode) {
 					VarSymbol arraySymbol = ((ClassSymbol)type).findArray((ArrayExprNode)memberExpr, errorReminder);
+					node.setSymbol(((ClassSymbol) type).findArray(node.getIdentifier()));
 					if (arraySymbol != null) {
 						node.setType(arraySymbol.getType());
 						node.setLvalue(true);
@@ -588,6 +627,7 @@ public class SemanticChecker implements ASTVisitor {
 				}
 				else if (memberExpr instanceof FunctExprNode) {
 					FunctSymbol functSymbol = ((ClassSymbol)type).findFunct((FunctExprNode)memberExpr, errorReminder);
+					node.setSymbol(functSymbol);
 					if (functSymbol != null) {
 						node.setType(functSymbol.getType());
 						node.setLvalue(false);
@@ -599,6 +639,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(BracketExprNode node) {
+		node.setScope(currentScope);
 		ExprNode expr = node.getExpr();
 		expr.accept(this);
 		node.setType(expr.getType());
@@ -607,6 +648,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(CreatorExprNode node) {
+		node.setScope(currentScope);
 		ArrayList<ExprNode> indexList = node.getIndexList();
 		for (ExprNode item : indexList) {
 			item.accept(this);
@@ -649,6 +691,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(SuffixExprNode node) {
+		node.setScope(currentScope);
 		ExprNode expr = node.getExpr();
 		Operator op = node.getOp();
 		expr.accept(this);
@@ -672,6 +715,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(PrefixExprNode node) {
+		node.setScope(currentScope);
 		ExprNode expr = node.getExpr();
 		Operator op = node.getOp();
 		expr.accept(this);
@@ -716,6 +760,7 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(BinaryExprNode node) {
+		node.setScope(currentScope);
 		ExprNode left = node.getLeft(), right = node.getRight();
 		left.accept(this);
 		right.accept(this);
@@ -818,26 +863,29 @@ public class SemanticChecker implements ASTVisitor {
 	
 	@Override
 	public void visit(BoolLiteralNode node) {
+		node.setScope(currentScope);
 		node.setType(new BoolType());
 		node.setLvalue(false);
 	}
 	
 	@Override
 	public void visit(IntLiteralNode node) { 
+		node.setScope(currentScope);
 		node.setType(new IntType());
 		node.setLvalue(false);
 	}
 	
 	@Override
 	public void visit(StringLiteralNode node) {
+		node.setScope(currentScope);
 		node.setType(stringTemplate);
 		node.setLvalue(false);
 	}
 
 	@Override
 	public void visit(NullLiteralNode node) {
+		node.setScope(currentScope);
 		node.setType(new NullType());
 		node.setLvalue(false);
 	}
-	
 }

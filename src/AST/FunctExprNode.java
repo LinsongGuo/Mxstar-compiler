@@ -12,6 +12,7 @@ public class FunctExprNode extends ExprNode {
 		super(loc);
 		this.nameExpr = nameExpr;
 		this.paraList = paraList;
+	//	this.symbol = null;
 	}
 	
 	public FunctExprNode(Location loc, String identifier, ArrayList<ExprNode> paraList) {
@@ -40,4 +41,16 @@ public class FunctExprNode extends ExprNode {
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	/*
+	private Symbol symbol;
+	
+	public void setSymbol(Symbol symbol) {
+		this.symbol = symbol;
+	}
+	
+	public Symbol getSymbol() {
+		return symbol;
+	}
+	*/
 }

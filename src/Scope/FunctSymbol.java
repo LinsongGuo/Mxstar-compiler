@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 
 import AST.FunctDefNode;
 import AST.VarDefNode;
+import IR.IRFunction;
 import AST.TypeNode;
 import AST.ArrayTypeNode;
 import AST.ExprNode;
@@ -63,7 +64,7 @@ public class FunctSymbol extends ScopedSymbol {
 			}
 			else {
 				String paraIdentifier = item.getIdentifier();
-				if(this.paraList.containsKey(paraIdentifier)) {
+				if(this.varList.containsKey(paraIdentifier)) {
 					errorReminder.error(item.getLoc(),
 						"redeclaration of \'" + paraIdentifier + "\'."
 					);
@@ -71,12 +72,14 @@ public class FunctSymbol extends ScopedSymbol {
 				else {
 					if (typeNode instanceof ArrayTypeNode) {
 						ArrayType tmp = new ArrayType(getGlobalScope(), typeIdentifier, ((ArrayTypeNode) typeNode).getDimension());
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, tmp));
+						VarSymbol varSymbol = new VarSymbol(paraIdentifier, tmp, this);
+						this.paraList.put(paraIdentifier, varSymbol);
+						this.varList.put(paraIdentifier, varSymbol);
 					}
 					else {
-						this.paraList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
-						this.varList.put(paraIdentifier, new VarSymbol(paraIdentifier, paraType));
+						VarSymbol varSymbol = new VarSymbol(paraIdentifier, paraType, this);
+						this.paraList.put(paraIdentifier, varSymbol);
+						this.varList.put(paraIdentifier, varSymbol);
 					}
 				}
 			}
@@ -124,6 +127,17 @@ public class FunctSymbol extends ScopedSymbol {
 	public boolean matchParameters(FunctExprNode node) {
 		ArrayList<ExprNode> paraList = node.getParaList();
 		return paraList.size() == this.paraList.size();
+	}
+	
+	//for IR
+	private IRFunction IRfunction;
+	
+	public void setIRFunction(IRFunction IRfunction) {
+		this.IRfunction = IRfunction;
+	}
+	
+	public IRFunction toIRFunction() {
+		return IRfunction;
 	}
 
 }

@@ -1,5 +1,7 @@
 package AST;
 
+import Scope.VarSymbol;
+
 import utility.Location;
 
 public class VarDefNode extends ASTNode{
@@ -33,4 +35,15 @@ public class VarDefNode extends ASTNode{
 	public void accept(ASTVisitor visitor) {
 		visitor.visit(this);
 	}
+	
+	private VarSymbol varSymbol;
+	
+	public void setVarSymbol(VarSymbol varSymbol) {
+		this.varSymbol = varSymbol;
+	}
+	
+	public VarSymbol getVarSymbol() {
+		return varSymbol;
+	}
+
 }

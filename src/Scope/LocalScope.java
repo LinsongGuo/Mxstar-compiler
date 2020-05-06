@@ -42,20 +42,20 @@ public class LocalScope extends BaseScope {
 	}
 	
 	@Override
-	public VarSymbol resovleVar(VarExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveVar(VarExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			return parent.resovleVar(node, errorReminder);
+			return parent.resolveVar(node, errorReminder);
 		}
 		else 
 			return varList.get(identifier);
 	}
 	
 	@Override
-	public VarSymbol resovleArray(ArrayExprNode node, ErrorReminder errorReminder) {
+	public VarSymbol resolveArray(ArrayExprNode node, ErrorReminder errorReminder) {
 		String identifier = node.getIdentifier();
 		if(!varList.containsKey(identifier)) {
-			return parent.resovleArray(node, errorReminder);
+			return parent.resolveArray(node, errorReminder);
 		}
 		/*
 		//check index
@@ -77,9 +77,9 @@ public class LocalScope extends BaseScope {
 			int tmp = ((ArrayType)type).getDimension();
 			String typeIdentifier = type.typeString();
 			if (tmp == 1)
-				return new VarSymbol(identifier, resolveType(typeIdentifier));
+				return new VarSymbol(identifier, resolveType(typeIdentifier), null);
 			else 
-				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1));
+				return new VarSymbol(identifier, new ArrayType(getGlobalScope(), typeIdentifier, tmp - 1), null);
 		} 
 		else {
 			errorReminder.error(node.getLoc(), "\'" + identifier + "\' is a variable not an array.");
@@ -127,5 +127,6 @@ public class LocalScope extends BaseScope {
 	@Override
 	public boolean duplicateClass(String identifier) {
 		return false;
-	} 
+	}
+
 }

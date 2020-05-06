@@ -1,7 +1,7 @@
 package utility;
 
 public class ReservedWord {
-	private String[] list = {"int", "bool", "string", "null", "void", "true", "false", "if", "else", "for", "while", "break", "continue", "return", "new", "class", "this"};
+/*	private String[] list = {"int", "bool", "string", "null", "void", "true", "false", "if", "else", "for", "while", "break", "continue", "return", "new", "class", "this"};
 	
 	private boolean IsReservedWord(String identifier) {
 		for (int i = 0; i < 17; ++i) {
@@ -10,4 +10,5 @@ public class ReservedWord {
 		}
 		return false;
 	}
+*/	
 }
