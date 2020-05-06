@@ -16,6 +16,7 @@ import codegen.RvPrinter;
 import optimize.CFGSimplifier;
 import optimize.DCE;
 import optimize.DominatorTree;
+import optimize.Inliner;
 import optimize.SCCP;
 import optimize.SSAConstructor;
 import optimize.SSADestructor;
@@ -44,10 +45,10 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-		if(args[0].equals("0")) {
+	/*	if(args[0].equals("0")) {
 			System.exit(count);			
 		}
-		
+		*/
 		GlobalScope globalScope = checker.getGlobalScope();
 		StringType stringTemplate = checker.getStringTemplate();
 		IRBuilder ir = new IRBuilder(globalScope, stringTemplate, errorReminder);
@@ -56,23 +57,28 @@ public class Main {
 		IRModule irModule = ir.getModule(); 
 		
 		//System.err.println("optimizing------------------");
-		new CFGSimplifier(irModule); 
+		CFGSimplifier cfg = new CFGSimplifier(irModule); 
+		cfg.run();
 		new DominatorTree(irModule);
 		new SSAConstructor(irModule);
+		Inliner inliner = new Inliner(irModule);
+		inliner.run();
+		
+		IRPrinter irPrinter = new IRPrinter();
+		irPrinter.visit(irModule);
+		
 		new DCE(irModule);
 		new SCCP(irModule);
-		new CFGSimplifier(irModule); 
-		
+		cfg.run();
+			
 		new SSADestructor(irModule);
-		
-		//IRPrinter irPrinter = new IRPrinter();
-		//irPrinter.visit(irModule);
 		
 		InstructionSelection selector = new InstructionSelection(irModule);
 		RvModule rvModule = selector.run();
 		
-		//RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
-		//pseudoPrinter.visit(rvModule);
+		RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
+		pseudoPrinter.visit(rvModule);
+		
 		
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
@@ -80,7 +86,7 @@ public class Main {
 		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
 		//rvPrinter.visit(rvModule);
 	
-		RvPrinter output = new RvPrinter("output.s", true);
+		RvPrinter output = new RvPrinter("output.s", false);
 		output.visit(rvModule);
 	}
 }

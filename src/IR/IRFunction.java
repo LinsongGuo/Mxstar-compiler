@@ -12,6 +12,7 @@ import Riscv.RvFunction;
 public class IRFunction {
 	private IRType type;
 	private String name;
+	private int called;
 	private ArrayList<IRRegister> parameters;
 	private HashMap<String, ArrayList<IRRegister>> registerHash;
 	private HashMap<String, ArrayList<IRBasicBlock>> blockHash;
@@ -26,6 +27,7 @@ public class IRFunction {
 	public IRFunction(IRType type, String name) {
 		this.type = type;
 		this.name = name;
+		this.called = 0;
 		this.parameters = new ArrayList<IRRegister>();
 		this.entranceBlock = this.lastBlock = this.exitBlock = null;
 		this.registerHash = new HashMap<String, ArrayList<IRRegister>>();
@@ -35,10 +37,19 @@ public class IRFunction {
 	public IRFunction(IRType type, String name, ArrayList<IRRegister> parameters) {
 		this.type = type;
 		this.name = name;
+		this.called = 0;
 		this.parameters = parameters;
 		this.entranceBlock = this.lastBlock = this.exitBlock = null;
 		this.registerHash = new HashMap<String, ArrayList<IRRegister>>();
 		this.blockHash = new HashMap<String, ArrayList<IRBasicBlock>>();
+	}
+	
+	public void increaseCalled() {
+		called ++;
+	}
+	
+	public int called() {
+		return called;
 	}
 	
 	public String declarationString () {

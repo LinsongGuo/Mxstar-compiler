@@ -245,6 +245,7 @@ public class IRBuilder implements ASTVisitor {
 			currentFunction.addBasicBlock(entranceBlock);
 			currentBlock = entranceBlock;
 			if (node.getIdentifier().equals("main")) {
+				module.setMain(function);
 				currentBlock.addInst(new CallInst(module.getFunct("__init__"), new ArrayList<IRSymbol>()));
 			}
 			//parameters

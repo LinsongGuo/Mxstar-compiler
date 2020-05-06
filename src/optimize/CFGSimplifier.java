@@ -21,15 +21,16 @@ import IR.Symbol.IRSymbol;
 public class CFGSimplifier extends PASS {
 
 	public CFGSimplifier(IRModule module) throws FileNotFoundException {
-		super(module);
-		
+		super(module);	
+	}
+	
+	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			removeSingleBlockInPhi(function);
 			removeConstantBranch(function);
 			removeUnusedBlock(function);
 		}
-		
 		//print();
 	}
 

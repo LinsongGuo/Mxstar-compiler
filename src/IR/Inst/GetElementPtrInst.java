@@ -137,4 +137,8 @@ public class GetElementPtrInst extends IRInst {
 			return null;
 		return index.get(1);
 	}
+	
+	public ArrayList<IRSymbol> getIndex() {
+		return index;
+	}
 }

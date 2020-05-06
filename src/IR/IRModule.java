@@ -22,8 +22,11 @@ public class IRModule {
 	private LinkedHashMap<String, IRGlobalString> stringList;
 	private LinkedHashMap<String, IRFunction> functList, builtInFunctList;
 	private LinkedHashMap<String, IRClassType> classList;
+	private IRFunction main;
 	
 	public IRModule(GlobalScope globalScope, Scope.StringType stringTemplate) {
+		main = null;
+		
 		LinkedHashMap<String, FunctSymbol> functSymbols = globalScope.getFunctList();
 		
 		globalVarList = new LinkedHashMap<String, IRGlobalVariable>();
@@ -164,6 +167,14 @@ public class IRModule {
 		builtInFunctList.put("__stringGreaterEqual", funct19);
 	}
 
+	public void setMain(IRFunction main) {
+		this.main = main;
+	}
+	
+	public IRFunction getMain() {
+		return main;
+	}
+	
 	public IRFunction getBuiltInFunct(String name) {
 		return builtInFunctList.get(name);
 	}
@@ -234,5 +245,9 @@ public class IRModule {
 	
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
+	}
+	
+	public boolean isbuiltInFunction(IRFunction function) {
+		return builtInFunctList.containsValue(function);
 	}
 }

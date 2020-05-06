@@ -95,6 +95,7 @@ public class CallInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+		function.increaseCalled();
 		if (result != null) result.addDef(this);
 		for (IRSymbol para : parameters) {
 			para.addUse(this);

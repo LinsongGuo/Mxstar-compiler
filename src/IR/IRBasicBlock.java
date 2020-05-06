@@ -3,6 +3,7 @@ package IR;
 import java.util.ArrayList;
 import java.util.HashSet;
 import IR.Inst.BrInst;
+import IR.Inst.CallInst;
 import IR.Inst.IRInst;
 import IR.Inst.MoveInst;
 import IR.Inst.PhiInst;
@@ -88,6 +89,22 @@ public class IRBasicBlock {
 			tail = inst;
 		}
 	}
+	
+	public void addInstWithoutInit(IRInst inst) {
+		if ((tail != null) && (tail instanceof BrInst)) {
+			return;
+		}
+		inst.setCurrentBlock(this);
+		if (head == null) {
+			head = tail = inst;
+		}
+		else {
+			tail.setNext(inst);
+			inst.setPrev(tail);
+			tail = inst;
+		}
+	}
+	
 	
 	public void setHead(IRInst inst) {
 		head = inst;
@@ -522,6 +539,44 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public IRBasicBlock spill(CallInst call) {
+		IRBasicBlock spillBlock = new IRBasicBlock("spillBlock");
+		currentFunction.addBasicBlock(spillBlock);
+		
+		if (currentFunction.getExitBlock() == this)
+			currentFunction.setExitBlock(spillBlock);
+ 		
+		IRInst prev = call.getPrev();
+		if (head == call) 
+			head = tail = null;
+		else {
+			tail = prev;
+			prev.setNext(null);
+		}
+		
+		IRInst next = null;
+		for (IRInst inst = call.getNext(); inst != null; inst = next) {
+			next = inst.getNext();
+			inst.setNext(null);
+			inst.setPrev(null);
+			spillBlock.addInstWithoutInit(inst);
+		}
+		
+		for (IRBasicBlock successor : successors) {
+			spillBlock.addSuccessor(successor);
+			successor.removePredecessor(this);
+			successor.addPredecessor(spillBlock);
+		}
+		successors.clear();
+		
+		for (PhiInst phi : phiUse) {
+			phi.replacePhiUse(this, spillBlock);
+		}
+		phiUse.clear();
+		
+		return spillBlock;
+	}
+	
 	//for instruction selection
 	private RvBlock rvBlock;
 	
@@ -532,4 +587,5 @@ public class IRBasicBlock {
 	public RvBlock toRvBlock() {
 		return rvBlock;
 	}
+
 }	
