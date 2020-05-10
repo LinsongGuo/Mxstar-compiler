@@ -16,7 +16,10 @@ import IR.Symbol.IRSymbol;
 public class SSADestructor extends PASS {
 
 	public SSADestructor(IRModule module) {
-		super(module);
+		super(module);	
+	}
+	
+	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			CriticalEdgeSplitting(function);

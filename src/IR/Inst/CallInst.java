@@ -11,6 +11,7 @@ public class CallInst extends IRInst {
 	private IRFunction function;
 	private ArrayList<IRSymbol> parameters;
 	private IRRegister result;
+	private boolean inlined;
 	
 	public CallInst(IRFunction function, IRSymbol parameter) {
 		super();
@@ -18,6 +19,7 @@ public class CallInst extends IRInst {
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
 		this.result = null;
+		this.inlined = false;
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters) {
@@ -25,6 +27,7 @@ public class CallInst extends IRInst {
 		this.function = function;
 		this.parameters = parameters;
 		this.result = null;	
+		this.inlined = false;
 	}
 	
 	public CallInst(IRFunction function, IRSymbol parameter, IRRegister result) {
@@ -33,6 +36,7 @@ public class CallInst extends IRInst {
 		this.parameters = new ArrayList<IRSymbol>();
 		this.parameters.add(parameter);
 		this.result = result;	
+		this.inlined = false;
 	}
 	
 	public CallInst(IRFunction function, ArrayList<IRSymbol> parameters, IRRegister result) {
@@ -95,7 +99,6 @@ public class CallInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
-		function.increaseCalled();
 		if (result != null) result.addDef(this);
 		for (IRSymbol para : parameters) {
 			para.addUse(this);
@@ -118,5 +121,13 @@ public class CallInst extends IRInst {
 	
 	public IRFunction getFunction() {
 		return function;
+	}
+	
+	public void setInlined() {
+		inlined = true;
+	}
+	
+	public boolean inlined() {
+		return inlined;
 	}
 }

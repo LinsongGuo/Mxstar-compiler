@@ -27,8 +27,8 @@ import Riscv.Operand.RegisterTable;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-	//	InputStream IS = System.in;
-		InputStream IS = new FileInputStream("code.txt");
+		InputStream IS = System.in;
+		//InputStream IS = new FileInputStream("code.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);
@@ -45,48 +45,51 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-	/*	if(args[0].equals("0")) {
+		if(args[0].equals("0")) {
 			System.exit(count);			
 		}
-		*/
+		
+		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
 		StringType stringTemplate = checker.getStringTemplate();
 		IRBuilder ir = new IRBuilder(globalScope, stringTemplate, errorReminder);
 		ir.visit(root);
 		
+		
+		//optimize
 		IRModule irModule = ir.getModule(); 
-		
-		//System.err.println("optimizing------------------");
-		CFGSimplifier cfg = new CFGSimplifier(irModule); 
-		cfg.run();
-		new DominatorTree(irModule);
-		new SSAConstructor(irModule);
 		Inliner inliner = new Inliner(irModule);
+		CFGSimplifier cfg = new CFGSimplifier(irModule); 
+		DominatorTree dom = new DominatorTree(irModule);
+		SSAConstructor ssaConstructor = new SSAConstructor(irModule);
+		SSADestructor ssaDestructor = new SSADestructor(irModule);
+		DCE dce = new DCE(irModule);
+		SCCP sccp = new SCCP(irModule);	
 		inliner.run();
-		
-		IRPrinter irPrinter = new IRPrinter();
-		irPrinter.visit(irModule);
-		
-		new DCE(irModule);
-		new SCCP(irModule);
 		cfg.run();
-			
-		new SSADestructor(irModule);
+		dom.run();
+		ssaConstructor.run();
+		dce.run();
+		sccp.run();
+		cfg.run();
+		ssaDestructor.run();	
 		
+		//IRPrinter irPrinter = new IRPrinter();
+		//irPrinter.visit(irModule);
+		
+		//codegen
 		InstructionSelection selector = new InstructionSelection(irModule);
 		RvModule rvModule = selector.run();
-		
-		RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
-		pseudoPrinter.visit(rvModule);
-		
-		
+		//RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
+		//pseudoPrinter.visit(rvModule);
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-		//rvPrinter.visit(rvModule);
 	
-		RvPrinter output = new RvPrinter("output.s", false);
+	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+	//	rvPrinter.visit(rvModule);
+	
+		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
 	}
 }

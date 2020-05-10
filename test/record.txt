@@ -1,5 +1,0 @@
-moveInst: when constant and constant = 0.
-
-li reg,0 --> move reg,zero
-
-snez

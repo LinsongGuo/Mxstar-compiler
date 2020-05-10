@@ -20,7 +20,9 @@ public class DominatorTree extends PASS {
 	 
 	public DominatorTree(IRModule module) throws FileNotFoundException {
 		super(module);
-		
+	}
+	
+	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			//System.err.println("function " + function.getName());

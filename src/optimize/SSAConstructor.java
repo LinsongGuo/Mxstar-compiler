@@ -36,6 +36,9 @@ public class SSAConstructor extends PASS {
 	
 	public SSAConstructor(IRModule module) {
 		super(module);
+	}
+	
+	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			construct(function);

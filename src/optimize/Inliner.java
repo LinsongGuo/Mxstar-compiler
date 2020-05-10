@@ -8,6 +8,7 @@ import java.util.HashSet;
 import IR.IRBasicBlock;
 import IR.IRFunction;
 import IR.IRModule;
+import IR.Inst.AllocaInst;
 import IR.Inst.BinOpInst;
 import IR.Inst.BitcastToInst;
 import IR.Inst.BitwiseBinOpInst;
@@ -36,6 +37,7 @@ public class Inliner extends PASS {
 	private HashSet<IRFunction> recursiveSet;
 	private HashMap<IRFunction, Integer> inStack;
 	private ArrayList<IRFunction> dfsOrder;
+	private HashSet<IRFunction> visited;
 	
 	private HashMap<IRBasicBlock, IRBasicBlock> renameBlock;
 	private HashMap<IRSymbol, IRSymbol> renameReg;
@@ -50,6 +52,7 @@ public class Inliner extends PASS {
 		recursiveSet = new HashSet<IRFunction>();
 		inStack = new HashMap<>();
 		dfsOrder = new ArrayList<>();
+		visited = new HashSet<IRFunction>();
 		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
@@ -58,8 +61,6 @@ public class Inliner extends PASS {
 		
 		IRFunction main = module.getMain();
 		dfsRecursive(main);
-		
-		//System.err.println("dfs " + dfsOrder);
 		
 		//inline non-recursive callees.
 		while (true) {
@@ -72,9 +73,9 @@ public class Inliner extends PASS {
 					IRFunction callee = call.getFunction();
 					int callerNum = instNums.get(caller);
 					int calleeNum = instNums.get(callee);
-					System.err.println("for " + caller.getName() + " " + callee.getName());
-					if (!recursiveSet.contains(callee) && instNums.get(callee) < MaxInstNum) {
+					if (!recursiveSet.contains(callee) && instNums.get(callee) < MaxInstNum && !call.inlined()) {
 						inline(caller, callee, call);
+						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
 						changed = true;
 					}
@@ -86,22 +87,48 @@ public class Inliner extends PASS {
 		
 		//inline recursive callees.
 		for (int d = 0; d < MaxDepth; ++d) {
-			for (int i = dfsOrder.size() - 1; i > 0; --i) {
+			for (int i = dfsOrder.size() - 1; i >= 0; --i) {
 				IRFunction caller = dfsOrder.get(i);
 				ArrayList<CallInst> calls = callSet.get(caller);
 				for (CallInst call : calls) {
 					IRFunction callee = call.getFunction();
 					int callerNum = instNums.get(caller);
 					int calleeNum = instNums.get(callee);
-					if (instNums.get(callee) < MaxInstNum) {
+					if (instNums.get(callee) < MaxInstNum && !call.inlined() && caller != callee) {
 						inline(caller, callee, call);
+						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
 					}
 				}
-			}
-			
+			}	
 		}
 		
+		//remove unused function.
+		dfsCallee(module.getMain());
+		ArrayList<IRFunction> tmps = new ArrayList<IRFunction>();
+		for (IRFunction function : functions) {
+			tmps.add(function);
+		}
+		for (IRFunction function : tmps) {
+			if (!visited.contains(function)) {
+				module.removeFunction(function);
+			}
+		}
+	}
+	
+	private void dfsCallee(IRFunction caller) {
+		visited.add(caller);
+		ArrayList<IRFunction> calls = new ArrayList<IRFunction>();
+		for (IRBasicBlock block = caller.getEntranceBlock(); block != null; block = block.getNext()) {
+			for (IRInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
+				if (inst instanceof CallInst) {
+					IRFunction callee = ((CallInst) inst).getFunction();
+					if (!visited.contains(callee)) {
+						dfsCallee(callee);
+					}
+				}
+			}
+		}
 	}
 	
 	private void buildGraph(IRFunction caller) {
@@ -145,8 +172,9 @@ public class Inliner extends PASS {
 		else if (s instanceof IRRegister) {
 			if (renameReg.containsKey(s))
 				return renameReg.get(s);
-			IRRegister res = new IRRegister(s.getType(), ((IRRegister) s).getName().split(".")[0]);
+			IRRegister res = new IRRegister(s.getType(), ((IRRegister) s).getName().split("\\.")[0]);
 			caller.addRegister(res);
+			renameReg.put(s, res);
 			return res;
 		}
 		else 
@@ -154,21 +182,24 @@ public class Inliner extends PASS {
 	}
 	
 	private void inline(IRFunction caller, IRFunction callee, CallInst call) {
+		//System.err.println("inline " + caller.getName() + " " + callee.getName());
 		renameBlock = new HashMap<IRBasicBlock, IRBasicBlock>();
 		renameReg = new HashMap<IRSymbol, IRSymbol>();
 		
 		IRBasicBlock currentBlock = call.getCurrentBlock();
 		IRBasicBlock spillBlock = currentBlock.spill(call);
 		
-		for (IRBasicBlock block = callee.getEntranceBlock(); block != null; block = block.getNext()) {
-			System.err.println("block " + block.getName().split("."));
-			IRBasicBlock newBlock = new IRBasicBlock(block.getName().split(".")[0]);
+		ArrayList<IRBasicBlock> blocks = callee.getBlockList();
+		for (IRBasicBlock block : blocks) {
+			IRBasicBlock newBlock = new IRBasicBlock(block.getName().split("\\.")[0]);
 			caller.addBasicBlock(newBlock);
 			renameBlock.put(block, newBlock);
 		}
 		
+	//	System.err.println(callee.getEntranceBlock()+ " " + callee.getExitBlock());
 		IRBasicBlock entranceBlock = renameBlock.get(callee.getEntranceBlock());
 		IRBasicBlock exitBlock = renameBlock.get(callee.getExitBlock());
+	//	System.err.println("Add br " + currentBlock + " " + entranceBlock);
 		currentBlock.addInst(new BrInst(currentBlock, entranceBlock));
 		
 		ArrayList<IRRegister> parameters = callee.getParameters();
@@ -177,9 +208,14 @@ public class Inliner extends PASS {
 			renameReg.put(parameters.get(i), arguments.get(i));
 		}
 		
-		for (IRBasicBlock block = callee.getEntranceBlock(); block != null; block = block.getNext()) {
+		for (IRBasicBlock block : blocks) {
 			IRBasicBlock newBlock = renameBlock.get(block);
+			//System.err.println("------------------ " + block + " --> " + newBlock);
 			for (IRInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
+				if (inst instanceof AllocaInst) {
+					newBlock.addInst(new AllocaInst((IRRegister) rename(caller, ((AllocaInst) inst).getRes()), 
+							((AllocaInst) inst).getType()));
+				}
 				if (inst instanceof BinOpInst) {
 					newBlock.addInst(new BinOpInst(((BinOpInst) inst).getOp(), 
 							(IRRegister) rename(caller, ((BinOpInst) inst).getRes()), 

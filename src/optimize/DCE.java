@@ -25,7 +25,10 @@ public class DCE extends PASS {
 	HashSet<IRBasicBlock> visited;
 
 	public DCE(IRModule module) {
-		super(module);
+		super(module);	
+	}
+	
+	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			run(function);

@@ -49,7 +49,10 @@ public class SCCP extends PASS implements IRVisitor {
 	
 	public SCCP(IRModule module) {
 		super(module);
-		visit(module);
+	}
+	
+	public void run() {
+		visit(module);	
 	}
 
 	private void markConstant(IRRegister reg, IRConst constant) {
@@ -306,6 +309,7 @@ public class SCCP extends PASS implements IRVisitor {
 		//System.err.println("BrInst " + node);
 		IRSymbol cond = node.getCond();
 		if (cond == null) {
+		//	System.err.println("brinst " + node.getTrue());
 			markExecutable(node.getTrue());
 		}
 		else {

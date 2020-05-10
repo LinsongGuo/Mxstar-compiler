@@ -70,8 +70,10 @@ public class RegisterAllocation {
 	public void run() {
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
-		//	if (function.getName().contains("f")) continue;
+		//	int cnt = 0;
+			//	if (function.getName().contains("f")) continue;
 			while (true) {
+			//	cnt++;
 			//for (int i = 1; i <= 1; ++i) {
 				//System.err.println("for----------------- " + function.getName());
 				init(function);
@@ -105,6 +107,7 @@ public class RegisterAllocation {
 				else 
 					rewriteProgram(function);
 			}
+			//System.err.println(cnt);
 			removeRedundantMove(function);
 			stackSlotAllocation(function);
 		}

@@ -58,4 +58,8 @@ public class AllocaInst extends IRInst {
 	public ArrayList<IRRegister> getUsedRegister() {
 		return new ArrayList<IRRegister>();
 	}
+	
+	public IRType getType() {
+		return type;
+	}
 }

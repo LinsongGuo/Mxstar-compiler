@@ -250,4 +250,8 @@ public class IRModule {
 	public boolean isbuiltInFunction(IRFunction function) {
 		return builtInFunctList.containsValue(function);
 	}
+	
+	public void removeFunction(IRFunction function) {
+		functList.remove(function.getName().substring(1));
+	}
 }

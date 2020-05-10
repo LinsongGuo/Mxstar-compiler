@@ -546,13 +546,13 @@ public class IRBasicBlock {
 		if (currentFunction.getExitBlock() == this)
 			currentFunction.setExitBlock(spillBlock);
  		
-		IRInst prev = call.getPrev();
+		/*
 		if (head == call) 
 			head = tail = null;
 		else {
 			tail = prev;
 			prev.setNext(null);
-		}
+		}*/
 		
 		IRInst next = null;
 		for (IRInst inst = call.getNext(); inst != null; inst = next) {
@@ -561,6 +561,11 @@ public class IRBasicBlock {
 			inst.setPrev(null);
 			spillBlock.addInstWithoutInit(inst);
 		}
+		
+		call.setNext(null);
+		call.removeItself();
+		
+	///	System.err.println(head + " " + tail);
 		
 		for (IRBasicBlock successor : successors) {
 			spillBlock.addSuccessor(successor);
@@ -573,6 +578,10 @@ public class IRBasicBlock {
 			phi.replacePhiUse(this, spillBlock);
 		}
 		phiUse.clear();
+		
+		
+		//System.err.println("after " + head);
+		//System.err.println("after " + tail);
 		
 		return spillBlock;
 	}
