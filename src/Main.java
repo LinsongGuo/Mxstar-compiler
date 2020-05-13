@@ -49,9 +49,9 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-		/*if(args[0].equals("0")) {
+		if(args[0].equals("0")) {
 			System.exit(count);			
-		}*/
+		}
 		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
