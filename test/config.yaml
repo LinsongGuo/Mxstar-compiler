@@ -1,0 +1,11 @@
+buildlimit: 10
+instlimit: -1
+memlimit: 512
+path:
+  compiler: /mnt/d/courses/compiler/Mxstar-compiler
+  dataset: /mnt/d/courses/compiler/Mxstar-compiler/test/testcase
+  simulator: /mnt/d/courses/compiler/Mxstar-compiler/test/ravel/bin
+  simulator-executable: /mnt/d/courses/compiler/Mxstar-compiler/test/ravel/bin/ravel
+  built-in: /mnt/d/courses/compiler/Mxstar-compiler/test/builtin.s
+stage: codegen
+timelimit: 15
