@@ -15,9 +15,9 @@ public class IRPrinter implements IRVisitor {
 	private PrintWriter printer;
 	private String tab = new String("    ");
 	
-	public IRPrinter() throws FileNotFoundException {
+	public IRPrinter(String path) throws FileNotFoundException {
 		//printer = new PrintWriter(System.out);
-		printer = new PrintWriter(new FileOutputStream("test/test.ll"));
+		printer = new PrintWriter(new FileOutputStream(path));
 	}
 	
 	@Override

@@ -243,6 +243,10 @@ public class IRModule {
 		return classList;
 	}
 	
+	public LinkedHashMap<String, IRGlobalVariable> getGlobalVars() {
+		return globalVarList;
+	}
+	
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);
 	}
@@ -253,5 +257,9 @@ public class IRModule {
 	
 	public void removeFunction(IRFunction function) {
 		functList.remove(function.getName().substring(1));
+	}
+	
+	public void removeGlobalVar(IRGlobalVariable var) {
+		globalVarList.remove(var.getName());
 	}
 }

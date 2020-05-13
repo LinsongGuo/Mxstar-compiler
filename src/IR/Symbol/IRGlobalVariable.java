@@ -26,6 +26,10 @@ public class IRGlobalVariable extends IRRegister {
 		return "@" + super.name;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
 	@Override
 	public void accept(IRVisitor visitor) {
 		visitor.visit(this);

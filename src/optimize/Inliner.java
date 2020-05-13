@@ -111,6 +111,12 @@ public class Inliner extends PASS {
 		}
 		for (IRFunction function : tmps) {
 			if (!visited.contains(function)) {
+				for (IRBasicBlock block = function.getEntranceBlock(); block != null; block = block.getNext()) {
+					ArrayList<IRInst> instList = block.getInstList();
+					for (IRInst inst : instList) {
+						inst.removeItself();
+					}
+				}
 				module.removeFunction(function);
 			}
 		}
@@ -182,13 +188,13 @@ public class Inliner extends PASS {
 	}
 	
 	private void inline(IRFunction caller, IRFunction callee, CallInst call) {
-		//System.err.println("inline " + caller.getName() + " " + callee.getName());
+	//	System.err.println("****inline " + caller.getName() + " " + callee.getName());
 		renameBlock = new HashMap<IRBasicBlock, IRBasicBlock>();
 		renameReg = new HashMap<IRSymbol, IRSymbol>();
 		
 		IRBasicBlock currentBlock = call.getCurrentBlock();
 		IRBasicBlock spillBlock = currentBlock.spill(call);
-		
+	//	System.err.println("spill "+ currentBlock.getName() + " " + spillBlock.getName());
 		ArrayList<IRBasicBlock> blocks = callee.getBlockList();
 		for (IRBasicBlock block : blocks) {
 			IRBasicBlock newBlock = new IRBasicBlock(block.getName().split("\\.")[0]);
@@ -206,6 +212,7 @@ public class Inliner extends PASS {
 		ArrayList<IRSymbol> arguments = call.getParameters();
 		for (int i = 0; i < parameters.size(); ++i) {
 			renameReg.put(parameters.get(i), arguments.get(i));
+		//	System.err.println("rename " + parameters.get(i) + " " + arguments.get(i));
 		}
 		
 		for (IRBasicBlock block : blocks) {
@@ -291,8 +298,11 @@ public class Inliner extends PASS {
 					newBlock.addInst(new PhiInst((IRRegister) rename(caller, ((PhiInst) inst).getRes()), newSyms, newBBs));
 				}
 				else if (inst instanceof StoreInst) {
-					newBlock.addInst(new StoreInst(rename(caller, ((StoreInst) inst).getValue()), 
-							rename(caller, ((StoreInst) inst).getPtr())));
+					StoreInst store = new StoreInst(rename(caller, ((StoreInst) inst).getValue()), 
+							rename(caller, ((StoreInst) inst).getPtr()));
+					newBlock.addInst(store);
+			//		System.err.println(store);
+			//		System.err.println("use " + store.getValue() + " " + store.getValue().getUseList());
 				}
 				else if (inst instanceof RetInst) {
 					IRSymbol value = ((RetInst) inst).getValue();

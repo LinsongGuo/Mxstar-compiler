@@ -31,11 +31,17 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
+		boolean flag = false;
 		if (value == old) {
 			value = nw;
-		//	old.removeUse(this);
-			nw.addUse(this);		
+			flag = true;
 		}
+		if (ptr == old) {
+			ptr = nw;
+			flag = true;
+		}
+		if (flag)
+			nw.addUse(this);		
 	}
 	
 	@Override
@@ -54,6 +60,7 @@ public class StoreInst extends IRInst {
 	@Override
 	public void removeAllUse() {
 		value.removeUse(this);
+		ptr.removeUse(this);
 	}
 
 	@Override
@@ -63,9 +70,12 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void InitDefUse() {
+	//	System.err.println("init in " + currentBlock.getName() + ": " + this);
 		ptr.addDef(this);
 		ptr.addUse(this); //??????????????????????????
 		value.addUse(this);
+	//	System.err.println("store " + value + " " + this);
+	//	System.err.println(value.getUseList());
 	}
 
 	@Override

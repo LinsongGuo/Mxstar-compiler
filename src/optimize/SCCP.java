@@ -139,6 +139,8 @@ public class SCCP extends PASS implements IRVisitor {
 				for (IRInst inst : instList) {
 					IRRegister res = inst.getRes();
 					if (res != null && res.status == IRRegister.Status.constant) {
+						//System.err.println("constant " + res + " " + res.getConstant());
+						//System.err.println(res.getUseList());	
 						res.replaceUse(res.getConstant());
 						inst.removeItself();
 					}

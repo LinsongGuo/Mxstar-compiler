@@ -135,6 +135,7 @@ public class SSAConstructor extends PASS {
 								function.addRegister(res);
 								PhiInst phi = new PhiInst(res);
 								df.addPhi(address, phi);
+								//System.err.println("phi " + df + " " + phi);
 								//add dominance frontier
 								queue.add(df);
 								phiSet.add(df);
@@ -188,6 +189,7 @@ public class SSAConstructor extends PASS {
 	}
 	
 	private void rename(IRBasicBlock block) {
+		//System.err.println("rename " + block);
 		ArrayList<Pair<IRRegister, PhiInst>> phiMap = block.getPhiMap();
 		
 		for (Pair<IRRegister, PhiInst> pair : phiMap) {
@@ -208,9 +210,12 @@ public class SSAConstructor extends PASS {
 			else if (inst instanceof LoadInst) {
 				IRSymbol address = ((LoadInst) inst).getPtr();
 				IRRegister res = ((LoadInst) inst).getRes();
-				
+				//System.err.println(inst + " " + address + " " + res + " " + contains(address));
 				if (contains(address)) {
+					//System.err.println(res.getUseList());
 					res.replaceUse(top(address));
+					//System.err.println("top " + top(address));
+					
 					//System.err.println("replace " + res +  " with " + top(address) + " " + top(address).getUseList());
 				}
 			}

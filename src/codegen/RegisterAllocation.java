@@ -65,14 +65,14 @@ public class RegisterAllocation {
 	public RegisterAllocation(RvModule module) {
 		this.module = module;
 		this.K = RegisterTable.allocableNumber;
+		//System.err.println("K" + K);
 	}
 	
 	public void run() {
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
-		//	int cnt = 0;
-			//	if (function.getName().contains("f")) continue;
 			while (true) {
+			//	System.err.println("true");
 			//	cnt++;
 			//for (int i = 1; i <= 1; ++i) {
 				//System.err.println("for----------------- " + function.getName());

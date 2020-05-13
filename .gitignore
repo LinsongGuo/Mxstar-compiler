@@ -1,1 +1,6 @@
-/bin/
+bin/
+test/
+.classpath
+.project
+t55.mx
+judge.py

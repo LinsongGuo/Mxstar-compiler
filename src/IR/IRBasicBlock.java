@@ -104,7 +104,20 @@ public class IRBasicBlock {
 			tail = inst;
 		}
 	}
-	
+	 
+	public void addInstInHead(IRInst inst) {
+		inst.setCurrentBlock(this);
+		inst.InitDefUse();
+		if (head == null) {
+			assert tail == null;
+			head = inst;
+		}
+		else {
+			head.setPrev(inst);
+			inst.setNext(head);
+			head = inst;
+		}
+	}
 	
 	public void setHead(IRInst inst) {
 		head = inst;
