@@ -4,3 +4,4 @@ test/
 .project
 t55.mx
 judge.py
+output.s
