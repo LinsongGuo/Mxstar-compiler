@@ -1,5 +1,5 @@
-/test/
-/bin/
-/output.s
-/.classpath
-/.project
+test/
+bin/
+output.s
+.classpath
+.project
