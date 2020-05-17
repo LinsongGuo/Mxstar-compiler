@@ -69,22 +69,24 @@ public class RegisterAllocation {
 	}
 	
 	public void run() {
+	//	int cnt = 0;
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
 			while (true) {
 			//	System.err.println("true");
-			//	cnt++;
 			//for (int i = 1; i <= 1; ++i) {
-				//System.err.println("for----------------- " + function.getName());
 				init(function);
 				new LivenessAnalysis(function);
+			//	System.err.println("live");
 				build(function);
 				makeWorkList();
+				
 				while(!simplifyWorkList.isEmpty() ||
 					  !workListMoves.isEmpty()    ||
 					  !freezeWorkList.isEmpty()   ||
 					  !spillWorkList.isEmpty()) 
 				{	
+				//	System.err.println(++cnt);
 					//System.err.println("simplifyWorkList " + simplifyWorkList);
 					if (!simplifyWorkList.isEmpty()) simplify();
 					//System.err.println("simplifyWorkList after simplify " + simplifyWorkList);
@@ -184,7 +186,7 @@ public class RegisterAllocation {
 					}
 					workListMoves.add((RvMove) inst);
 				}
-				
+				//live.addAll(inst.getDef());
 				live.add(RegisterTable.zero);
 			/*
 				 although zero isn't a allocable register, but may be coalesced with zero, such as the following case.  

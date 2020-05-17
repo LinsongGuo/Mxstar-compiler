@@ -65,13 +65,13 @@ public class StoreInst extends IRInst {
 
 	@Override
 	public void removeAllDef() {
-		ptr.removeDef(this);
+	//	ptr.removeDef(this);
 	}
 
 	@Override
 	public void InitDefUse() {
 	//	System.err.println("init in " + currentBlock.getName() + ": " + this);
-		ptr.addDef(this);
+	//	ptr.addDef(this);
 		ptr.addUse(this); //??????????????????????????
 		value.addUse(this);
 	//	System.err.println("store " + value + " " + this);

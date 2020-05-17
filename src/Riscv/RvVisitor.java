@@ -15,6 +15,7 @@ public interface RvVisitor {
 	public void visit(RvInst inst);
 	public void visit(RvTypeB inst);
 	public void visit(RvCall inst);
+	public void visit(RvLa inst);
 	public void visit(RvJ inst);
 	public void visit(RvJr inst);
 	public void visit(RvLi inst);

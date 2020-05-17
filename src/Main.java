@@ -49,9 +49,9 @@ public class Main {
 		checker.visit(root);
 		
 		int count = errorReminder.count();
-		if(args[0].equals("0")) {
-			System.exit(count);			
-		}
+		//if(args[0].equals("0")) {
+		//	System.exit(count);			
+		//}
 		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
@@ -66,7 +66,6 @@ public class Main {
 		CFGSimplifier cfg = new CFGSimplifier(irModule); 
 		DominatorTree dom = new DominatorTree(irModule);
 		SSAConstructor ssaConstructor = new SSAConstructor(irModule);
-		SSADestructor ssaDestructor = new SSADestructor(irModule);
 		DCE dce = new DCE(irModule);
 		SCCP sccp = new SCCP(irModule);	
 	
@@ -78,34 +77,23 @@ public class Main {
 		dce.run();
 		sccp.run();
 		cfg.run();
-		ssaDestructor.run();	
-		/*
-		Collection<IRFunction> functions = irModule.getFunctList().values();
-		for (IRFunction function : functions) {
-			for (IRBasicBlock block : function.getBlockList()) {
-				for (IRInst inst : block.getInstList()) {
-					if (inst instanceof StoreInst) {
-						System.err.println(inst + " " + ((StoreInst) inst).getValue() + " " + ((StoreInst) inst).getValue().getUseList());
-					}
-				}
-			}
-		}
-		*/
-		//IRPrinter irPrinter = new IRPrinter("test/test.ll");
-		//irPrinter.visit(irModule);
-		//IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
-		//irPrinter2.visit(irModule);
+		
+	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
+	//	irPrinter.visit(irModule);
 		
 		//codegen
+		SSADestructor ssaDestructor = new SSADestructor(irModule);
+		ssaDestructor.run();	
 		InstructionSelection selector = new InstructionSelection(irModule);
 		RvModule rvModule = selector.run();
-		//RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
-		//pseudoPrinter.visit(rvModule);
+	//	RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
+	//	pseudoPrinter.visit(rvModule);
+		
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-		//rvPrinter.visit(rvModule);
+	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+	//	rvPrinter.visit(rvModule);
 	
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);

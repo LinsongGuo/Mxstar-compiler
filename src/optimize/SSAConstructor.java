@@ -110,13 +110,13 @@ public class SSAConstructor extends PASS {
 						inst.removeItself();
 					}
 					
-					HashSet<IRInst> defList = address.getDefList();
+					HashSet<IRInst> useList = address.getUseList();
 					Queue<IRBasicBlock> queue = new LinkedList<IRBasicBlock>();
 					HashSet<IRBasicBlock> visitedSet = new HashSet<IRBasicBlock>(); 
 					HashSet<IRBasicBlock> phiSet = new HashSet<IRBasicBlock>(); 
-					for (IRInst def : defList) {
-						if (def instanceof StoreInst) {
-							IRBasicBlock defBlock = def.getCurrentBlock();
+					for (IRInst use : useList) {
+						if ((use instanceof StoreInst) && ((StoreInst) use).getPtr() == address) {
+							IRBasicBlock defBlock = use.getCurrentBlock();
 							if (!visitedSet.contains(defBlock)) {
 								//System.err.println("def " + defBlock + " " + def);
 								queue.add(defBlock);

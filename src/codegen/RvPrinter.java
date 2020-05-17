@@ -14,6 +14,7 @@ import Riscv.Inst.RvCmpZ;
 import Riscv.Inst.RvInst;
 import Riscv.Inst.RvJ;
 import Riscv.Inst.RvJr;
+import Riscv.Inst.RvLa;
 import Riscv.Inst.RvLi;
 import Riscv.Inst.RvLoad;
 import Riscv.Inst.RvLui;
@@ -168,6 +169,11 @@ public class RvPrinter implements RvVisitor {
 
 	@Override
 	public void visit(RvCmpZ inst) {
+		printer.println(inst);
+	}
+
+	@Override
+	public void visit(RvLa inst) {
 		printer.println(inst);
 	}
 

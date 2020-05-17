@@ -47,6 +47,7 @@ import Riscv.Inst.RvCmpZ;
 import Riscv.Inst.RvInst;
 import Riscv.Inst.RvJ;
 import Riscv.Inst.RvJr;
+import Riscv.Inst.RvLa;
 import Riscv.Inst.RvLi;
 import Riscv.Inst.RvLoad;
 import Riscv.Inst.RvLui;
@@ -511,10 +512,11 @@ public class InstructionSelection implements IRVisitor {
 		IRSymbol ptr = node.getPtr();
 		if (res.getName().indexOf("__stringLiteral") != -1) {
 			if (!node.isIgnored()) {
-				RvVirtualRegister tmp = currentFunction.newRegister("tmp");
+				//RvVirtualRegister tmp = currentFunction.newRegister("tmp");
 				RvGlobalString var = ((IRGlobalString) ptr).toRvGlobalString();
-				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(RegisterTable.hi, var)));
-				currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, toRvRegister(res), tmp, new RvAddress(RegisterTable.lo, var)));
+				//currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(RegisterTable.hi, var)));
+				//currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, toRvRegister(res), tmp, new RvAddress(RegisterTable.lo, var)));
+				currentBlock.addInst(new RvLa(currentBlock, toRvRegister(res), var));
 			}
 			return;
 		}
