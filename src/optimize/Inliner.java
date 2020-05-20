@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Stack;
 
 import IR.IRBasicBlock;
 import IR.IRFunction;
@@ -29,8 +30,9 @@ import IR.Symbol.IRSymbol;
 
 public class Inliner extends PASS {
 
-	private static int MaxInstNum = 333;
+	private static int MaxInstNum = 200;
 	private static int MaxDepth = 1;
+	private boolean changed;
 	
 	private HashMap<IRFunction, Integer> instNums;
 	private HashMap<IRFunction, ArrayList<CallInst>> callSet;
@@ -38,6 +40,7 @@ public class Inliner extends PASS {
 	private HashMap<IRFunction, Integer> inStack;
 	private ArrayList<IRFunction> dfsOrder;
 	private HashSet<IRFunction> visited;
+	private ArrayList<IRFunction> stack;
 	
 	private HashMap<IRBasicBlock, IRBasicBlock> renameBlock;
 	private HashMap<IRSymbol, IRSymbol> renameReg;
@@ -46,13 +49,15 @@ public class Inliner extends PASS {
 		super(module);
 	}
 	
-	public void run() {
+	public boolean run() {
+		changed = false;
 		instNums = new HashMap<IRFunction, Integer>();
 		callSet = new HashMap<IRFunction, ArrayList<CallInst>>();
 		recursiveSet = new HashSet<IRFunction>();
 		inStack = new HashMap<>();
 		dfsOrder = new ArrayList<>();
 		visited = new HashSet<IRFunction>();
+		stack = new ArrayList<IRFunction>();
 		
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
@@ -62,19 +67,25 @@ public class Inliner extends PASS {
 		IRFunction main = module.getMain();
 		dfsRecursive(main);
 		
+		/*	
+		for (IRFunction function : recursiveSet) {
+			System.err.println("recursive " + function.getName());
+		}
+		*/
+		
 		//inline non-recursive callees.
 		while (true) {
 			boolean changed = false;
 			for (int i = dfsOrder.size() - 1; i >= 0; --i) {
 				IRFunction caller = dfsOrder.get(i);
 				ArrayList<CallInst> calls = callSet.get(caller);
-				//System.err.println("for " + caller.getName() + " " + calls);
 				for (CallInst call : calls) {
 					IRFunction callee = call.getFunction();
 					int callerNum = instNums.get(caller);
 					int calleeNum = instNums.get(callee);
-					if (!recursiveSet.contains(callee) && instNums.get(callee) < MaxInstNum && !call.inlined()) {
+					if (!recursiveSet.contains(callee) && calleeNum + callerNum < MaxInstNum && !call.inlined()) {
 						inline(caller, callee, call);
+						//System.err.println("inline " + caller.getName() + " --> " + callee.getName());
 						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
 						changed = true;
@@ -94,8 +105,9 @@ public class Inliner extends PASS {
 					IRFunction callee = call.getFunction();
 					int callerNum = instNums.get(caller);
 					int calleeNum = instNums.get(callee);
-					if (instNums.get(callee) < MaxInstNum && !call.inlined() && caller != callee) {
+					if (recursiveSet.contains(callee) &&  calleeNum + callerNum < MaxInstNum && !call.inlined() && caller != callee) {
 						inline(caller, callee, call);
+						//System.err.println("inline " + caller.getName() + " --> " + callee.getName());
 						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
 					}
@@ -117,14 +129,17 @@ public class Inliner extends PASS {
 						inst.removeItself();
 					}
 				}
+				changed = true;
 				module.removeFunction(function);
 			}
 		}
+		
+		return changed;
 	}
 	
 	private void dfsCallee(IRFunction caller) {
 		visited.add(caller);
-		ArrayList<IRFunction> calls = new ArrayList<IRFunction>();
+		//System.err.println("caller " + caller.getName());
 		for (IRBasicBlock block = caller.getEntranceBlock(); block != null; block = block.getNext()) {
 			for (IRInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
 				if (inst instanceof CallInst) {
@@ -160,15 +175,24 @@ public class Inliner extends PASS {
 	private void dfsRecursive(IRFunction caller) {
 		//enter stack.
 		dfsOrder.add(caller);
+		stack.add(caller);
 		inStack.put(caller, 1);
 		ArrayList<CallInst> calls = callSet.get(caller);
 		for (CallInst call : calls) {
 			IRFunction callee = call.getFunction();
-			if (inStack.get(callee) == 0) 
+			//System.err.println(caller.getName() + " --> " + callee.getName() + " " + inStack.get(callee));
+			if (inStack.get(callee) == 0)  {
 				dfsRecursive(callee);
-			else if (inStack.get(callee) == 1) 
+			}
+			else if (inStack.get(callee) == 1) {
 				recursiveSet.add(callee);
+				for (int i = stack.size() - 1; i >= 0; --i) {
+					recursiveSet.add(stack.get(i));
+					if (stack.get(i) == callee) break;
+				}
+			}
 		}
+		stack.remove(stack.size() - 1);
 		inStack.put(caller, 2);
 	}
 	
@@ -188,7 +212,8 @@ public class Inliner extends PASS {
 	}
 	
 	private void inline(IRFunction caller, IRFunction callee, CallInst call) {
-	//	System.err.println("****inline " + caller.getName() + " " + callee.getName());
+		changed = true;
+		//System.err.println("inline " + caller + " " + callee);
 		renameBlock = new HashMap<IRBasicBlock, IRBasicBlock>();
 		renameReg = new HashMap<IRSymbol, IRSymbol>();
 		

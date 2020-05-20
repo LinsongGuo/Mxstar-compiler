@@ -24,13 +24,15 @@ public class DominatorTree extends PASS {
 	
 	public void run() {
 		Collection<IRFunction> functions = module.getFunctList().values();
+		
 		for (IRFunction function : functions) {
-			//System.err.println("function " + function.getName());
+			init(function);
+		}
+		
+		for (IRFunction function : functions) {
 			LengauerTarjan(function);
 			CalcDF(function);
 		}
-		
-		//print();
 		
 		for (IRFunction function : functions) {
 			RLengauerTarjan(function);
@@ -53,6 +55,13 @@ public class DominatorTree extends PASS {
 	
 	private void link(IRBasicBlock block, IRBasicBlock father) {
 		unionFindSet.get(block).first = father;
+	}
+	
+	private void init(IRFunction function) {
+		ArrayList<IRBasicBlock> blocks = function.getBlockList();
+		for (IRBasicBlock block : blocks) {
+			block.initDom();
+		}
 	}
 	
 	//The Lengauer Tarjan algorithm to construct the dominator's tree.

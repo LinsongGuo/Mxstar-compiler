@@ -63,7 +63,7 @@ public class Main {
 		SSAConstructor ssaConstructor = new SSAConstructor(irModule);
 		DCE dce = new DCE(irModule);
 		SCCP sccp = new SCCP(irModule);	
-	
+		
 		inliner.run();
 		gve.run();
 		cfg.run();
@@ -75,15 +75,18 @@ public class Main {
 		
 		boolean changed = true;
 		while(changed) {
+			///System.err.println("----------------while");
 			changed = false;
+			changed |= inliner.run();
+			dom.run();
 			changed |= dce.run();
 			changed |= sccp.run();
 			changed |= cfg.run();
 		}
-		
+
 	//	IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
 	//	irPrinter2.visit(irModule);
-		
+	
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
 		ssaDestructor.run();	
@@ -98,7 +101,7 @@ public class Main {
 	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
 	//	rvPrinter.visit(rvModule);
 	
-		RvPrinter output = new RvPrinter("output.s", true);
+		RvPrinter output = new RvPrinter("test.s", true);
 		output.visit(rvModule);
 	}
 }

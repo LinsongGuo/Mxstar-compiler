@@ -37,6 +37,7 @@ public class IRBasicBlock {
 		successors = new ArrayList<IRBasicBlock>();
 		prev = next = null;
 		currentFunction = null;
+		/*
 		dfn = 0;
 		Rdfn = 0;
 		sdom = idom = father = null;
@@ -48,10 +49,25 @@ public class IRBasicBlock {
 		DF = new HashSet<IRBasicBlock>();
 		RDF = new HashSet<IRBasicBlock>();
 		dominaces = new ArrayList<IRBasicBlock>();
-		Rdominaces = new ArrayList<IRBasicBlock>();
+		Rdominaces = new ArrayList<IRBasicBlock>();*/
 		phiMap = new ArrayList<Pair<IRRegister, PhiInst>>();
 		phiUse = new HashSet<PhiInst>(); 
 		moveList = new ArrayList<MoveInst>();
+	}
+	
+	public void initDom() {
+	 	dfn = 0;
+		Rdfn = 0;
+		sdom = idom = father = null;
+		Rsdom = Ridom = Rfather = null;
+		bucket = new HashSet<IRBasicBlock>();
+		Rbucket = new HashSet<IRBasicBlock>();
+		strictDominators = new HashSet<IRBasicBlock>();
+		RstrictDominators = new HashSet<IRBasicBlock>();
+		DF = new HashSet<IRBasicBlock>();
+		RDF = new HashSet<IRBasicBlock>();
+		dominaces = new ArrayList<IRBasicBlock>();
+		Rdominaces = new ArrayList<IRBasicBlock>();
 	}
 	
 	public void setCurrentFunction(IRFunction function) {
