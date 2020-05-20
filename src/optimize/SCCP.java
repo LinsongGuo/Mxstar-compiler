@@ -226,24 +226,25 @@ public class SCCP extends PASS implements IRVisitor {
 			IRConst leftConst = toConstant(left);
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
+				//System.err.println(node.op +  "  " + ((IRConstInt) leftConst).getValue() + " " +  ((IRConstInt) rightConst).getValue());
 				if (node.op == BinOpInst.BinOpType.add) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() + ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() + ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BinOpInst.BinOpType.sub) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() - ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() - ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BinOpInst.BinOpType.mul) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() * ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() * ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BinOpInst.BinOpType.sdiv) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() / ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() / ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BinOpInst.BinOpType.srem) {
 				//System.err.println("node " + node);
 				//System.err.println("rem " + ((IRConstInt) leftConst).getValue() + " " +  ((IRConstInt) rightConst).getValue() + " " 
 				//+((IRConstInt) leftConst).getValue() % ((IRConstInt) rightConst).getValue());
 					if (((IRConstInt) rightConst).getValue() != 0)
-						markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() % ((IRConstInt) rightConst).getValue()));
+						markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() % ((IRConstInt) rightConst).getValue()));
 				}
 			}
 			else if (isMultiDefined(left) || isMultiDefined(right)){
@@ -265,6 +266,8 @@ public class SCCP extends PASS implements IRVisitor {
 			IRConst leftConst = toConstant(left);
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
+				//System.err.println(node);
+				//System.err.println(node.op +  "  " + ((IRConstInt) leftConst).getValue() + " " +  ((IRConstInt) rightConst).getValue());
 				if (node.op == BitwiseBinOpInst.BitwiseBinOpType.and) {
 					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() & ((IRConstInt) rightConst).getValue()));
 				}
@@ -272,10 +275,10 @@ public class SCCP extends PASS implements IRVisitor {
 					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() | ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BitwiseBinOpInst.BitwiseBinOpType.shl) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() << ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() << ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BitwiseBinOpInst.BitwiseBinOpType.ashr) {
-					markConstant(res, new IRConstInt(((IRConstInt) leftConst).getValue() >> ((IRConstInt) rightConst).getValue()));
+					markConstant(res, new IRConstInt((int) ((IRConstInt) leftConst).getValue() >> ((IRConstInt) rightConst).getValue()));
 				}
 				else if (node.op == BitwiseBinOpInst.BitwiseBinOpType.xor) {
 					if (leftConst.getType() instanceof IRInt32Type)

@@ -32,7 +32,7 @@ public class GlobalVarElimination extends PASS {
 			boolean flag = true;
 			for (IRInst use : uses) {
 				IRFunction current = use.getCurrentBlock().getCurrentFunction();
-			//	System.err.println(var + " " + use + " " + current.getName());
+			//	System.err.println("for " + var + " " + current.getName());
 				if (function == null)
 					function = current;
 				else if (function != current) {

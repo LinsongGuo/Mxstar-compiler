@@ -49,7 +49,6 @@ public class Main {
 			System.exit(count);			
 		}
 		
-		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
 		StringType stringTemplate = checker.getStringTemplate();
@@ -81,8 +80,9 @@ public class Main {
 			changed |= sccp.run();
 			changed |= cfg.run();
 		}
-	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
-	//	irPrinter.visit(irModule);
+		//IRPrinter irPrinter = new IRPrinter("test/test.ll");
+		//irPrinter.visit(irModule);
+				
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
@@ -96,7 +96,6 @@ public class Main {
 		
 		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
 		//rvPrinter.visit(rvModule);
-	
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
 	}
