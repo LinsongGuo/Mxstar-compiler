@@ -43,10 +43,12 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
 		
+		
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
 		}
+		
 		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
@@ -55,6 +57,7 @@ public class Main {
 		ir.visit(root);
 		IRModule irModule = ir.getModule(); 
 		
+		
 		//optimize
 		Inliner inliner = new Inliner(irModule);
 		GlobalVarElimination gve = new GlobalVarElimination(irModule);
@@ -62,17 +65,12 @@ public class Main {
 		DominatorTree dom = new DominatorTree(irModule);
 		SSAConstructor ssaConstructor = new SSAConstructor(irModule);
 		DCE dce = new DCE(irModule);
-		SCCP sccp = new SCCP(irModule);	
-		
+		SCCP sccp = new SCCP(irModule);		
 		inliner.run();
 		gve.run();
 		cfg.run();
 		dom.run();
 		ssaConstructor.run();
-		
-	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
-	//	irPrinter.visit(irModule);
-		
 		boolean changed = true;
 		while(changed) {
 			///System.err.println("----------------while");
@@ -83,10 +81,9 @@ public class Main {
 			changed |= sccp.run();
 			changed |= cfg.run();
 		}
-
-	//	IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
-	//	irPrinter2.visit(irModule);
-	
+	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
+	//	irPrinter.visit(irModule);
+		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
 		ssaDestructor.run();	
@@ -94,12 +91,11 @@ public class Main {
 		RvModule rvModule = selector.run();
 	//	RvPrinter pseudoPrinter = new RvPrinter("test/pseudo.s", true);
 	//	pseudoPrinter.visit(rvModule);
-		
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-	//	rvPrinter.visit(rvModule);
+		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+		//rvPrinter.visit(rvModule);
 	
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);

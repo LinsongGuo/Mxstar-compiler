@@ -34,6 +34,7 @@ public class DCE extends PASS {
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			run(function);
+			
 		}
 		return changed;
 	}

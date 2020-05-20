@@ -43,9 +43,11 @@ public class GlobalVarElimination extends PASS {
 			
 			if (flag) {
 				if (function == null) {
+					//System.err.println("remove1 " + var);
 					removeList.add(var);
 				}
-				else {
+				else if (function.getName().equals("@main")){
+					//System.err.println("remove2 " + var + " " + function.getName());
 					removeList.add(var);
 					IRRegister res = new IRRegister(var.getType(), var.getName() + "$");
 					IRBasicBlock entranceBlock = function.getEntranceBlock();
