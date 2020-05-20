@@ -42,24 +42,26 @@ public class GlobalVarElimination extends PASS {
 			}
 			
 			if (flag) {
-				removeList.add(var);
-				//System.err.println(var.getName());
-				IRRegister res = new IRRegister(var.getType(), var.getName() + "$");
-				IRBasicBlock entranceBlock = function.getEntranceBlock();
-				function.addRegister(res);
-				IRSymbol init = var.getInit();
-				if (init != null && !(init instanceof IRNull)) {
-					//System.err.println("chushi " + init);
-					assert init instanceof IRConstInt;
-					StoreInst store = new StoreInst(init, res);
-					entranceBlock.addInstInHead(store);
+				if (function == null) {
+					removeList.add(var);
 				}
-				AllocaInst alloca = new AllocaInst(res, ((IRPtrType) res.getType()).getType());
-				entranceBlock.addInstInHead(alloca);
-				
-				for (IRInst use : uses) {
-					//System.err.println("*** " + use);
-					use.replaceUse(var, res);
+				else {
+					removeList.add(var);
+					IRRegister res = new IRRegister(var.getType(), var.getName() + "$");
+					IRBasicBlock entranceBlock = function.getEntranceBlock();
+					function.addRegister(res);
+					IRSymbol init = var.getInit();
+					if (init != null && !(init instanceof IRNull)) {
+						assert init instanceof IRConstInt;
+						StoreInst store = new StoreInst(init, res);
+						entranceBlock.addInstInHead(store);
+					}
+					AllocaInst alloca = new AllocaInst(res, ((IRPtrType) res.getType()).getType());
+					entranceBlock.addInstInHead(alloca);
+					
+					for (IRInst use : uses) {
+						use.replaceUse(var, res);
+					}	
 				}
 			}
 		}

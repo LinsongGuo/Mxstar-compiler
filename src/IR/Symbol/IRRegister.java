@@ -14,8 +14,6 @@ public class IRRegister extends IRSymbol {
 	public IRRegister(IRType type, String name) {
 		super(type);
 		this.name = name;	
-		status = Status.undefined;
-		constant = null;
 	}
 
 	@Override
@@ -36,20 +34,7 @@ public class IRRegister extends IRSymbol {
 		this.name = name;
 	}
 
-	//for SCCP
-	public enum Status {
-		undefined, constant, multiDefined;		
-	}
-	public Status status;
-	private IRConst constant; 
-		
-	public void setConstant(IRConst constant) {
-		this.constant = constant;
-	}
 	
-	public IRConst getConstant() {
-		return constant;
-	}
 	
 	//for instruction selection
 	private RvRegister rvReg;

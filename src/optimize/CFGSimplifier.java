@@ -20,11 +20,14 @@ import IR.Symbol.IRSymbol;
 
 public class CFGSimplifier extends PASS {
 
+	private boolean changed;
+	
 	public CFGSimplifier(IRModule module) throws FileNotFoundException {
 		super(module);	
 	}
 	
-	public void run() {
+	public boolean run() {
+		changed = false;
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			removeSingleBlockInPhi(function);
@@ -32,6 +35,7 @@ public class CFGSimplifier extends PASS {
 			removeUnusedBlock(function);
 		}
 		//print();
+		return changed;
 	}
 
 	public void removeSingleBlockInPhi(IRFunction function) {
@@ -83,6 +87,7 @@ public class CFGSimplifier extends PASS {
 				IRBasicBlock successor = successors.get(0);
 				//System.err.println("union " + block + " " + successor);
 				block.union(successor);
+				changed = true;
 				//System.err.println(block.getSuccessors());
 				queue.offer(block);
 				continue;
@@ -98,6 +103,7 @@ public class CFGSimplifier extends PASS {
 		ArrayList<IRBasicBlock> blockList = function.getBlockList();
 		for (IRBasicBlock block : blockList) {
 			if (!visitedSet.contains(block)) {
+				changed = true;
 				block.removeItself();
 				block.removeAllInst();
 				block.removeAllPhiUse();

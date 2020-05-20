@@ -20,19 +20,22 @@ import IR.Symbol.IRRegister;
 
 public class DCE extends PASS {
 
-	Queue<IRInst> workList;
-	HashSet<IRInst> marked;
-	HashSet<IRBasicBlock> visited;
+	private boolean changed;
+	private Queue<IRInst> workList;
+	private HashSet<IRInst> marked;
+	private HashSet<IRBasicBlock> visited;
 
 	public DCE(IRModule module) {
 		super(module);	
 	}
 	
-	public void run() {
+	public boolean run() {
+		changed = false;
 		Collection<IRFunction> functions = module.getFunctList().values();
 		for (IRFunction function : functions) {
 			run(function);
 		}
+		return changed;
 	}
 	
 	private void push(IRInst inst) {
@@ -62,12 +65,9 @@ public class DCE extends PASS {
 		while(!workList.isEmpty()) {
 			IRInst inst = workList.poll();
 			ArrayList<IRRegister> regs = inst.getUsedRegister();
-		//	System.err.println(inst);
 			for (IRRegister reg : regs) {
 				HashSet<IRInst> defList = reg.getDefList();
-			//	System.err.println("reg : " + reg);
 				for (IRInst def : defList) {
-				//	System.err.println("def : " + def);
 					push(def);
 				}
 			}
@@ -96,11 +96,16 @@ public class DCE extends PASS {
 			for (IRInst inst : instList) {
 				if (!marked.contains(inst)) {
 					if (inst instanceof BrInst) {
-						//System.err.println("idom " + block + " " + block.getRIdom());
-						((BrInst) inst).change(block.getRIdom());			
+						if (((BrInst) inst).getCond() != null) {
+							((BrInst) inst).change(block.getRIdom());			
+							changed = true;
+						//	System.err.println("dce " + inst + " " + block.getRIdom());	
+						}
 					}
 					else {
+					//	System.err.println("dce " + inst);
 						inst.removeItself();
+						changed = true;
 					}
 				}
 			}

@@ -3,7 +3,6 @@ import org.antlr.v4.runtime.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 
 import Scope.*;
 import parser.*;
@@ -11,7 +10,6 @@ import AST.*;
 import utility.*;
 import SemanticChecker.*;
 import codegen.InstructionSelection;
-import codegen.LivenessAnalysis;
 import codegen.RegisterAllocation;
 import codegen.RvPrinter;
 import optimize.CFGSimplifier;
@@ -23,16 +21,13 @@ import optimize.SCCP;
 import optimize.SSAConstructor;
 import optimize.SSADestructor;
 import IR.*;
-import IR.Inst.IRInst;
-import IR.Inst.StoreInst;
 import Riscv.RvModule;
-import Riscv.Operand.RegisterTable;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
 		InputStream IS = System.in;
-		//InputStream IS = new FileInputStream("code.txt");
+	//	InputStream IS = new FileInputStream("code.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);
@@ -70,16 +65,24 @@ public class Main {
 		SCCP sccp = new SCCP(irModule);	
 	
 		inliner.run();
-		//gve.run();
+		gve.run();
 		cfg.run();
 		dom.run();
 		ssaConstructor.run();
-		dce.run();
-		sccp.run();
-		cfg.run();
 		
 	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
 	//	irPrinter.visit(irModule);
+		
+		boolean changed = true;
+		while(changed) {
+			changed = false;
+			changed |= dce.run();
+			changed |= sccp.run();
+			changed |= cfg.run();
+		}
+		
+	//	IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
+	//	irPrinter2.visit(irModule);
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);

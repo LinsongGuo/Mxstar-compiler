@@ -2,6 +2,7 @@ package optimize;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -44,36 +45,58 @@ import IR.Type.IRType;
 import IR.Type.IRVoidType;
 
 public class SCCP extends PASS implements IRVisitor {
+	//for SCCP
+	public enum Status {
+		undefined, constant, multiDefined;		
+	}
+	
+	private boolean changed;
 	private Queue<IRBasicBlock> queueBB;
 	private Queue<IRRegister> queueREG;
+	private HashMap<IRRegister, Status> statusMap;
+	private HashMap<IRRegister, IRConst> constantMap;
+	private HashSet<IRBasicBlock> executableSet;
 	
 	public SCCP(IRModule module) {
 		super(module);
 	}
 	
-	public void run() {
-		visit(module);	
+	public boolean run() {
+		changed = false;
+		Collection<IRFunction> functions = module.getFunctList().values();
+		for (IRFunction function : functions) {
+			function.accept(this);
+		}	
+		return changed;
 	}
 
+	private IRConst getConstant(IRRegister reg) {
+		return constantMap.get(reg);
+	}
+	
+	private Status getStatus(IRRegister reg) {
+		return statusMap.containsKey(reg) ? statusMap.get(reg) : Status.undefined;
+	}
+	
 	private void markConstant(IRRegister reg, IRConst constant) {
-		if (reg.status != IRRegister.Status.constant) {
-			reg.setConstant(constant);
-			reg.status = IRRegister.Status.constant;
+		if (getStatus(reg) != Status.constant) {
+			constantMap.put(reg, constant);
+			statusMap.put(reg, Status.constant);
 			queueREG.offer(reg);		
 		}
 	}
 	
 	private void markMultiDefined(IRRegister reg) {
-		if (reg.status != IRRegister.Status.multiDefined) {
-			reg.setConstant(null);
-			reg.status = IRRegister.Status.multiDefined;
+		if (getStatus(reg) != Status.multiDefined) {
+			constantMap.put(reg, null);
+			statusMap.put(reg, Status.multiDefined);
 			queueREG.offer(reg);		
 		}
 	}
 	
 	private void markExecutable(IRBasicBlock block) {
-		if (!block.getExecutable()) {
-			block.setExecutable();
+		if (!executableSet.contains(block)) {
+			executableSet.add(block);
 			queueBB.offer(block);
 		}
 		else {
@@ -85,33 +108,37 @@ public class SCCP extends PASS implements IRVisitor {
 	
 	private IRConst toConstant(IRSymbol symbol) {
 		return symbol instanceof IRConst ?  ((IRConst) symbol) : 
-			(symbol instanceof IRRegister ? ((IRRegister) symbol).getConstant() : null); 
+			(symbol instanceof IRRegister ? getConstant((IRRegister) symbol) : null); 
 	}
 	
 	private boolean isMultiDefined(IRSymbol symbol) {
-		return (symbol instanceof IRRegister) && ((IRRegister) symbol).status == IRRegister.Status.multiDefined;
+	//	if (symbol instanceof IRRegister)
+	//		System.err.println(symbol + " ismultidefined " +  getStatus((IRRegister) symbol));
+	//	else System.err.println(symbol + " not register");
+		return (symbol instanceof IRRegister) && getStatus((IRRegister) symbol) == Status.multiDefined;
 	}
 	
 	@Override
 	public void visit(IRModule node) {
-		Collection<IRFunction> functions = module.getFunctList().values();
-		for (IRFunction function : functions) {
-			function.accept(this);
-		}
+		
 	}
 
 	@Override
 	public void visit(IRFunction node) {
-		ArrayList<IRRegister> parameters = node.getParameters();
-		for (IRRegister parameter : parameters) {
-			parameter.status = IRRegister.Status.multiDefined;
-		}
-		
 		queueBB = new LinkedList<IRBasicBlock>();
 		queueREG = new LinkedList<IRRegister>();
+		statusMap = new HashMap<IRRegister, Status>();
+		constantMap = new HashMap<IRRegister, IRConst>();
+		executableSet = new HashSet<IRBasicBlock>();
+		
+		ArrayList<IRRegister> parameters = node.getParameters();
+		for (IRRegister parameter : parameters) {
+			statusMap.put(parameter, Status.multiDefined);
+		}
+		
 		IRBasicBlock entranceBlock = node.getEntranceBlock();
 		queueBB.offer(entranceBlock);
-		entranceBlock.setExecutable();
+		executableSet.add(entranceBlock);
 		
 		while(!queueBB.isEmpty() || !queueREG.isEmpty()) {
 			if (!queueBB.isEmpty()) {
@@ -120,6 +147,7 @@ public class SCCP extends PASS implements IRVisitor {
 			
 			if (!queueREG.isEmpty()) {
 				IRRegister reg = queueREG.poll();
+				//System.err.println("queueReg " + reg);
 				HashSet<IRInst> useList = reg.getUseList();
 				for (IRInst inst : useList) {
 					inst.accept(this);
@@ -129,20 +157,22 @@ public class SCCP extends PASS implements IRVisitor {
 		
 		ArrayList<IRBasicBlock> bbs = node.getBlockList();
 		for (IRBasicBlock block : bbs) {
-			if (!block.getExecutable()) {
+			if (!executableSet.contains(block)) {
+				//System.err.println("sccp " + block.getName());
 				block.removeItself();
 				block.removeAllInst();
 				block.removeAllPhiUse();
+				changed = true;
 			}
 			else {
 				ArrayList<IRInst> instList = block.getInstList();
 				for (IRInst inst : instList) {
 					IRRegister res = inst.getRes();
-					if (res != null && res.status == IRRegister.Status.constant) {
-						//System.err.println("constant " + res + " " + res.getConstant());
-						//System.err.println(res.getUseList());	
-						res.replaceUse(res.getConstant());
+					if (res != null && getStatus(res) == Status.constant) {
+						//System.err.println("sccp " + res + " " + inst);
+						res.replaceUse(getConstant(res));
 						inst.removeItself();
+						changed = true;
 					}
 				}
 			}
@@ -191,7 +221,7 @@ public class SCCP extends PASS implements IRVisitor {
 	public void visit(BinOpInst node) {
 		IRRegister res = node.getRes();
 		IRSymbol left = node.getLeft(), right = node.getRight();
-		if (res.status == IRRegister.Status.undefined) {
+		if (getStatus(res) == Status.undefined) {
 			IRConst leftConst = toConstant(left);
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
@@ -215,7 +245,7 @@ public class SCCP extends PASS implements IRVisitor {
 				markMultiDefined(res);
 			}
 		}
-		else if (res.status == IRRegister.Status.constant) {
+		else if (getStatus(res) == Status.constant) {
 			 if (isMultiDefined(left) || isMultiDefined(right)){
 				markMultiDefined(res);
 			}
@@ -226,7 +256,7 @@ public class SCCP extends PASS implements IRVisitor {
 	public void visit(BitwiseBinOpInst node) {
 		IRRegister res = node.getRes();
 		IRSymbol left = node.getLeft(), right = node.getRight();
-		if (res.status == IRRegister.Status.undefined) {
+		if (getStatus(res) == Status.undefined) {
 			IRConst leftConst = toConstant(left);
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
@@ -253,7 +283,7 @@ public class SCCP extends PASS implements IRVisitor {
 				markMultiDefined(res);
 			}
 		}
-		else if (res.status == IRRegister.Status.constant) {
+		else if (getStatus(res) == Status.constant) {
 			 if (isMultiDefined(left) || isMultiDefined(right)){
 				markMultiDefined(res);
 			}
@@ -265,7 +295,7 @@ public class SCCP extends PASS implements IRVisitor {
 		///System.err.println(node + " " );
 		IRRegister res = node.getRes();
 		IRSymbol left = node.getLeft(), right = node.getRight();
-		if (res.status == IRRegister.Status.undefined) {
+		if (getStatus(res) == Status.undefined) {
 			IRConst leftConst = toConstant(left);
 			IRConst rightConst = toConstant(right);
 			if (leftConst != null && rightConst != null) {
@@ -298,7 +328,7 @@ public class SCCP extends PASS implements IRVisitor {
 				markMultiDefined(res);
 			}
 		}
-		else if (res.status == IRRegister.Status.constant) {
+		else if (getStatus(res) == Status.constant) {
 			 if (isMultiDefined(left) || isMultiDefined(right)){
 				markMultiDefined(res);
 			}
@@ -308,7 +338,6 @@ public class SCCP extends PASS implements IRVisitor {
 
 	@Override
 	public void visit(BrInst node) {
-		//System.err.println("BrInst " + node);
 		IRSymbol cond = node.getCond();
 		if (cond == null) {
 		//	System.err.println("brinst " + node.getTrue());
@@ -334,7 +363,7 @@ public class SCCP extends PASS implements IRVisitor {
 
 	@Override
 	public void visit(PhiInst node) {
-		//System.err.println("visit " + node);
+	//	System.err.println("visit " + node);
 		IRConst constant = null;
 		IRRegister res = node.getRes();
 		ArrayList<IRSymbol> symbols = node.getSymbols();
@@ -342,8 +371,8 @@ public class SCCP extends PASS implements IRVisitor {
 		for (int i = 0; i < symbols.size(); ++i) {
 			IRSymbol symbol = symbols.get(i);
 			IRBasicBlock bb = bbs.get(i);
-			if (bb.getExecutable()) {
-				//System.err.println("for " + i + " " + symbol + " " + bb + " " + isMultiDefined(symbol));	
+			if (executableSet.contains(bb)) {
+			//	System.err.println("for " + i + " " + symbol + " " + bb + " " + isMultiDefined(symbol));	
 				if (isMultiDefined(symbol)) {
 					markMultiDefined(res);
 					return;

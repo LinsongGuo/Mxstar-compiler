@@ -51,7 +51,6 @@ public class IRBasicBlock {
 		Rdominaces = new ArrayList<IRBasicBlock>();
 		phiMap = new ArrayList<Pair<IRRegister, PhiInst>>();
 		phiUse = new HashSet<PhiInst>(); 
-		executable = false;
 		moveList = new ArrayList<MoveInst>();
 	}
 	
@@ -483,16 +482,6 @@ public class IRBasicBlock {
 		}
 	}
 	
-	//for SCCP
-	private boolean executable;
-	
-	public void setExecutable() {
-		executable = true;
-	}
-	
-	public boolean getExecutable() {
-		return executable;
-	}
 	
 	//for SSA destruction
 	private ArrayList<MoveInst> moveList;
