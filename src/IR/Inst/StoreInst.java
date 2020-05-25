@@ -87,4 +87,5 @@ public class StoreInst extends IRInst {
 			res.add((IRRegister) ptr);
 		return res;
 	}
+
 }

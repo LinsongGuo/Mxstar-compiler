@@ -463,7 +463,6 @@ public class InstructionSelection implements IRVisitor {
 		}
 	}
 
-
 	@Override
 	public void visit(BrInst node) {
 		IRSymbol cond = node.getCond();
@@ -486,24 +485,37 @@ public class InstructionSelection implements IRVisitor {
 
 	public void handleGEPWithLoadStore(IRRegister res, RvRegister reg, RvImm imm) {
 		HashSet<IRInst> instList = res.getUseList();
-		//System.err.println("handleGEPWithLoadStore " + reg + " " + imm);
-		//System.err.println(instList);
 		for (IRInst inst : instList) {
-			//System.err.println("store " + inst);
-			if (inst instanceof LoadInst) 
+			//System.err.println("handle " + res + " " + inst + " " + toRvRegister(inst.getRes()) + " " + reg);
+			if (inst instanceof LoadInst) {
+				/*
+				if (inst.getRvInst() != null) {
+					RvLoad rv = (RvLoad) inst.getRvInst();
+					System.err.println(rv);
+				//	System.err.println(rv.getPrev());
+			//		rv.setSrc(reg);
+					System.err.println(" --> " + rv);
+				//	System.err.println(rv.getPrev());
+				}
+				else {
+					inst.setRvInst(new RvLoad(currentBlock, toRvRegister(inst.getRes()), reg, imm));		
+				}*/
 				inst.setRvInst(new RvLoad(currentBlock, toRvRegister(inst.getRes()), reg, imm));
-			else 
+			}
+			else {
+				/*
+				if (inst.getRvInst() != null) {
+					RvStore rv = (RvStore) inst.getRvInst();
+					System.err.println(rv);
+			//		rv.setDest(reg);
+					System.err.println(" --> " + rv);
+				}
+				else {
+					inst.setRvInst(new RvStore(currentBlock, toRvRegister(((StoreInst) inst).getValue()), reg, imm));	
+				}	*/
 				inst.setRvInst(new RvStore(currentBlock, toRvRegister(((StoreInst) inst).getValue()), reg, imm));	
+			}
 		}
-	}
-	
-	private int log2(int value) {
-		int res = 0;
-		while (value > 1) {
-			value >>= 1;
-			res++;
-		}
-		return value == 0 ? res : -1;
 	}
 	
 	@Override
@@ -535,14 +547,16 @@ public class InstructionSelection implements IRVisitor {
 			int offset = (int) ((IRConstInt) index0).getValue() * bytes;
 			if (canBeImm(offset + offset1)) {
 				offset += offset1;
-				if (only) 
+				if (only) {
+					//System.err.println("before "+ res);
 					handleGEPWithLoadStore(res, toRvRegister(ptr), new RvImm(offset));
-				else {	
+				}
+			//	else {	
 					if (offset == 0) 						
 						currentBlock.addInst(new RvMove(currentBlock, toRvRegister(res), toRvRegister(ptr)));
 					else 
 						currentBlock.addInst(new RvTypeI(currentBlock, RvTypeI.Op.addi, toRvRegister(res), toRvRegister(ptr), new RvImm(offset)));		
-				}	
+			//	}	
 			}
 			else {
 				RvVirtualRegister tmp = currentFunction.newRegister("tmp");
@@ -594,8 +608,11 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(RegisterTable.hi, var)));
 				currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(node.getRes()), tmp, new RvAddress(RegisterTable.lo, var)));
 			} 
-			else 
-				currentBlock.addInst(new RvLoad(currentBlock, toRvRegister(node.getRes()), toRvRegister(node.getPtr()), new RvImm(0)));
+			else {
+				RvInst rv = new RvLoad(currentBlock, toRvRegister(node.getRes()), toRvRegister(node.getPtr()), new RvImm(0));
+				currentBlock.addInst(rv);
+				node.setRvInst(rv);		
+			}
 		}
 	}
 	
@@ -624,8 +641,11 @@ public class InstructionSelection implements IRVisitor {
 				currentBlock.addInst(new RvLui(currentBlock, tmp, new RvAddress(RegisterTable.hi, var)));
 				currentBlock.addInst(new RvStore(currentBlock, toRvRegister(node.getRes()), tmp, new RvAddress(RegisterTable.lo, var)));
 			} 
-			else 
-				currentBlock.addInst(new RvStore(currentBlock, toRvRegister(node.getValue()), toRvRegister(node.getPtr()), new RvImm(0)));
+			else { 
+				RvInst rv = new RvStore(currentBlock, toRvRegister(node.getValue()), toRvRegister(node.getPtr()), new RvImm(0));
+				currentBlock.addInst(rv);
+				node.setRvInst(rv);
+			}
 		}
 	}
 	

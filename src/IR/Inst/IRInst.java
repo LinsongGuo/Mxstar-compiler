@@ -88,6 +88,7 @@ abstract public class IRInst {
 	}
 	
 	public void setRvInst(RvInst rvInst) {
+	//	System.err.println("set rvInst " + rvInst);
 		this.rvInst = rvInst;
 	}
 	

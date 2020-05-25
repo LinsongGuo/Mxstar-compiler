@@ -32,6 +32,7 @@ public class LoadInst extends IRInst {
 			ptr = nw;
 		//	old.removeUse(this);
 			nw.addUse(this);
+		//	System.err.println("addUse " + nw);
 		}
 	}
 	

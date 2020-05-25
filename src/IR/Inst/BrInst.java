@@ -94,7 +94,7 @@ public class BrInst extends IRInst {
 	public void replaceUse(IRSymbol old, IRSymbol nw) {
 		if (cond == old) {
 			cond = nw;
-			old.removeUse(this);
+			//old.removeUse(this);
 			nw.addUse(this);
 			if (nw instanceof IRConstBool) {
 				cond = null;

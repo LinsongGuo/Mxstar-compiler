@@ -46,6 +46,10 @@ public class RvStore extends RvInst {
 		return dest;
 	}
 	
+	public void setDest(RvRegister dest) {
+		this.dest = dest;
+	}
+	
 	public RvImm getOffset() {
 		return offset;
 	}

@@ -29,11 +29,9 @@ public class RvFunction {
 	}
 	
 	public RvVirtualRegister newRegister(String name) {
-		//System.err.println("enter " + regList);
 		name = name + "_" + String.valueOf(regList.size());
 		RvVirtualRegister reg = new RvVirtualRegister(name);
 		regList.add(reg);
-		//System.err.println("new reg " + reg + " " + regList);
 		return reg;
 	}
 	

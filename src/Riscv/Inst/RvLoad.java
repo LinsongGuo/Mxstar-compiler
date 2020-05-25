@@ -46,6 +46,10 @@ public class RvLoad extends RvInst {
 		return src;
 	}
 	
+	public void setSrc(RvRegister src) {
+		this.src = src;
+	}
+	
 	public RvImm getOffset() {
 		return offset;
 	}
@@ -59,7 +63,7 @@ public class RvLoad extends RvInst {
 	public String toString() {
 		if (src instanceof RvStackSlot) 
 			return "\tlw      " + rd + "," + src;
-		else
+		else 
 			return "\tlw      " + rd + "," + offset + "(" + src + ")";
 	}
 

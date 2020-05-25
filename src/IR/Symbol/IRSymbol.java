@@ -60,6 +60,7 @@ abstract public class IRSymbol {
 	public void replaceUse(IRSymbol other) {
 		if (this == other) return;
 		for (IRInst inst : useList) {
+		//	System.err.println("repalce " + inst);
 			inst.replaceUse(this, other);
 		}
 		useList.clear();

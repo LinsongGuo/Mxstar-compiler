@@ -56,6 +56,7 @@ public class SCCP extends PASS implements IRVisitor {
 	private HashMap<IRRegister, Status> statusMap;
 	private HashMap<IRRegister, IRConst> constantMap;
 	private HashSet<IRBasicBlock> executableSet;
+	private ArrayList<IRInst> removeList;
 	
 	public SCCP(IRModule module) {
 		super(module);
@@ -132,6 +133,7 @@ public class SCCP extends PASS implements IRVisitor {
 		statusMap = new HashMap<IRRegister, Status>();
 		constantMap = new HashMap<IRRegister, IRConst>();
 		executableSet = new HashSet<IRBasicBlock>();
+		removeList = new ArrayList<IRInst>();
 		
 		ArrayList<IRRegister> parameters = node.getParameters();
 		for (IRRegister parameter : parameters) {
@@ -170,13 +172,17 @@ public class SCCP extends PASS implements IRVisitor {
 				for (IRInst inst : instList) {
 					IRRegister res = inst.getRes();
 					if (res != null && getStatus(res) == Status.constant) {
-						//System.err.println("sccp " + res + " " + inst);
+					//	System.err.println("sccp " + res + " " + inst);
 						res.replaceUse(getConstant(res));
-						inst.removeItself();
+						removeList.add(inst);
 						changed = true;
 					}
 				}
 			}
+		}
+		
+		for (IRInst inst : removeList) {
+			inst.removeItself();
 		}
 	}
 

@@ -82,6 +82,7 @@ public class GetElementPtrInst extends IRInst {
 		if (flag) {
 		//	old.removeUse(this);
 			nw.addUse(this);
+		
 		}
 	}
 	
