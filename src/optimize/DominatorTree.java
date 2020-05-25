@@ -22,7 +22,7 @@ public class DominatorTree extends PASS {
 		super(module);
 	}
 	
-	public void run() throws FileNotFoundException {
+	public void run() /*throws FileNotFoundException */{
 		Collection<IRFunction> functions = module.getFunctList().values();
 		
 		for (IRFunction function : functions) {
@@ -33,7 +33,7 @@ public class DominatorTree extends PASS {
 			LengauerTarjan(function);
 			CalcDF(function);
 		}
-		print();
+	//	print();
 		for (IRFunction function : functions) {
 			RLengauerTarjan(function);
 			CalcRDF(function);

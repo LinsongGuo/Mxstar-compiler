@@ -46,7 +46,6 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);
 		
-		
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
