@@ -188,19 +188,14 @@ public class CSE extends PASS {
 		if (removeList.size() > 0)
 			changed = true;
 		
-		//for (IRInst inst : removeList) {
-			//System.err.println("#eliminate  " + inst);
-		//	inst.removeItself();
-		//}
-		
 		for (int i = 0; i < removeList.size(); ++i) {
 			IRInst inst = removeList.get(i);
 			IRRegister res = inst.getRes();
-		/*	IRRegister replace = replaceList.get(i);
+			IRRegister replace = replaceList.get(i);
 			HashSet<IRInst> uses = res.getUseList();
 			for (IRInst use : uses) {
 				use.replaceUse(res, replace);
-			}*/
+			}
 			inst.removeItself();
 		}
 	}
@@ -258,13 +253,20 @@ public class CSE extends PASS {
 				IRInst last = top.first;
 				IRRegister replace = top.second;
 				if (inst instanceof LoadInst) {
-					if (cheakAlias(inst, (IRRegister) ((LoadInst) inst).getPtr(), (LoadInst) last, new HashSet<IRInst>())) {
-						HashSet<IRInst> uses = res.getUseList();
+					if (/*!res.getName().contains("storage") && 
+							!res.getName().contains("size") && 
+							!res.getName().contains("end") && 
+							!res.getName().contains("beg") && */
+							cheakAlias(inst, (IRRegister) ((LoadInst) inst).getPtr(), (LoadInst) last, new HashSet<IRInst>())) {
+					
+						//System.err.println(inst);
+						//System.err.println(res + " --> " + replace);
+						removeList.add(inst);
+						replaceList.add(replace);
+						/*HashSet<IRInst> uses = res.getUseList();
 						for (IRInst use : uses) {
 							use.replaceUse(res, replace);
-						}
-						removeList.add(inst);
-					//	replaceList.add(replace);
+						}*/
 						stack.push(new Pair<IRInst, IRRegister>(inst, replace));
 					}
 					else {
@@ -272,6 +274,14 @@ public class CSE extends PASS {
 					}
 				}
 				else {
+						removeList.add(inst);
+						replaceList.add(replace);
+						/*HashSet<IRInst> uses = res.getUseList();
+						for (IRInst use : uses) {
+							use.replaceUse(res, replace);
+						}*/
+						stack.push(new Pair<IRInst, IRRegister>(inst, replace));
+					
 				//	if (inst instanceof GetElementPtrInst && ((IRRegister) ((GetElementPtrInst) inst).getPtr()).getName().contains("malloc.1")) {
 				//		System.err.println(inst);
 				//		System.err.println(res + " --> " + replace);
@@ -297,13 +307,9 @@ public class CSE extends PASS {
 						System.err.println(res + " --> " + replace);
 						continue;
 					}*/
-					HashSet<IRInst> uses = res.getUseList();
-					for (IRInst use : uses) {
-						use.replaceUse(res, replace);
-					}
-					removeList.add(inst);
-					//replaceList.add(replace);
-					stack.push(new Pair<IRInst, IRRegister>(inst, replace));
+					
+					
+			
 				}
 			}
 		}
@@ -326,7 +332,7 @@ public class CSE extends PASS {
 	}
 	
 	private boolean cheakAlias(IRInst inst, IRRegister ptr, LoadInst goal, HashSet<IRInst>visited) {
-		//return false;
+		
 		if (visited.contains(inst))
 			return true;
 		if (inst == goal)
@@ -351,38 +357,6 @@ public class CSE extends PASS {
 			return true;
 		}
 	}
-	
-	/*
-	private boolean cheakAlias(LoadInst from, LoadInst to) {
-		//System.err.println("check " + from + " " + to);
-		IRRegister ptr = (IRRegister) from.getPtr();
-		IRBasicBlock block = from.getCurrentBlock();
-		IRInst inst = from.getPrev() == null ? block.getIdom().getTail() : from.getPrev(); 
-		while (!inst.equals(to)) {
-			if (inst instanceof StoreInst && aa.mayAlias(ptr, (IRRegister) ((StoreInst) inst).getPtr())) {
-				return false;
-			}
-			if (inst instanceof CallInst && !module.isbuiltInFunction(((CallInst) inst).getFunction())) {
-				return false;
-			}
-			if (inst.getPrev() == null) {
-			//	System.err.println(block + " --> " + block.getIdom());
-				block = block.getIdom();
-				inst = block.getTail();	
-			}
-			else {
-				inst = inst.getPrev(); 			
-			}
-		}
-		System.err.println("from " + from);
-		System.err.println("to   " + to);
-		if (from.getRes().getName().contains("next.6")) {
-			
-			//return false;	
-		}
-		return true;
-		//return false;
-	}*/
 	
 	private Expr toExpr(BinOpInst inst) {
 		if (inst.op == BinOpInst.BinOpType.add)

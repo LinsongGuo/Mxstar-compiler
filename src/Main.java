@@ -58,6 +58,8 @@ public class Main {
 		ir.visit(root);
 		IRModule irModule = ir.getModule(); 
 		
+		//IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
+		//irPrinter2.visit(irModule);
 		
 		//optimize
 		Inliner inliner = new Inliner(irModule);
@@ -76,8 +78,6 @@ public class Main {
 		ssaConstructor.run();
 		boolean changed = true;
 
-		//IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
-		//irPrinter2.visit(irModule);
 		while(changed) {
 		//System.err.println("----------------while");
 			changed = false;
