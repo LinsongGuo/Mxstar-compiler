@@ -2,6 +2,7 @@ package Riscv.Inst;
 
 import Riscv.RvBlock;
 import Riscv.RvVisitor;
+import Riscv.Operand.RegisterTable;
 import Riscv.Operand.RvImm;
 import Riscv.Operand.RvOperand;
 import Riscv.Operand.RvRegister;
@@ -108,5 +109,34 @@ public class RvLoad extends RvInst {
 	
 	public RvStackSlot getStackSlot() {
 		return (src instanceof RvStackSlot) ? (RvStackSlot) src : null;
+	}
+	
+	public boolean checkStore(RvStore store) {
+		RvOperand storeDest = store.getDest();
+		RvImm storeOffset = store.getOffset();
+		
+		int storeImm = -1, loadImm = -1;
+		RvRegister storeReg = null, loadReg = null;
+		if (storeDest instanceof RvStackSlot) {
+			storeImm = ((RvStackSlot) storeDest).getIndex();
+			storeReg = RegisterTable.sp;
+		}
+		else if (storeDest instanceof RvRegister) {
+			storeImm = storeOffset.getValue();
+			storeReg = (RvRegister) storeDest;
+		}
+		
+		if (src instanceof RvStackSlot) {
+			loadImm = ((RvStackSlot) src).getIndex();
+			loadReg = RegisterTable.sp;
+		}
+		else if (src instanceof RvRegister) {
+			loadImm = offset.getValue();
+			loadReg = (RvRegister) src; 
+		}
+		
+		if (storeReg == null || loadReg == null)
+			return false;
+		else return storeReg == loadReg && storeImm == loadImm;
 	}
 }

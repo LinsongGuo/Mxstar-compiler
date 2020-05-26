@@ -112,6 +112,7 @@ public class RegisterAllocation {
 			//System.err.println(cnt);
 			removeRedundantMove(function);
 			stackSlotAllocation(function);
+			PeepholeOptimization(function);
 		}
 	}
 	
@@ -539,6 +540,21 @@ public class RegisterAllocation {
 							slot.addIndex(size);
 						}
 					}
+				}
+			}
+		}
+	}
+	
+	private void PeepholeOptimization(RvFunction function) {
+		ArrayList<RvBlock> blocks = function.getBlockList();
+		for (RvBlock block : blocks) {
+			ArrayList<RvLoad> loads = block.getAllLoads();
+			for (RvLoad load : loads) {
+				RvInst store = load.getPrev();
+				if (store != null && store instanceof RvStore && load.checkStore((RvStore) store)) {
+					//System.err.println(store + " :: " + load);
+					RvMove move = new RvMove(block, load.getRd(), ((RvStore) store).getRd());
+					block.replaceInst(load, move);
 				}
 			}
 		}

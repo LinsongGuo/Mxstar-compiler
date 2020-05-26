@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import Riscv.Inst.RvInst;
+import Riscv.Inst.RvLoad;
 import Riscv.Inst.RvMove;
 import Riscv.Operand.RvRegister;
 
@@ -189,5 +190,51 @@ public class RvBlock {
 			}
 		}
 	}
+	
+	public void replaceInst(RvInst old, RvInst nw) {
+		RvInst next = old.getNext();
+		RvInst prev = old.getPrev();
+		if (old == head) {
+			if (next != null) {
+				nw.setNext(next);
+				next.setPrev(nw);
+			}
+			head = nw;
+		}
+		else if (old == tail) {
+			if (prev != null) {
+				nw.setPrev(prev);
+				prev.setNext(nw);
+			}
+			tail = nw;
+		}
+		else {
+			nw.setNext(next);
+			nw.setPrev(prev);
+			prev.setNext(nw);
+			next.setPrev(nw);
+		}
+		nw.init();
+		old.removeUseAndDef();
+	}
+	
+	public ArrayList<RvLoad> getAllLoads() {
+		ArrayList<RvLoad> loads = new ArrayList<RvLoad>();
+		for (RvInst inst = head; inst != null; inst = inst.getNext()) {
+			if (inst instanceof RvLoad)
+				loads.add((RvLoad) inst);
+		}
+		return loads;
+	}
+	
+	
+	public ArrayList<RvInst> getAllInsts() {
+		ArrayList<RvInst> insts = new ArrayList<RvInst>();
+		for (RvInst inst = head; inst != null; inst = inst.getNext()) {
+			insts.add(inst);
+		}
+		return insts;
+	}
+	
 }
 
