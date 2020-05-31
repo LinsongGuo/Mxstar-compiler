@@ -134,6 +134,44 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public void addInstBeforeWithoutInit(IRInst next, IRInst inst) {
+		inst.setCurrentBlock(this);
+		if (next == head) {
+			head = inst;
+			inst.setPrev(null);
+			inst.setNext(next);
+			next.setPrev(inst);
+		}
+		else {
+			IRInst prev = next.getPrev();
+			prev.setNext(inst);
+			inst.setPrev(prev);
+			next.setPrev(inst);
+			inst.setNext(next);
+		}
+	}
+	
+	public void removeInst(IRInst inst) {
+		IRInst prev = inst.getPrev(), next = inst.getNext();
+		if (head == tail) {
+			head = tail = null;
+		}
+		else if (head == inst) {
+			head = next;
+			next.setPrev(null);
+		}
+		else if (tail == inst) {
+			tail = prev;
+			prev.setNext(null);
+		}
+		else {
+			prev.setNext(next);
+			next.setPrev(prev);
+		}
+		inst.setPrev(null);
+		inst.setNext(null);
+	}
+	
 	public void setHead(IRInst inst) {
 		head = inst;
 	}

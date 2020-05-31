@@ -19,6 +19,7 @@ import optimize.DCE;
 import optimize.DominatorTree;
 import optimize.GlobalVarElimination;
 import optimize.Inliner;
+import optimize.LoopInvariantCodeMotion;
 import optimize.SCCP;
 import optimize.SSAConstructor;
 import optimize.SSADestructor;
@@ -30,7 +31,7 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
 		InputStream IS = System.in;
-		//InputStream IS = new FileInputStream("code.txt");
+	//	InputStream IS = new FileInputStream("code.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);
@@ -44,8 +45,7 @@ public class Main {
 		ASTBuilder ast = new ASTBuilder(errorReminder);
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		SemanticChecker checker = new SemanticChecker(errorReminder);
-		checker.visit(root);
-		
+		checker.visit(root);	
 		
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
@@ -71,6 +71,7 @@ public class Main {
 		DCE dce = new DCE(irModule);
 		SCCP sccp = new SCCP(irModule);		
 		AliasAnalysis aa = new AliasAnalysis(irModule);
+		LoopInvariantCodeMotion licm = new LoopInvariantCodeMotion(irModule, aa);
 		inliner.run();
 		gve.run();
 		cfg.run();
@@ -88,9 +89,13 @@ public class Main {
 			changed |= cse.run();
 			changed |= dce.run();
 			changed |= sccp.run();
+		//	IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
+		//	irPrinter2.visit(irModule);
+			changed |= licm.run();
 			changed |= cfg.run();
 		//	break;
 		}
+		
 		//IRPrinter irPrinter = new IRPrinter("test/test.ll");
 		//irPrinter.visit(irModule);
 		
@@ -104,8 +109,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-		//rvPrinter.visit(rvModule);
+	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+	//	rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
