@@ -115,15 +115,16 @@ public class RvRegister extends RvOperand {
 	}
 	
 	public double getSpillCost() {
+		//System.err.println(spillCost);
 		return spillCost / degree;
 	}
 	
 	public void increaseSpillCost(boolean inLoop) {
-		spillCost += (inLoop ? 100 : 1);
+		spillCost += (inLoop ? 33 : 1);
 	}
 	
 	public void decreaseSpillCost(boolean inLoop) {
-		spillCost -= (inLoop ? 100 : 1);
+		spillCost -= (inLoop ? 33 : 1);
 	}
 	
 	public void setColor(RvPhysicalRegister color) {

@@ -170,7 +170,7 @@ public class LoopInvariantCodeMotion extends PASS {
 			}
 			else {
 				for(IRInst inst : invariantInsts) {
-			//		System.err.println("LICM " + inst);
+					System.err.println("LICM " + inst);
 					inst.getCurrentBlock().removeInst(inst);
 					IRInst tail = preHeader.getTail();
 					assert tail instanceof BrInst;

@@ -30,8 +30,8 @@ import IR.Symbol.IRSymbol;
 
 public class Inliner extends PASS {
 
-	private static int MaxInstNum = 1333;
-	private static int MaxDepth = 10;
+	private static int MaxInstNum = 999;
+	private static int MaxDepth = 1;
 	private boolean changed;
 	
 	private HashMap<IRFunction, Integer> instNums;
@@ -75,7 +75,7 @@ public class Inliner extends PASS {
 		
 		//inline non-recursive callees.
 		while (true) {
-			boolean changed = false;
+			boolean inlineChanged = false;
 			for (int i = dfsOrder.size() - 1; i >= 0; --i) {
 				IRFunction caller = dfsOrder.get(i);
 				ArrayList<CallInst> calls = callSet.get(caller);
@@ -88,11 +88,11 @@ public class Inliner extends PASS {
 						//System.err.println("inline " + caller.getName() + " --> " + callee.getName());
 						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
-						changed = true;
+						inlineChanged = true;
 					}
 				}
 			}
-			if (!changed)
+			if (!inlineChanged)
 				break;
 		}
 		
@@ -107,7 +107,8 @@ public class Inliner extends PASS {
 					int calleeNum = instNums.get(callee);
 					if (recursiveSet.contains(callee) &&  calleeNum + callerNum < MaxInstNum && !call.inlined() && caller != callee) {
 						inline(caller, callee, call);
-						//System.err.println("inline " + caller.getName() + " --> " + callee.getName());
+				//		System.err.println(calleeNum  + " " + callerNum);
+				//		System.err.println("inline " + caller.getName() + " --> " + callee.getName());
 						call.setInlined();
 						instNums.put(caller, calleeNum + callerNum);
 					}
@@ -133,7 +134,6 @@ public class Inliner extends PASS {
 				module.removeFunction(function);
 			}
 		}
-		
 		return changed;
 	}
 	

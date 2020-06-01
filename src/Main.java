@@ -46,7 +46,7 @@ public class Main {
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);	
-	
+		
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
@@ -90,7 +90,6 @@ public class Main {
 			changed |= dce.run();
 			changed |= sccp.run();
 			changed |= cfg.run();
-		//	break;
 		}
 		
 	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
@@ -106,8 +105,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-//		RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-//		rvPrinter.visit(rvModule);
+	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+	//	rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);

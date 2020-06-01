@@ -73,11 +73,8 @@ public class RegisterAllocation {
 		ArrayList<RvFunction> functions = module.getFunctions();
 		for (RvFunction function : functions) {
 			while (true) {
-			//	System.err.println("true");
-			//for (int i = 1; i <= 1; ++i) {
 				init(function);
 				new LivenessAnalysis(function);
-			//	System.err.println("live");
 				build(function);
 				makeWorkList();
 				
