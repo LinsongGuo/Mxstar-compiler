@@ -32,8 +32,8 @@ import Riscv.Inst.RvInst;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		InputStream IS = System.in;
-	//	InputStream IS = new FileInputStream("code.txt");
+	//	InputStream IS = System.in;
+		InputStream IS = new FileInputStream("code.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);
@@ -49,10 +49,11 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);	
 		
+		/*
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
-		}
+		}*/
 		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
@@ -63,6 +64,9 @@ public class Main {
 		
 		//IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
 		//irPrinter2.visit(irModule);
+		
+		IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
+		irPrinter2.visit(irModule);
 		
 		//optimize
 		Inliner inliner = new Inliner(irModule);
@@ -98,8 +102,8 @@ public class Main {
 			changed |= cfg.run();
 		}
 		
-	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
-	//	irPrinter.visit(irModule);
+		IRPrinter irPrinter = new IRPrinter("test/test.ll");
+		irPrinter.visit(irModule);
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
@@ -111,8 +115,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-	//	rvPrinter.visit(rvModule);
+		RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+		rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
