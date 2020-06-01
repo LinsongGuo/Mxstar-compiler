@@ -78,14 +78,17 @@ public class AliasAnalysis extends PASS {
 		Collection<IRGlobalString> stringList = module.getStringList().values();
 		for (IRGlobalString str : stringList) {
 			Pointer pointer = new Pointer(str.getName());
-			pointer.pointTo.add(new Pointer(str.getName() + ".address"));
+			pointer.pointTo.add(new Pointer(str.getName() + ".value"));
 			map.put(str, pointer);
 		}
 		
 		Collection<IRGlobalVariable> varList = module.getGlobalVarList().values();
 		for (IRGlobalVariable var : varList) {
 			Pointer pointer = new Pointer(var.getName());
-			pointer.pointTo.add(new Pointer(var.getName() + ".address"));
+		//	if (var.getName().contains("g")) {
+		//		System.err.println(var + " " + var.getType() + " " + ((IRPtrType) var.getType()).getType());
+		//	}
+			pointer.pointTo.add(new Pointer(var.getName() + ".value"));
 			map.put(var, pointer);
 		}
 		
@@ -135,10 +138,10 @@ public class AliasAnalysis extends PASS {
 			}
 		}	
 		
-		
 		Collection<Pointer> pointers = map.values();
 		for (Pointer pointer : pointers) {
 			if (!pointer.pointTo.isEmpty()) {
+		//		System.err.println("not empty " + pointer);
 				queue.offer(pointer);
 				inQueue.add(pointer);
 			}
@@ -147,6 +150,7 @@ public class AliasAnalysis extends PASS {
 		while (!queue.isEmpty()) {
 			Pointer pointer = queue.poll();
 			inQueue.remove(pointer);
+			
 			for (Pointer load : pointer.loads) {
 				for (Pointer pointTo : pointer.pointTo) {
 					if (!pointTo.moves.contains(load)) {
@@ -171,7 +175,7 @@ public class AliasAnalysis extends PASS {
 			}
 			for (Pointer move: pointer.moves) {
 				if (move.pointTo.addAll(pointer.pointTo)) {
-					if (inQueue.contains(move)) {
+					if (!inQueue.contains(move)) {
 						inQueue.add(move);
 						queue.offer(move);
 					}
@@ -181,7 +185,7 @@ public class AliasAnalysis extends PASS {
 		
 		/*
 		for (Pointer pointer : pointers) {
-			System.err.println(pointer + " " + pointer.pointTo);
+			System.err.println("pointTo " + pointer + " " + pointer.pointTo);
 		}
 		for (Pointer a : pointers) {
 			for (Pointer b : pointers) {
@@ -195,8 +199,8 @@ public class AliasAnalysis extends PASS {
 				if (mayAlias(a, b))
 					System.err.println("mayAlias : " + a + " " + b);
 			}
-		}
-		*/
+		}*/
+		
 	}
 	
 	private void addConstraints(BitcastToInst inst) {
@@ -213,7 +217,8 @@ public class AliasAnalysis extends PASS {
 		IRFunction function = inst.getFunction();
 		if (module.isbuiltInFunction(function)) {
 			if (res != null && res.getType() instanceof IRPtrType) {
-				map.get(res).pointTo.add(new Pointer(function.getName() + ".returnValue"));	
+				Pointer ret = new Pointer(function.getName() + ".returnValue");
+				map.get(res).pointTo.add(ret);
 			}
 		}
 		else {
@@ -244,15 +249,9 @@ public class AliasAnalysis extends PASS {
 			if (inst.getPtr() instanceof IRRegister) {
 				IRRegister ptr = (IRRegister) inst.getPtr();
 				map.get(ptr).moves.add(map.get(res));
+		//		System.err.println("move " + map.get(ptr) + " " + map.get(res));
 			}
 		}
-		/*
-		IRSymbol idx0 = inst.getIndex0(), idx1 = inst.getIndex1();
-		if (idx0 instanceof IRConstInt && ((IRConstInt) idx0).getValue() != 0 && 
-				(idx1 == null || (idx1 instanceof IRConstInt && ((IRConstInt) idx1).getValue() != 0))) {
-			return;
-		}
-		*/
 	}
 	
 	private void addConstraints(LoadInst inst) {

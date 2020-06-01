@@ -13,6 +13,7 @@ import IR.Inst.BinOpInst;
 import IR.Inst.BitcastToInst;
 import IR.Inst.BitwiseBinOpInst;
 import IR.Inst.BrInst;
+import IR.Inst.CallInst;
 import IR.Inst.GetElementPtrInst;
 import IR.Inst.IRInst;
 import IR.Inst.IcmpInst;
@@ -33,6 +34,7 @@ public class LoopInvariantCodeMotion extends PASS {
 	private HashMap<IRBasicBlock, HashSet<IRBasicBlock>> loopBlocks;
 	private HashMap<IRBasicBlock, HashSet<StoreInst>> loopStores; 	
 	private HashMap<IRBasicBlock, IRBasicBlock> loopBelong; 	
+	private HashSet<IRBasicBlock> hasCall;
 	private HashSet<IRRegister> invariances;
 	
 	public LoopInvariantCodeMotion(IRModule module, AliasAnalysis aa) {
@@ -56,6 +58,7 @@ public class LoopInvariantCodeMotion extends PASS {
 		loopStores = new HashMap<>();
 		loopBelong = new HashMap<>();
 		invariances = new HashSet<>();
+		hasCall = new HashSet<>();
 		loopAnalysis(function);
 		motion(function);
 	}
@@ -100,22 +103,25 @@ public class LoopInvariantCodeMotion extends PASS {
 					}
 				}
 			}
-			
+		
 			HashSet<StoreInst> stores = new HashSet<>();
 			loopStores.put(header, stores);
+			boolean call = false;
 			for (IRBasicBlock block : blocks) {
 				for (IRInst inst = block.getHead(); inst != null; inst = inst.getNext()) {
 					if (inst instanceof StoreInst) {
 						stores.add((StoreInst) inst);
 					}
+					else if (inst instanceof CallInst && !module.isbuiltInFunction(((CallInst) inst).getFunction())) {
+						call = true;
+					}
 				}
 			}
-			
-			/*
-			for (IRBasicBlock block : blocks) {
-				System.err.println("block : " + block);
+
+			if (call) {
+				hasCall.add(header);
+			//	System.err.println("has call " + header);
 			}
-			*/
 		}
 	}
 	
@@ -148,18 +154,23 @@ public class LoopInvariantCodeMotion extends PASS {
 				}
 			}
 			
+			/*if (invariantInsts.size() > 0) {
+				System.err.println(header.getName());
+			}*/
+			
 			IRBasicBlock preHeader = null;
 			for (IRBasicBlock predecessor : header.getPredecessors()) {
 				if (!loopBelong.containsKey(predecessor)) {
 					preHeader = predecessor;
 				}
 			}
+			
 			if (preHeader == null) {
 				System.err.println("warning : no preheader!");
 			}
 			else {
 				for(IRInst inst : invariantInsts) {
-				//	System.err.println("LICM  " + inst);
+			//		System.err.println("LICM " + inst);
 					inst.getCurrentBlock().removeInst(inst);
 					IRInst tail = preHeader.getTail();
 					assert tail instanceof BrInst;
@@ -239,6 +250,8 @@ public class LoopInvariantCodeMotion extends PASS {
 	}
 	
 	private boolean checkInvariant(LoadInst inst, IRBasicBlock header) {
+		if (hasCall.contains(header))
+			return false;
 		IRRegister res = inst.getRes();
 		IRRegister ptr = (IRRegister) inst.getPtr();
 		if (isVariant(res, header))

@@ -46,7 +46,7 @@ public class Main {
 		ProgramNode root = (ProgramNode) ast.visit(parser.program());
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);	
-		
+	
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
@@ -72,32 +72,29 @@ public class Main {
 		SCCP sccp = new SCCP(irModule);		
 		AliasAnalysis aa = new AliasAnalysis(irModule);
 		LoopInvariantCodeMotion licm = new LoopInvariantCodeMotion(irModule, aa);
+		CSE cse = new CSE(irModule, aa);
+		
 		inliner.run();
 		gve.run();
 		cfg.run();
 		dom.run();
-		CSE cse = new CSE(irModule, aa);
 		ssaConstructor.run();
 		boolean changed = true;
-
 		while(changed) {
-		//System.err.println("----------------while");
 			changed = false;
 			changed |= inliner.run();
 			dom.run();
 			aa.run();
+			changed |= licm.run();
 			changed |= cse.run();
 			changed |= dce.run();
 			changed |= sccp.run();
-		//	IRPrinter irPrinter2 = new IRPrinter("test/test2.ll");
-		//	irPrinter2.visit(irModule);
-			changed |= licm.run();
 			changed |= cfg.run();
 		//	break;
 		}
 		
-		//IRPrinter irPrinter = new IRPrinter("test/test.ll");
-		//irPrinter.visit(irModule);
+	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
+	//	irPrinter.visit(irModule);
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
@@ -109,8 +106,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-	//	rvPrinter.visit(rvModule);
+//		RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+//		rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
