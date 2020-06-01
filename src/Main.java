@@ -20,6 +20,7 @@ import optimize.DominatorTree;
 import optimize.GlobalVarElimination;
 import optimize.Inliner;
 import optimize.LoopInvariantCodeMotion;
+import optimize.PrintRestruction;
 import optimize.SCCP;
 import optimize.SSAConstructor;
 import optimize.SSADestructor;
@@ -30,8 +31,8 @@ import Riscv.Inst.RvInst;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		ErrorReminder errorReminder = new ErrorReminder();
-		InputStream IS = System.in;
-	//	InputStream IS = new FileInputStream("code.txt");
+	//	InputStream IS = System.in;
+		InputStream IS = new FileInputStream("code.txt");
 		CharStream AIS = CharStreams.fromStream(IS);
       	
 		MxstarLexer lexer = new MxstarLexer(AIS);
@@ -47,10 +48,11 @@ public class Main {
 		SemanticChecker checker = new SemanticChecker(errorReminder);
 		checker.visit(root);	
 		
+		/*
 		int count = errorReminder.count();
 		if(args[0].equals("0")) {
 			System.exit(count);			
-		}
+		}*/
 		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
@@ -73,16 +75,18 @@ public class Main {
 		AliasAnalysis aa = new AliasAnalysis(irModule);
 		LoopInvariantCodeMotion licm = new LoopInvariantCodeMotion(irModule, aa);
 		CSE cse = new CSE(irModule, aa);
-		
+		PrintRestruction pr = new PrintRestruction(irModule);
 		inliner.run();
 		gve.run();
 		cfg.run();
 		dom.run();
 		ssaConstructor.run();
+		pr.run();
+	
 		boolean changed = true;
 		while(changed) {
 			changed = false;
-			changed |= inliner.run();
+		//	changed |= inliner.run();
 			dom.run();
 			aa.run();
 			changed |= licm.run();
@@ -92,8 +96,8 @@ public class Main {
 			changed |= cfg.run();
 		}
 		
-	//	IRPrinter irPrinter = new IRPrinter("test/test.ll");
-	//	irPrinter.visit(irModule);
+		IRPrinter irPrinter = new IRPrinter("test/test.ll");
+		irPrinter.visit(irModule);
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
@@ -105,10 +109,10 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-	//	rvPrinter.visit(rvModule);
+		RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+		rvPrinter.visit(rvModule);
 		
-		RvPrinter output = new RvPrinter("output.s", true);
+		RvPrinter output = new RvPrinter("output.s", false);
 		output.visit(rvModule);
 	}
 }

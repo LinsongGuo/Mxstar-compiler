@@ -151,6 +151,24 @@ public class IRBasicBlock {
 		}
 	}
 	
+	public void addInstBefore(IRInst next, IRInst inst) {
+		inst.setCurrentBlock(this);
+		inst.InitDefUse();
+		if (next == head) {
+			head = inst;
+			inst.setPrev(null);
+			inst.setNext(next);
+			next.setPrev(inst);
+		}
+		else {
+			IRInst prev = next.getPrev();
+			prev.setNext(inst);
+			inst.setPrev(prev);
+			next.setPrev(inst);
+			inst.setNext(next);
+		}
+	}
+	
 	public void removeInst(IRInst inst) {
 		IRInst prev = inst.getPrev(), next = inst.getNext();
 		if (head == tail) {

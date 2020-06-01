@@ -201,8 +201,6 @@ public class CSE extends PASS {
 	}
 	
 	public void elimination(IRBasicBlock block) {
-		//if (block.getName().contains("thenBodyBlock.0"))
-	//	System.err.println("+++ enter " + block.getName());
 		ArrayList<IRInst> instList = block.getInstList();
 		for (IRInst inst : instList) {
 			Expr e = null;
@@ -235,17 +233,10 @@ public class CSE extends PASS {
 			IRRegister res = inst.getRes();
 			if (stack == null) {
 				stack = new Stack<Pair<IRInst, IRRegister>>();
-			//	if (inst instanceof GetElementPtrInst && res.getName().contains("data$.19")) {
-			//		System.err.println("###push " + inst);
-			//	}
-				
 				stack.add(new Pair<IRInst, IRRegister>(inst, res));
 				stackMap.put(e, stack);
 			}
 			else if (stack.isEmpty()) {
-				//if (inst instanceof GetElementPtrInst && res.getName().contains("data$.19")) {
-				//	System.err.println("###push " + inst);
-				//}
 				stack.add(new Pair<IRInst, IRRegister>(inst, res));
 			}
 			else {
@@ -253,20 +244,9 @@ public class CSE extends PASS {
 				IRInst last = top.first;
 				IRRegister replace = top.second;
 				if (inst instanceof LoadInst) {
-					if (/*!res.getName().contains("storage") && 
-							!res.getName().contains("size") && 
-							!res.getName().contains("end") && 
-							!res.getName().contains("beg") && */
-							cheakAlias(inst, (IRRegister) ((LoadInst) inst).getPtr(), (LoadInst) last, new HashSet<IRInst>())) {
-					
-						//System.err.println(inst);
-						//System.err.println(res + " --> " + replace);
+					if (cheakAlias(inst, (IRRegister) ((LoadInst) inst).getPtr(), (LoadInst) last, new HashSet<IRInst>())) {
 						removeList.add(inst);
 						replaceList.add(replace);
-						/*HashSet<IRInst> uses = res.getUseList();
-						for (IRInst use : uses) {
-							use.replaceUse(res, replace);
-						}*/
 						stack.push(new Pair<IRInst, IRRegister>(inst, replace));
 					}
 					else {
@@ -276,40 +256,7 @@ public class CSE extends PASS {
 				else {
 						removeList.add(inst);
 						replaceList.add(replace);
-						/*HashSet<IRInst> uses = res.getUseList();
-						for (IRInst use : uses) {
-							use.replaceUse(res, replace);
-						}*/
 						stack.push(new Pair<IRInst, IRRegister>(inst, replace));
-					
-				//	if (inst instanceof GetElementPtrInst && ((IRRegister) ((GetElementPtrInst) inst).getPtr()).getName().contains("malloc.1")) {
-				//		System.err.println(inst);
-				//		System.err.println(res + " --> " + replace);
-					
-						//	stack.push(new Pair<IRInst, IRRegister>(inst, res));
-					//	continue;		
-					//	System.err.println(inst);
-					//	System.err.println(res + " --> " + replace);
-					//}
-				/*
-					if ( res.getName().contains("size$.1")) {
-						
-						System.err.println("expr " + e);
-						stack.push(new Pair<IRInst, IRRegister>(inst, res));
-						System.err.println(res + " --> " + replace);
-						continue;
-					}
-					
-					if (res.getName().contains("edges$.1")) {
-						System.err.println(inst);
-						System.err.println("expr " + e);
-						stack.push(new Pair<IRInst, IRRegister>(inst, res));
-						System.err.println(res + " --> " + replace);
-						continue;
-					}*/
-					
-					
-			
 				}
 			}
 		}
@@ -318,13 +265,8 @@ public class CSE extends PASS {
 		for (IRBasicBlock dom : doms) {
 			elimination(dom);
 		}
-		
-		//if (block.getName().contains("thenBodyBlock.0"))
-		//System.err.println("--- exit " + block.getName());
+
 		for (IRInst inst : instList) {
-			//if (inst instanceof GetElementPtrInst && inst.getRes().getName().contains("data$.19")) {
-			//	System.err.println("###pop " + inst);
-			//}
 			if (exprMap.containsKey(inst)) {
 				stackMap.get(exprMap.get(inst)).pop();
 			}
