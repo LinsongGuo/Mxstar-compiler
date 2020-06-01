@@ -244,7 +244,9 @@ public class CSE extends PASS {
 				IRInst last = top.first;
 				IRRegister replace = top.second;
 				if (inst instanceof LoadInst) {
+				//	System.err.println(inst);
 					if (cheakAlias(inst, (IRRegister) ((LoadInst) inst).getPtr(), (LoadInst) last, new HashSet<IRInst>())) {
+					//	System.err.println("check");
 						removeList.add(inst);
 						replaceList.add(replace);
 						stack.push(new Pair<IRInst, IRRegister>(inst, replace));
@@ -274,7 +276,7 @@ public class CSE extends PASS {
 	}
 	
 	private boolean cheakAlias(IRInst inst, IRRegister ptr, LoadInst goal, HashSet<IRInst>visited) {
-		
+		//System.err.println("checkAlias " + inst + " " + ptr + " " + goal);
 		if (visited.contains(inst))
 			return true;
 		if (inst == goal)
