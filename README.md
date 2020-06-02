@@ -120,18 +120,18 @@ A very useful optimization. For non-recursive functions, we build a calling tree
 ### Global Variables Localization
 I just move global variables to `main` function if they just appear in `main` function. In fact, most global variables will be moved into `main` after inlining. But there're still some global variables. Here's a good optimization: load values from all global varaibles when entering function and store values to all global variables when exiting function. I don't do the optimization, but the same effect can be achieved by **CSE**. ~~Thus my **CSE** is just to eliminate global variables?~~
 
-### Dead Code Elimitation
+### DCE(Dead Code Elimitation)
 A naive dead code elimitation: If a instruction's result is not used by other instructions, remove it! 
 
 **DCE** optimization can be used to eliminate redundant IR instructions if the implementation of IR is a little bad.
 
-### Sparse Conditional Constant Propagation    
+### SCCP(Sparse Conditional Constant Propagation)    
 See chapter 19.3 in Tiger Book .
 
 Are **DCE** and **SCCP** useful in programs which are written by a not bad programer? 
 
 ### Print Restruction
-Replace `print(toString(x))` with `printInt(x)`. Maybe the optimization is just **data-oriented optimization**. I'm curious why there are many `print(toString())` in some testcases. In my opinion, it's meaningless. Is there such a programmer writing these redundant codes?
+Replace `println(toString(x))` with `printlnInt(x)`. Maybe the optimization is just **data-oriented optimization**. I'm curious why there are many `println(toString())` in some testcases. In my opinion, it's meaningless. Is there such a programmer writing these redundant codes?
 
 ### Peephole Optimization
 Replace `store a, ptr` `b = load ptr` with `store a, ptr` `b = move a`. For every `load`, we just need to check nearby `store` of the `load`. The opimization is useful in the following case.
@@ -152,7 +152,9 @@ for (i = 0; i < n; ++i) {
 
 ## Performance
 gcc O1 benchmark: 4.00
+
 gcc O2 benchmark: 5.00
+
 | testcase     | time(clock cycles of simulator) |  score  |
 | :--------:     | :-----:   | :----:  |
 | binary_tree  | 595389094   | 4.82 |
