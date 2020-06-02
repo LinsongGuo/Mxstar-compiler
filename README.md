@@ -87,14 +87,14 @@ for(i = 0; i < n; ++i) {
 ```
 In the above example, there's no `store` instruction. So we don't need to check alias and just need to eliminate `load` instructions. But most cases is more complex. In **CSE** optimization, we **dfs** the dominator tree, find common subexpressions by using map and check alias if we eliminate `load`.
 
-### LICM(Loop Invariant Code Elimination)
+### LICM(Loop Invariant Code Motion)
 A variable `a` is **loop invariant** if :
 - `a` is defined outside the loop.
 - `a = b op c` b, c are loop invariant.
 - `a = getelementptr ptr, x` ptr is loop invariant.
 - `a = load ptr` ptr is loop invariant and no `store` instruction to `ptr` or `ptr's alias`.
 
-If we don't have alias anlysis, **LICM** will be useless. Because in most cases, we eliminate `getelementptr` and `load` instructions like the following case.
+If we don't have alias anlysis, **LICM** will be useless. Because in most cases, we move `getelementptr` and `load` instructions like the following case.
 
 Before LICM:
 ```
@@ -115,7 +115,7 @@ for(i = 0; i < n; ++i) {
 ```
 
 ### Inlining
-A very useful optimization. For non-recursive functions, we build a calling tree rooted at main function and start inlining from the leafs of the calling tree. For recursive-functions, we only inline several levels. 
+A very useful optimization. For non-recursive functions, we build a calling tree rooted at `main` function and start inlining from the leafs of the calling tree. For recursive-functions, we only inline several levels. 
 
 ### Global Variables Localization
 I just move global variables to `main` function if they just appear in `main` function. In fact, most global variables will be moved into `main` after inlining. But there're still some global variables. Here's a good optimization: load values from all global varaibles when entering function and store values to all global variables when exiting function. I don't do the optimization, but the same effect can be achieved by **CSE**. ~~Thus my **CSE** is just to eliminate global variables?~~
@@ -134,14 +134,14 @@ Are **DCE** and **SCCP** useful in programs which are written by a not bad progr
 Replace `print(toString(x))` with `printInt(x)`. Maybe the optimization is just **data-oriented optimization**. I'm curious why there are many `print(toString())` in some testcases. In my opinion, it's meaningless. Is there such a programmer writing these redundant codes?
 
 ### Peephole Optimization
-Replace `store a, ptr` `b = load ptr` with `store a, ptr` `b = move a`. For every `load`, we just need to check nearby `store` of the `load`. The opimization is very useful in the following case.
+Replace `store a, ptr` `b = load ptr` with `store a, ptr` `b = move a`. For every `load`, we just need to check nearby `store` of the `load`. The opimization is useful in the following case.
 ```
 for (i = 0; i < n; ++i) {
     a[i] = i * i;
     printlnInt(a[i]);
 }
 ```
-If the block has the only entry, we can eliminate `store` and `load` in different basic blocks. The optimization is useful in If conditions.
+If the block has the only entry, we can eliminate `store` and `load` in different basic blocks. The optimization is useful in `if ` statements.
 ```
 for (i = 0; i < n; ++i) {
     a[i] = i * i;
@@ -152,6 +152,7 @@ for (i = 0; i < n; ++i) {
 
 ## Performance
 gcc O1 benchmark: 4.00
+gcc O2 benchmark: 5.00
 | testcase     | time(clock cycles of simulator) |  score  |
 | :--------:     | :-----:   | :----:  |
 | binary_tree  | 595389094   | 4.82 |
