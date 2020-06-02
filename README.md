@@ -49,7 +49,7 @@ The definition of **SSA(Static Single Assignment)** in [SSA book](http://ssabook
 
     A program is defined to be in SSA form if each variable is a target of exactly one assignment statement in the program text. 
 
-But to implement LLVM-IR with SSA directly is a little hard, so we firstly implement pesudo-LLVM then restruct it to real LLVM. In pesudo-LLVM, all defitions of variables are by **store** instructions and all uses of variables are by **load** instructions. For example,
+But to implement LLVM-IR with SSA directly is a little hard, so we firstly implement pesudo-LLVM then restruct it to real LLVM. In pesudo-LLVM, all defitions of variables are by **store** instructions and all uses of variables are by **load** instructions. The following is an example.
 ```
 int a = 1, b = 2;
 int c = a + b;
@@ -77,15 +77,30 @@ Two pointers are **may alias** if they may point to the same memory location. Th
 Is alias analysis useful? In fact, in most cases, only global variables are checked **not alias** and other pointers are checked **may alias**.
  
 ### CSE(Common SubExpression Elimination)
-If `c = a + b` in `block1`, `d = a + b` in `block2` and `block1` dominates `block2`, then we can replace `d = a + b` with `d = c`. But this case doesn't often happen. In most cases, we elimniate memory access like `a[i]` in the following example.
+If `c = a + b` in `block1`, `d = a + b` in `block2` and `block1` dominates `block2`, then we can replace `d = a + b` with `d = c`. But this case doesn't often happen. In most cases, we elimniate `load` like `a[i]` to reduce memory access. The following is an example.
+
+Before CSE:
 ```
 for(i = 0; i < n; ++i) {
     s1 = s1 + a[i];
     s2 = s2 + a[i] * a[i];
     s3 = s3 + a[i] * a[i] * a[i];
 }
+
 ```
-In the above example, there's no `store` instruction. So we don't need to check alias and just need to eliminate `load` instructions. But most cases is more complex. In **CSE** optimization, we **dfs** the dominator tree, find common subexpressions by using map and check alias if we eliminate `load`.
+After CSE:
+```
+for(i = 0; i < n; ++i) {
+    t1 = a[i];
+    s1 = s1 + t1;
+    t2 = t1 * t1;
+    s2 = s2 + t2;
+    t3 = t2 * t1
+    s3 = s3 + t3;
+}
+```
+
+In the above example, there's no `store` instruction. So we don't need to check alias and just need to eliminate `load` instructions. But most cases are more complex. In **CSE** optimization, we **dfs** the dominator tree, find common subexpressions by using map and check alias if we eliminate `load`.
 
 ### LICM(Loop Invariant Code Motion)
 A variable `a` is **loop invariant** if :
@@ -94,7 +109,7 @@ A variable `a` is **loop invariant** if :
 - `a = getelementptr ptr, x` ptr is loop invariant.
 - `a = load ptr` ptr is loop invariant and no `store` instruction to `ptr` or `ptr's alias`.
 
-If we don't have alias anlysis, **LICM** will be useless. Because in most cases, we move `getelementptr` and `load` instructions like the following case.
+If we don't have alias anlysis, **LICM** will be useless. Because in most cases, we move `getelementptr` and `load` instructions like the following example.
 
 Before LICM:
 ```
@@ -135,18 +150,40 @@ Replace `println(toString(x))` with `printlnInt(x)`. Maybe the optimization is j
 
 ### Peephole Optimization
 Replace `store a, ptr` `b = load ptr` with `store a, ptr` `b = move a`. For every `load`, we just need to check nearby `store` of the `load`. The opimization is useful in the following case.
+
+Before Peephole Optimization:
 ```
 for (i = 0; i < n; ++i) {
     a[i] = i * i;
     printlnInt(a[i]);
 }
 ```
-If the block has the only entry, we can eliminate `store` and `load` in different basic blocks. The optimization is useful in `if ` statements.
+After Peephole Optimization:
+```
+for (i = 0; i < n; ++i) {
+    t = i * i;
+    a[i] = t;
+    printlnInt(t);
+}
+```
+
+If the block has the only entry, we can eliminate `store` and `load` in different basic blocks. The optimization is useful in `if ` statements like the following case.
+
+Before Peephole Optimization:
 ```
 for (i = 0; i < n; ++i) {
     a[i] = i * i;
     if (a[i] > c)
         printlnInt(a[i]);
+}
+```
+After Peephole Optimization:
+```
+for (i = 0; i < n; ++i) {
+    t = i * i;
+    a[i] = t;
+    if (t > c)
+        printlnInt(t);
 }
 ```
 
