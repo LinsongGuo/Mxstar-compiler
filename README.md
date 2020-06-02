@@ -153,8 +153,6 @@ for (i = 0; i < n; ++i) {
 ## Performance
 gcc O1 benchmark: 4.00
 
-gcc O2 benchmark: 5.00
-
 | testcase     | time(clock cycles of simulator) |  score  |
 | :--------:     | :-----:   | :----:  |
 | binary_tree  | 595389094   | 4.82 |
