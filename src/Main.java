@@ -88,7 +88,9 @@ public class Main {
 		inliner.run();
 
 		boolean changed = true;
-		for (int t = 0; t < 5 && changed; ++t) {
+		//for (int t = 0; t < 100 && changed; ++t) 
+        while(changed)
+		{
 			changed = false;
 			changed |= inliner.run();
 			dom.run();

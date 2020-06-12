@@ -30,8 +30,8 @@ import IR.Symbol.IRSymbol;
 
 public class Inliner extends PASS {
 
-	private static int MaxInstNum = 1000;
-	private static int MaxDepth = 10;
+	private static int MaxInstNum = 500;
+	private static int MaxDepth = 1;
 	private boolean changed;
 	
 	private HashMap<IRFunction, Integer> instNums;
