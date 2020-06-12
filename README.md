@@ -190,6 +190,21 @@ for (i = 0; i < n; ++i) {
 ## Performance
 gcc O1 benchmark: 4.00
 
+when **maxInstNum=2000** in `inlining`:
+
+| testcase     | time(clock cycles of simulator) |  score  |
+| :--------:     | :-----:   | :----:  |
+| binary_tree  | 532814506|5.00 |
+| dijkstra     | 166188863|4.22 |
+| humble       | 1018041821|3.05|
+| kruskal      | 158220677|3.42 |
+| lca          | 96375308|4.06|
+| lunatic      | 2656322338|3.51|
+| maxflow      | 23437143|5.00 |
+| pi           | 32980003|3.49 |
+| segtree      | 1027958443|3.96|
+| sha_1        | 1243551947|4.78 |
+| overall      |             |40.55 |
 
 when **maxInstNum=1000** in `inlining`:
 
@@ -231,16 +246,3 @@ when **maxInstNum=500** in `inlining`:
 - Engineering A Compiler.
 - [SSA Book](http://ssabook.gforge.inria.fr/latest/book.pdf)
 - The RISC-V Instruction Set Manual.
-
-
-38.96
-679571883/4.09
-170628330/4.07
-1018041821/3.05
-158897962/3.39
-96616199/4.05
-2657771281/3.50
-23437143/5.00
-32980003/3.49
-1040642244/3.89
-1265151948/4.69
