@@ -54,6 +54,7 @@ public class Main {
 			System.exit(count);			
 		}
 		
+		
 		//build IR
 		GlobalScope globalScope = checker.getGlobalScope();
 		StringType stringTemplate = checker.getStringTemplate();
@@ -84,8 +85,10 @@ public class Main {
 		ssaConstructor.run();
 		pr.run();
 	
+		inliner.run();
+
 		boolean changed = true;
-		while(changed) {
+		for (int t = 0; t < 10 && changed; ++t) {
 			changed = false;
 			changed |= inliner.run();
 			dom.run();
@@ -97,9 +100,10 @@ public class Main {
 			changed |= sccp.run();
 			changed |= cfg.run();
 		}
-		
-		IRPrinter irPrinter = new IRPrinter("test/test.ll");
-		irPrinter.visit(irModule);
+
+	
+		// IRPrinter irPrinter = new IRPrinter("test/test.ll");
+		// irPrinter.visit(irModule);
 		
 		//codegen
 		SSADestructor ssaDestructor = new SSADestructor(irModule);
@@ -111,8 +115,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-		RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-		rvPrinter.visit(rvModule);
+		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+		//rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
