@@ -190,6 +190,9 @@ for (i = 0; i < n; ++i) {
 ## Performance
 gcc O1 benchmark: 4.00
 
+
+when **maxInstNum=1000** in `inlining`:
+
 | testcase     | time(clock cycles of simulator) |  score  |
 | :--------:     | :-----:   | :----:  |
 | binary_tree  | 595389094   | 4.82 |
@@ -204,6 +207,23 @@ gcc O1 benchmark: 4.00
 | sha_1        | 1249243188  | 4.76 |
 | overall      |             |40.44 |
 
+when **maxInstNum=500** in `inlining`:
+
+| testcase     | time(clock cycles of simulator) |  score  |
+| :--------:     | :-----:   | :----:  |
+| binary_tree  |679571883 | 4.09 |
+| dijkstra     |170628330 | 4.07|
+| humble       | 1018041821 | 3.05|
+| kruskal      | 158897962  | 3.39|
+| lca          | 96616199 | 4.05 |
+| lunatic      | 2657771281 | 3.50 |
+| maxflow      | 23437143 | 5.00 |
+| pi           | 32980003 | 3.49 |
+| segtree      | 1040642244 | 3.89 |
+| sha_1        | 1265151948 | 4.69|
+| overall      |             |38.96 |
+
+
 ## Reference
 - The Definitive ANTLR 4 Reference.
 - Tiger Book: Modern Compiler Implementation in Java.
@@ -211,3 +231,16 @@ gcc O1 benchmark: 4.00
 - Engineering A Compiler.
 - [SSA Book](http://ssabook.gforge.inria.fr/latest/book.pdf)
 - The RISC-V Instruction Set Manual.
+
+
+38.96
+679571883/4.09
+170628330/4.07
+1018041821/3.05
+158897962/3.39
+96616199/4.05
+2657771281/3.50
+23437143/5.00
+32980003/3.49
+1040642244/3.89
+1265151948/4.69

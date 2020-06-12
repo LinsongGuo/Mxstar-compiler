@@ -88,9 +88,8 @@ public class Main {
 		inliner.run();
 
 		boolean changed = true;
-		//for (int t = 0; t < 100 && changed; ++t) 
-        while(changed)
-		{
+		for (int t = 0; t < 5 && changed; ++t) 
+        {
 			changed = false;
 			changed |= inliner.run();
 			dom.run();
@@ -117,8 +116,8 @@ public class Main {
 		RegisterAllocation allocator = new RegisterAllocation(rvModule); 
 		allocator.run();
 		
-		//RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
-		//rvPrinter.visit(rvModule);
+	//	RvPrinter rvPrinter = new RvPrinter("test/test.s", true);
+	//	rvPrinter.visit(rvModule);
 		
 		RvPrinter output = new RvPrinter("output.s", true);
 		output.visit(rvModule);
