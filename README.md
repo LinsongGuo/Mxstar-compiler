@@ -1,7 +1,6 @@
-# Mx* Compiler Project for SJTU MS208
+# Mx* Compiler 
 
 ## Overview
-The course repository: [Compiler 2020](https://github.com/peterzheng98/Compiler-2020) 
 
 The source language is Mx*, a java-like language. The target is risc-v assembly. There are mainly three stages: semantic, codegen and optimize.
 
